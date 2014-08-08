@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Control.Common", "Control.Common\Control.Common.csproj", "{CBB5DE48-A305-4F9C-88F3-F0F071AC3298}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Control.Series", "Control.Series\Control.Series.csproj", "{F1A8B1CE-B30B-4DC8-BB12-D4EB53E53763}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CBB5DE48-A305-4F9C-88F3-F0F071AC3298}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CBB5DE48-A305-4F9C-88F3-F0F071AC3298}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CBB5DE48-A305-4F9C-88F3-F0F071AC3298}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CBB5DE48-A305-4F9C-88F3-F0F071AC3298}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F1A8B1CE-B30B-4DC8-BB12-D4EB53E53763}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F1A8B1CE-B30B-4DC8-BB12-D4EB53E53763}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F1A8B1CE-B30B-4DC8-BB12-D4EB53E53763}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F1A8B1CE-B30B-4DC8-BB12-D4EB53E53763}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		StartupItem = Control.Series\Control.Series.csproj
+	EndGlobalSection
+EndGlobal

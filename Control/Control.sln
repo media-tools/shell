@@ -5,22 +5,34 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Control.Common", "Control.C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Control.Series", "Control.Series\Control.Series.csproj", "{F1A8B1CE-B30B-4DC8-BB12-D4EB53E53763}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Control.MailSync", "Control.MailSync\Control.MailSync.csproj", "{F03A89B1-EEC4-4121-A6DB-61F729BED16B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Control", "Control\Control.csproj", "{63C0126A-4870-4769-B6F7-C22179DB5445}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{63C0126A-4870-4769-B6F7-C22179DB5445}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{63C0126A-4870-4769-B6F7-C22179DB5445}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{63C0126A-4870-4769-B6F7-C22179DB5445}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{63C0126A-4870-4769-B6F7-C22179DB5445}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CBB5DE48-A305-4F9C-88F3-F0F071AC3298}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{CBB5DE48-A305-4F9C-88F3-F0F071AC3298}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CBB5DE48-A305-4F9C-88F3-F0F071AC3298}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CBB5DE48-A305-4F9C-88F3-F0F071AC3298}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F03A89B1-EEC4-4121-A6DB-61F729BED16B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F03A89B1-EEC4-4121-A6DB-61F729BED16B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F03A89B1-EEC4-4121-A6DB-61F729BED16B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F03A89B1-EEC4-4121-A6DB-61F729BED16B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F1A8B1CE-B30B-4DC8-BB12-D4EB53E53763}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F1A8B1CE-B30B-4DC8-BB12-D4EB53E53763}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F1A8B1CE-B30B-4DC8-BB12-D4EB53E53763}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F1A8B1CE-B30B-4DC8-BB12-D4EB53E53763}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
-		StartupItem = Control.Series\Control.Series.csproj
+		StartupItem = Control\Control.csproj
 	EndGlobalSection
 EndGlobal

@@ -11,6 +11,10 @@ namespace Control.Series
             Description = "Update series and video files";
             Options = new string[] { "series" };
         }
+
+        protected override void InternalRun ()
+        {
+        }
     }
 }
 

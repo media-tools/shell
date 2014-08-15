@@ -23,7 +23,7 @@ namespace Control.Common
                 printUsage ();
             }
 
-            Log.Debug ("Stop (date='", Commons.DATETIME, "', runtime='", (int)Commons.RUNTIME_SEC, "s')");
+            Log.Debug ("Stop (date='", Commons.DATETIME, "', runtime='", (int)Commons.RUNTIME_SEC, " sec')");
         }
 
         private void printUsage ()

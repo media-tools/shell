@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace Control.Common
 {
-    public class Task
+    public abstract class Task
     {
         public string Name { protected set; get; }
 
@@ -38,8 +38,10 @@ namespace Control.Common
         public void Run (string[] args)
         {
             CheckValid ();
-            throw new NotImplementedException ();
+            InternalRun ();
         }
+
+        protected abstract void InternalRun ();
 
         public virtual void PrintUsage (string indent)
         {

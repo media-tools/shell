@@ -11,5 +11,9 @@ namespace Control.MailSync
             Description = "Synchronize e-mails";
             Options = new string[] { "mailsync" };
         }
+
+        protected override void InternalRun ()
+        {
+        }
     }
 }

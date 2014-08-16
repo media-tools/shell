@@ -34,7 +34,7 @@ namespace Control.MailSync
 
         private void readConfigAccounts ()
         {
-            if (!fs.Config.Exists (path: ACCOUNTS_CONF)) {
+            if (!fs.Config.FileExists (path: ACCOUNTS_CONF)) {
                 fs.Config.WriteAllText (path: ACCOUNTS_CONF, contents: "google ACCOUT_NAME_1 USER_NAME PASSWORD");
                 fs.Config.WriteAllText (path: ACCOUNTS_CONF, contents: "google ACCOUT_NAME_2 USER_NAME PASSWORD");
             }
@@ -59,7 +59,7 @@ namespace Control.MailSync
 
         private void readConfigChannels ()
         {
-            if (!fs.Config.Exists (path: CHANNELS_CONF)) {
+            if (!fs.Config.FileExists (path: CHANNELS_CONF)) {
                 fs.Config.WriteAllText (path: CHANNELS_CONF, contents: "ACCOUT_NAME_1:PATH -> ACCOUT_NAME_2:PATH");
             }
             string[] lines = fs.Config.ReadAllLines (path: CHANNELS_CONF);

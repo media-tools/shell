@@ -18,6 +18,7 @@ namespace Control.Common
 
             Task matchingTask = null;
             if (args.Length > 0 && findMatchingTask (args, out matchingTask)) {
+                Git.Commit ();
                 matchingTask.Run (args);
             } else {
                 printUsage ();

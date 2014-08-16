@@ -44,6 +44,7 @@
     <Compile Include="Control.Common\IniFile.cs" />
     <Compile Include="Control.Common\ConfigFile.cs" />
     <Compile Include="Control.Common\FileSystemType.cs" />
+    <Compile Include="Control.Common\Git.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

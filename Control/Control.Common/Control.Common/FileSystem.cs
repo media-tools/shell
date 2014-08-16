@@ -9,9 +9,15 @@ namespace Control.Common
         public string RootDirectory = "";
 
         public FileSystem (Task task, FileSystemType type)
+            : this (type: type)
         {
-            RootDirectory = (type == FileSystemType.Config ? SystemInfo.SettingsDirectory + SystemInfo.PathSeparator + "config" : SystemInfo.CacheDirectory + SystemInfo.PathSeparator + "runtime")
-                + SystemInfo.PathSeparator + task.Name;
+            RootDirectory += SystemInfo.PathSeparator + task.Name;
+            Directory.CreateDirectory (RootDirectory);
+        }
+
+        public FileSystem (FileSystemType type)
+        {
+            RootDirectory = (type == FileSystemType.Config ? SystemInfo.SettingsDirectory + SystemInfo.PathSeparator + "config" : SystemInfo.CacheDirectory + SystemInfo.PathSeparator + "runtime");
             Directory.CreateDirectory (RootDirectory);
         }
 
@@ -28,10 +34,14 @@ namespace Control.Common
         }
 
         private static ConfigFile _default;
-
-        public bool Exists (string path)
+        
+        public bool FileExists (string path)
         {
             return File.Exists (RootDirectory + SystemInfo.PathSeparator + path);
+        }
+        public bool DirectoryExists (string path)
+        {
+            return Directory.Exists (RootDirectory + SystemInfo.PathSeparator + path);
         }
 
         public void WriteAllLines (string path, string[] contents)

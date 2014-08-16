@@ -130,11 +130,13 @@ namespace Control.MailSync
         private string IMAPFILTER_LUA = "imapfilter.lua";
         private string MBSYNC_RC = "mbsyncrc";
 
-        private string CONTENT_BIN_RUN1 { get { return "imapfilter -v -c " + fs.Runtime.RootDirectory + SystemInfo.PathSeparator + IMAPFILTER_LUA; } }
+        private string CONTENT_BIN_RUN1 { get { return "function faketty { script -qfc \"$(printf \"'%s' \" \"$@\")\"; }\n" +
+            "yes p | faketty imapfilter -v -c " + fs.Runtime.RootDirectory + SystemInfo.PathSeparator + IMAPFILTER_LUA; } }
 
         private string CONTENT_BIN_RUN2 { get { return "mbsync -c " + fs.Runtime.RootDirectory + SystemInfo.PathSeparator + MBSYNC_RC + " -a"; } }
 
-        private string IMAPFILTER_LUA_BEGIN = "function main()\n";
+        private string IMAPFILTER_LUA_BEGIN = "options.certificates = true\n" +
+            "function main()\n";
         private string IMAPFILTER_LUA_END = "end\n" +
             "\n" +
             "-- This helper function lets one copy messages\n" +

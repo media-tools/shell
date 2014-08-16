@@ -24,9 +24,14 @@ namespace Control.MailSync
             Password = password;
         }
 
+        public bool HasName (string name)
+        {
+            return Accountname == filterAccountname.Replace (name.ToLower (), "");
+        }
+
         public override string ToString ()
         {
-            return "Account(name=" + Accountname + ",host=" + Hostname + ",user=" + Username + ",pass=" + String.Concat (Enumerable.Repeat ("?", Password.Length)) + ")";
+            return "Account(name=" + Accountname + ",host=" + Hostname + ",user=" + Username + ")"; //+ ",pass=" + String.Concat (Enumerable.Repeat ("?", Password.Length)) + ")";
         }
 
         private static Regex filterAccountname = new Regex ("[^a-zA-Z0-9-]");

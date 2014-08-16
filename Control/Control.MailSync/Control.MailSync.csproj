@@ -37,6 +37,7 @@
     <Compile Include="Control.MailSync\MailSyncTask.cs" />
     <Compile Include="Control.MailSync\Account.cs" />
     <Compile Include="Control.MailSync\GoogleAccount.cs" />
+    <Compile Include="Control.MailSync\Channel.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

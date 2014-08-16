@@ -11,6 +11,8 @@ namespace Control.Common
 
         public string Description { protected set; get; }
 
+        protected FileSystems fs;
+
         public Task ()
         {
         }
@@ -38,6 +40,11 @@ namespace Control.Common
         public void Run (string[] args)
         {
             CheckValid ();
+            
+            fs = new FileSystems {
+                Config = new FileSystem (task: this, type: FileSystemType.Config),
+                Runtime = new FileSystem (task: this, type: FileSystemType.Runtime)
+            };
             InternalRun ();
         }
 
@@ -61,6 +68,12 @@ namespace Control.Common
                 }
             }
             return false;
+        }
+
+        protected struct FileSystems
+        {
+            public FileSystem Config;
+            public FileSystem Runtime;
         }
     }
 }

@@ -27,7 +27,7 @@ namespace Control.Common
         {
             return !IsRunningOnLinux ();
         }
-
+        
 
         public static string SettingsDirectory
         {
@@ -38,7 +38,7 @@ namespace Control.Common
                 else {
                     string directory;
                     if (SystemInfo.IsRunningOnLinux ()) {
-                        directory = Environment.GetEnvironmentVariable ("HOME") + "/.control/";
+                        directory = Environment.GetEnvironmentVariable ("HOME") + "/.config/control/";
                     }
                     else {
                         directory = Environment.GetFolderPath (System.Environment.SpecialFolder.UserProfile) + "\\Control\\";
@@ -53,15 +53,54 @@ namespace Control.Common
         }
 
         private static string settingsDirectory = null;
+        
 
+        public static string CacheDirectory
+        {
+            get {
+                if (cacheDirectory != null) {
+                    return cacheDirectory;
+                }
+                else {
+                    string directory;
+                    if (SystemInfo.IsRunningOnLinux ()) {
+                        directory = Environment.GetEnvironmentVariable ("HOME") + "/.cache/control/";
+                    }
+                    else {
+                        directory = Environment.GetFolderPath (System.Environment.SpecialFolder.UserProfile) + "\\ControlCache\\";
+                    }
+                    Directory.CreateDirectory (directory);
+                    return cacheDirectory = directory;
+                }
+            }
+            set {
+                cacheDirectory = value;
+            }
+        }
 
-        /// <summary>
-        /// Das Verzeichnis, das die Logdateien enthält.
-        /// </summary>
+        private static string cacheDirectory = null;
+
+        
         public static string LogDirectory
         {
             get {
-                string directory = SettingsDirectory + "Logs";
+                string directory = SettingsDirectory + "logs";
+                Directory.CreateDirectory (directory);
+                return directory;
+            }
+        }
+        public static string ConfigDirectory
+        {
+            get {
+                string directory = SettingsDirectory + "config";
+                Directory.CreateDirectory (directory);
+                return directory;
+            }
+        }
+        public static string RuntimeDirectory
+        {
+            get {
+                string directory = CacheDirectory + "runtime";
                 Directory.CreateDirectory (directory);
                 return directory;
             }

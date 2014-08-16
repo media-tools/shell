@@ -40,6 +40,10 @@
     <Compile Include="Control.Common\Log.cs" />
     <Compile Include="Control.Common\SystemInfo.cs" />
     <Compile Include="Control.Common\StringUtils.cs" />
+    <Compile Include="Control.Common\FileSystem.cs" />
+    <Compile Include="Control.Common\IniFile.cs" />
+    <Compile Include="Control.Common\ConfigFile.cs" />
+    <Compile Include="Control.Common\FileSystemType.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

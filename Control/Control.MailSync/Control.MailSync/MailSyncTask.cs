@@ -97,6 +97,20 @@ namespace Control.MailSync
                 ++i;
             }
             fs.Runtime.WriteAllText (path: MBSYNC_RC, contents: mbsyncrc);
+
+            string imapfilter_lua = "";
+            imapfilter_lua += IMAPFILTER_LUA_BEGIN;
+            foreach (Account acc in accounts) {
+                imapfilter_lua += "    local " + acc.Accountname + " = IMAP {\n" +
+                    "server = '" + acc.Hostname + "',\n" +
+                    "username = '" + acc.Username + "',\n" +
+                    "password = '" + acc.Password + "',\n" +
+                    "ssl = 'tls1',\n" +
+                    "}\n";
+                imapfilter_lua += "    move("+acc.Accountname+", \"INBOX\", \"Archiv\", is_expired(30))\n";
+            }
+            imapfilter_lua += IMAPFILTER_LUA_END;
+            fs.Runtime.WriteAllText (path: IMAPFILTER_LUA, contents: imapfilter_lua);
         }
 
         private void writeScripts ()
@@ -119,5 +133,82 @@ namespace Control.MailSync
         private string CONTENT_BIN_RUN1 { get { return "imapfilter -v -c " + fs.Runtime.RootDirectory + SystemInfo.PathSeparator + IMAPFILTER_LUA; } }
 
         private string CONTENT_BIN_RUN2 { get { return "mbsync -c " + fs.Runtime.RootDirectory + SystemInfo.PathSeparator + MBSYNC_RC + " -a"; } }
+
+        private string IMAPFILTER_LUA_BEGIN = "function main()\n";
+        private string IMAPFILTER_LUA_END = "end\n" +
+            "\n" +
+            "-- This helper function lets one copy messages\n" +
+            "-- between two folders by name, rather than value,\n" +
+            "-- and takes a function callback (f) to act as a \"predicate\".\n" +
+            "function copy(imap, from_name, to_name, f)\n" +
+            "local from = imap[from_name]\n" +
+            "local to   = imap[to_name]\n" +
+            "from:copy_messages(to, f(from))\n" +
+            "end\n" +
+            " \n" +
+            "-- This is almost identical to copy(), except it moves messages\n" +
+            "-- instead.\n" +
+            "function move(imap, from_name, to_name, f)\n" +
+            "    local from = imap[from_name]\n" +
+            "    local to   = imap[to_name]\n" +
+            "    from:move_messages(to, f(from))\n" +
+            "end\n" +
+            "\n" +
+            "function move2(imap1, from_name, imap2, to_name, f)\n" +
+            "    local from = imap1[from_name]\n" +
+            "    local to   = imap2[to_name]\n" +
+            "    from:move_messages(to, f(from))\n" +
+            "end\n" +
+            " \n" +
+            "-- Here, I use the verb \"archive\", as I use gmail's imap.\n" +
+            "-- Deleting mail from a label (or inbox) == archiving it.\n" +
+            "function archive(imap, from_name, f)\n" +
+            "    local from = imap[from_name]\n" +
+            "    from:delete_messages( f(from) )\n" +
+            "end\n" +
+            " \n" +
+            "-- Trashing mail is the same as moving it to the Trash folder.\n" +
+            "function trash(imap, name, f)\n" +
+            "    move(imap, name, '[Gmail]/Trash', f)\n" +
+            "end\n" +
+            " \n" +
+            "-- This is a shortcut for removing mail regardless of which label(es) it is in.\n" +
+            "function trash_all(imap, f)\n" +
+            "    trash(imap, '[Gmail]/All Mail', f)\n" +
+            "end\n" +
+            " \n" +
+            " \n" +
+            "-- The following are predicate function builders,\n" +
+            "-- which is to say they are functions which return functions which return a set of messages to act on.\n" +
+            "-- There is nothing special about '_', it is just the 'from' folder object (c.f. move() and copy()).\n" +
+            " \n" +
+            "-- An ignored message is something older than age and unseen (unread).\n" +
+            "function is_ignored(age)\n" +
+            "    return function (_) return _:is_older(age) * _:is_unseen() end\n" +
+            "end\n" +
+            " \n" +
+            "-- This matches all messages older than age and unflagged (unstarred in gmail terms)\n" +
+            "function is_older(age) \n" +
+            "    return function (_) return _:is_older(age) * _:is_unflagged() end \n" +
+            "end\n" +
+            " \n" +
+            "-- Same, except ignores unseen messages. Used on the inbox, slug, and billing folders/labels.\n" +
+            "function is_expired(age)\n" +
+            "    return function (_) return _:is_older(age) * _:is_seen() * _:is_unflagged() end\n" +
+            "------    return function (_) return _:is_newer(1) end\n" +
+            "end\n" +
+            " \n" +
+            "-- This matches all messages whose subject contains the given text.\n" +
+            "function has_subject_and_age(subj, age)\n" +
+            "    return function (_) return _:contain_subject(subj) * _:is_older(age) * _:is_seen() * _:is_unflagged() end\n" +
+            "end\n" +
+            "\n" +
+            "-- This matches all messages whose subject contains the given text.\n" +
+            "function has_subject(subj)\n" +
+            "    return function (_) return _:contain_subject(subj) end\n" +
+            "end\n" +
+            "\n" +
+            " \n" +
+            "main() -- and now we begin executing the meat of the script.\n";
     }
 }

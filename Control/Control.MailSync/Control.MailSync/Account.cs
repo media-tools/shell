@@ -34,6 +34,6 @@ namespace Control.MailSync
             return "Account(name=" + Accountname + ",host=" + Hostname + ",user=" + Username + ")"; //+ ",pass=" + String.Concat (Enumerable.Repeat ("?", Password.Length)) + ")";
         }
 
-        private static Regex filterAccountname = new Regex ("[^a-zA-Z0-9-]");
+        private static Regex filterAccountname = new Regex ("[^a-zA-Z0-9]");
     }
 }

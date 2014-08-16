@@ -107,7 +107,7 @@ namespace Control.MailSync
                     "password = '" + acc.Password + "',\n" +
                     "ssl = 'tls1',\n" +
                     "}\n";
-                imapfilter_lua += "    move("+acc.Accountname+", \"INBOX\", \"Archiv\", is_expired(30))\n";
+                imapfilter_lua += "    move(" + acc.Accountname + ", \"INBOX\", \"Archiv\", is_expired(30))\n";
             }
             imapfilter_lua += IMAPFILTER_LUA_END;
             fs.Runtime.WriteAllText (path: IMAPFILTER_LUA, contents: imapfilter_lua);
@@ -130,10 +130,18 @@ namespace Control.MailSync
         private string IMAPFILTER_LUA = "imapfilter.lua";
         private string MBSYNC_RC = "mbsyncrc";
 
-        private string CONTENT_BIN_RUN1 { get { return "function faketty { script -qfc \"$(printf \"'%s' \" \"$@\")\"; }\n" +
-            "yes p | faketty imapfilter -v -c " + fs.Runtime.RootDirectory + SystemInfo.PathSeparator + IMAPFILTER_LUA; } }
+        private string CONTENT_BIN_RUN1 {
+            get {
+                return "function faketty { script -qfc \"$(printf \"'%s' \" \"$@\")\"; }\n" +
+                    "yes p | faketty imapfilter -v -c " + fs.Runtime.RootDirectory + SystemInfo.PathSeparator + IMAPFILTER_LUA;
+            }
+        }
 
-        private string CONTENT_BIN_RUN2 { get { return "mbsync -c " + fs.Runtime.RootDirectory + SystemInfo.PathSeparator + MBSYNC_RC + " -a"; } }
+        private string CONTENT_BIN_RUN2 {
+            get {
+                return "mbsync -c " + fs.Runtime.RootDirectory + SystemInfo.PathSeparator + MBSYNC_RC + " -a";
+            }
+        }
 
         private string IMAPFILTER_LUA_BEGIN = "options.certificates = true\n" +
             "function main()\n";

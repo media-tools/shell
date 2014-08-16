@@ -16,7 +16,7 @@ namespace Control.MailSync
             Options = new string[] { "mailsync" };
         }
 
-        protected override void InternalRun ()
+        protected override void InternalRun (string[] args)
         {
             readConfigs ();
             writeConfigs ();

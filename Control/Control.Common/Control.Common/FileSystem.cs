@@ -1,12 +1,16 @@
 using System;
 using System.IO;
 using System.Diagnostics;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Control.Common
 {
     public class FileSystem
     {
         public string RootDirectory = "";
+
+        private static HashSet<string> InstalledPackages = new HashSet<string>();
 
         public FileSystem (Task task, FileSystemType type)
             : this (type: type)
@@ -103,13 +107,21 @@ namespace Control.Common
 
         public void RequirePackages (params string[] packages)
         {
-            string script = "export TOINSTALL=\"\";\n";
-            foreach (string pkg in packages) {
-                script += "if [ $(dpkg-query -W -f='${Status}' " + pkg + " 2>/dev/null | grep -c \"ok installed\") -eq 0 ];\nthen\n  export TOINSTALL=\"$TOINSTALL " + pkg + "\";\nfi\n";
+            packages = (from pkg in packages where !InstalledPackages.Contains(pkg) select pkg).ToArray();
+
+            if (packages.Length > 0) {
+                string script = "export TOINSTALL=\"\";\n";
+                foreach (string pkg in packages) {
+                    script += "if [ $(dpkg-query -W -f='${Status}' " + pkg + " 2>/dev/null | grep -c \"ok installed\") -eq 0 ];\nthen\n  export TOINSTALL=\"$TOINSTALL " + pkg + "\";\nfi\n";
+                }
+                script += "echo $TOINSTALL | egrep \"...\" >/dev/null && sudo apt-get install -fyqm $TOINSTALL\n";
+                WriteAllText ("apt.sh", script);
+                ExecuteScript ("apt.sh");
             }
-            script += "echo $TOINSTALL | egrep \"...\" >/dev/null && sudo apt-get install -fyqm $TOINSTALL\n";
-            WriteAllText ("apt.sh", script);
-            ExecuteScript ("apt.sh");
+
+            foreach (string pkg in packages) {
+                InstalledPackages.Add (pkg);
+            }
         }
     }
 }

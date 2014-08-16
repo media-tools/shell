@@ -45,10 +45,10 @@ namespace Control.Common
                 Config = new FileSystem (task: this, type: FileSystemType.Config),
                 Runtime = new FileSystem (task: this, type: FileSystemType.Runtime)
             };
-            InternalRun ();
+            InternalRun (args);
         }
 
-        protected abstract void InternalRun ();
+        protected abstract void InternalRun (string[] args);
 
         public virtual void PrintUsage (string indent)
         {

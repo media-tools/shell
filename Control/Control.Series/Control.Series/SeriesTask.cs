@@ -12,7 +12,7 @@ namespace Control.Series
             Options = new string[] { "series" };
         }
 
-        protected override void InternalRun ()
+        protected override void InternalRun (string[] args)
         {
         }
     }

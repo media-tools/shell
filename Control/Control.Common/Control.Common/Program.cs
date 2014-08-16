@@ -1,12 +1,17 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Control.Common
 {
-    public class TaskProgram
+    public class Program
     {
         public Task[] Tasks { get; private set; }
 
-        public TaskProgram (Task[] tasks)
+        public static Action<Task> HooksBeforeTask = (tsk) => {};
+        public static Action<Task> HooksAfterTask = (tsk) => {};
+
+        public Program (Task[] tasks)
         {
             Tasks = tasks;
         }
@@ -17,9 +22,10 @@ namespace Control.Common
             Log.Debug ("Start (date='", Commons.DATETIME, "', args='", StringUtils.JoinArgs (args: args, alt: "(null)"), "')");
 
             Task matchingTask = null;
-            if (args.Length > 0 && findMatchingTask (args, out matchingTask)) {
-                Git.Commit ();
-                matchingTask.Run (args);
+            if (args.Length > 0 && findMatchingTask (args[0], out matchingTask)) {
+                HooksBeforeTask (matchingTask);
+                matchingTask.Run (args.Skip(1).ToArray());
+                HooksAfterTask (matchingTask);
             } else {
                 printUsage ();
             }
@@ -35,10 +41,10 @@ namespace Control.Common
             }
         }
 
-        private bool findMatchingTask (string[] args, out Task matchingTask)
+        private bool findMatchingTask (string arg, out Task matchingTask)
         {
             foreach (Task task in Tasks) {
-                if (task.MatchesOption (args [0])) {
+                if (task.MatchesOption (arg)) {
                     matchingTask = task;
                     return true;
                 }

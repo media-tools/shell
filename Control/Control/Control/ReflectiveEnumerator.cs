@@ -30,11 +30,10 @@ namespace Control.Common.Util
         public static IEnumerable<T> FindSubclasses<T> (Assembly assembly = null) where T : class
         {
             assembly = assembly ?? Assembly.GetAssembly (typeof(T));
-            Console.WriteLine (assembly);
             List<T> objects = new List<T> ();
             try {
                 foreach (Type type in assembly.GetTypes().Where(myType => myType.IsClass && !myType.IsAbstract && myType.IsSubclassOf(typeof(T)))) {
-                    Console.WriteLine (type + "\t" + typeof(T).IsAssignableFrom (type));
+                    //Console.WriteLine (type + "\t" + typeof(T).IsAssignableFrom (type));
                     objects.Add ((T)Activator.CreateInstance (type));
                 }
             } catch (ReflectionTypeLoadException ex) {
@@ -45,7 +44,6 @@ namespace Control.Common.Util
 
         public static IEnumerable<T> FindClassImplementingInterface<T> (Assembly assembly = null)
         {
-            Console.WriteLine (assembly);
             assembly = assembly ?? Assembly.GetAssembly (typeof(T));
             List<T> objects = new List<T> ();
             try {

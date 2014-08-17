@@ -21,8 +21,6 @@ namespace Control.Common
 
         public void Main (string[] args)
         {
-            Log.Message (Commons.INFO_STR);
-
             Task matchingTask = null;
             if (args.Length > 0 && findMatchingTask (args [0], out matchingTask)) {
                 Log.MessageLog ("Start (date='", Commons.DATETIME, "', args='", StringUtils.JoinArgs (args: args, alt: "(null)"), "')");
@@ -39,6 +37,9 @@ namespace Control.Common
 
         private void printUsage ()
         {
+            Log.MessageLog ("");
+            Log.Message (Commons.INFO_STR);
+
             Log.MessageLog ("Print usage...");
             Console.ResetColor ();
             Console.Write ("Usage: ");

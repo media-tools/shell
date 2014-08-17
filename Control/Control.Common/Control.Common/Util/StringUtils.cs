@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 
 namespace Control.Common.Util
 {
@@ -11,6 +12,11 @@ namespace Control.Common.Util
             } else {
                 return "\"" + string.Join ("\" \"", args) + "\"";
             }
+        }
+
+        public static string Padding (int length)
+        {
+            return String.Concat (Enumerable.Repeat (" ", length));
         }
     }
 }

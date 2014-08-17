@@ -1,5 +1,7 @@
 using System;
 using System.IO;
+using System.Diagnostics;
+using System.Linq;
 
 namespace Control.Common.Util
 {
@@ -31,9 +33,21 @@ namespace Control.Common.Util
 
         public static double RUNTIME_SEC { get { return (DateTime.Now - StartedAt).TotalSeconds; } }
 
+        public static int PID { get; private set; }
+
+        public static int MAX_PID { get; private set; }
+
         static Commons ()
         {
             StartedAt = DateTime.Now;
+            PID = Process.GetCurrentProcess ().Id;
+
+            try {
+                MAX_PID = int.Parse (File.ReadAllText ("/proc/sys/kernel/pid_max"));
+            } catch (Exception ex) {
+                MAX_PID = (int)Math.Pow (2, 22);
+                Console.WriteLine (ex);
+            }
         }
     }
 }

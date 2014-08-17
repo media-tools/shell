@@ -68,7 +68,8 @@ namespace Control.Common.IO
         private static void LogFilePrefix ()
         {
             try {
-                logFile.Write (Commons.DATETIME_LOG + "  ");
+
+                logFile.Write (Commons.DATETIME_LOG + " " + Commons.PID + " ");
             } catch (Exception) {
             }
         }
@@ -113,6 +114,7 @@ namespace Control.Common.IO
 
         public static void MessageConsole (params object[] message)
         {
+
             string str = string.Join ("", message);
             Console.WriteLine (str);
         }

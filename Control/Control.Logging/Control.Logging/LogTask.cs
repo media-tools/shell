@@ -3,6 +3,7 @@ using Control.Common;
 using System.IO;
 using Control.Common.Tasks;
 using Control.Common.IO;
+using Control.Common.Util;
 
 namespace Control.Logging
 {
@@ -70,13 +71,26 @@ namespace Control.Logging
             }
         }
 
+        private static string lastPid;
+
         void printLine (string str)
         {
-            Console.ForegroundColor = ConsoleColor.DarkGray;
-            Console.Write (">> ");
-            Console.ResetColor ();
-            Console.WriteLine (str);
-            Console.ResetColor ();
+            string[] parts = str.Split (new char[] { ' ' }, 4);
+            if (parts.Length == 4) {
+                if (parts [2] != lastPid && !string.IsNullOrEmpty(lastPid)) {
+                    Console.WriteLine ();
+                }
+                Console.ForegroundColor = ConsoleColor.DarkGray;
+                Console.Write (">> ");
+                Console.ForegroundColor = ConsoleColor.DarkMagenta;
+                Console.Write (parts [0] + " " + parts [1] + " ");
+                Console.ForegroundColor = ConsoleColor.DarkCyan;
+                Console.Write (StringUtils.Padding ((Commons.MAX_PID + "").Length - parts [2].Length) + parts [2] + " ");
+                Console.ResetColor ();
+                Console.WriteLine (parts [3]);
+                Console.ResetColor ();
+                lastPid = parts [2];
+            }
         }
     }
 }

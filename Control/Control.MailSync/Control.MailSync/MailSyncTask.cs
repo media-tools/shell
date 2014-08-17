@@ -35,20 +35,28 @@ namespace Control.MailSync
         private void readConfigAccounts ()
         {
             if (!fs.Config.FileExists (path: ACCOUNTS_CONF)) {
-                fs.Config.WriteAllText (path: ACCOUNTS_CONF, contents: "google ACCOUT_NAME_1 USER_NAME PASSWORD");
-                fs.Config.WriteAllText (path: ACCOUNTS_CONF, contents: "google ACCOUT_NAME_2 USER_NAME PASSWORD");
+                fs.Config.WriteAllText (path: ACCOUNTS_CONF, contents: "google ACCOUT_NAME_1 USER_NAME PASSWORD\n" + "custom ACCOUT_NAME_2 USER_NAME PASSWORD IMAP_HOST\n");
             }
             string[] lines = fs.Config.ReadAllLines (path: ACCOUNTS_CONF);
             int lineNum = 1;
             foreach (string line in lines) {
                 string[] parts = line.Split (new char[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
                 if (parts.Length >= 1 && parts [0] == "google") {
+
                     if (parts.Length == 4) {
                         Account acc = new GoogleAccount (accountname: parts [1], username: parts [2], password: parts [3]);
                         accounts.Add (acc);
                         Log.Message ("Found account: ", acc);
                     } else {
                         Log.Message ("Invalid google account in ", ACCOUNTS_CONF, ":", lineNum);
+                    }
+                } else if (parts.Length >= 1 && parts [0] == "custom") {
+                    if (parts.Length == 5) {
+                        Account acc = new Account (accountname: parts [1], username: parts [2], password: parts [3], hostname: parts [4]);
+                        accounts.Add (acc);
+                        Log.Message ("Found account: ", acc);
+                    } else {
+                        Log.Message ("Invalid custom account in ", ACCOUNTS_CONF, ":", lineNum);
                     }
                 } else if (parts.Length > 0) {
                     Log.Message ("Invalid account in ", ACCOUNTS_CONF, ":", lineNum);
@@ -60,7 +68,9 @@ namespace Control.MailSync
         private void readConfigChannels ()
         {
             if (!fs.Config.FileExists (path: CHANNELS_CONF)) {
-                fs.Config.WriteAllText (path: CHANNELS_CONF, contents: "ACCOUT_NAME_1:PATH -> ACCOUT_NAME_2:PATH");
+                fs.Config.WriteAllText (path: CHANNELS_CONF, contents: "ACCOUT_NAME_1:INBOX -> ACCOUT_NAME_2:Archiv\n"
+                    + "ACCOUT_NAME_1:PATH -> ACCOUT_NAME_3:PATH\n"
+                    + "ACCOUT_NAME_1:PATH -> ACCOUT_NAME_2:PATH\n");
             }
             string[] lines = fs.Config.ReadAllLines (path: CHANNELS_CONF);
             int lineNum = 1;

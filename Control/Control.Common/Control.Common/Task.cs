@@ -9,12 +9,15 @@ namespace Control.Common
 
         public string[] Options { protected set; get; }
 
+        public string ParameterSyntax { protected set; get; }
+
         public string Description { protected set; get; }
 
         protected FileSystems fs;
 
         public Task ()
         {
+            ParameterSyntax = "";
         }
 
         protected void CheckValid ()
@@ -53,10 +56,27 @@ namespace Control.Common
         public virtual void PrintUsage (string indent)
         {
             CheckValid ();
-            string line = indent + Options [0];
-            line += String.Concat (Enumerable.Repeat (" ", 40 - line.Length));
-            line += Description;
-            Log.Message (line);
+
+            int lineLength = 0;
+            Console.ResetColor ();
+            Console.Write (indent);
+            lineLength += indent.Length;
+            Console.ForegroundColor = ConsoleColor.DarkGreen;
+            Console.Write (Options [0]);
+            lineLength += Options[0].Length;
+            if (ParameterSyntax.Length != 0) {
+                Console.ResetColor ();
+                Console.Write (" ");
+                lineLength += 1;
+                Console.ForegroundColor = ConsoleColor.DarkGray;
+                Console.Write (ParameterSyntax);
+                lineLength += ParameterSyntax.Length;
+            }
+            Console.ResetColor ();
+            Console.Write (String.Concat (Enumerable.Repeat (" ", 40 - lineLength)));
+           // Console.ForegroundColor = ConsoleColor.;
+            Console.WriteLine (Description);
+            Console.ResetColor ();
         }
 
         public virtual bool MatchesOption (string str)
@@ -69,12 +89,12 @@ namespace Control.Common
             }
             return false;
         }
+    }
 
-        protected struct FileSystems
-        {
-            public FileSystem Config;
-            public FileSystem Runtime;
-        }
+    public struct FileSystems
+    {
+        public FileSystem Config;
+        public FileSystem Runtime;
     }
 }
 

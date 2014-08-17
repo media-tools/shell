@@ -19,26 +19,30 @@ namespace Control.Common
         public void Main (string[] args)
         {
             Log.Message (Commons.INFO_STR);
-            Log.Debug ("Start (date='", Commons.DATETIME, "', args='", StringUtils.JoinArgs (args: args, alt: "(null)"), "')");
 
             Task matchingTask = null;
             if (args.Length > 0 && findMatchingTask (args[0], out matchingTask)) {
+                Log.Debug ("Start (date='", Commons.DATETIME, "', args='", StringUtils.JoinArgs (args: args, alt: "(null)"), "')");
+
                 HooksBeforeTask (matchingTask);
                 matchingTask.Run (args.Skip(1).ToArray());
                 HooksAfterTask (matchingTask);
+
+                Log.Debug ("Stop (date='", Commons.DATETIME, "', runtime='", (int)Commons.RUNTIME_SEC, " sec')");
             } else {
                 printUsage ();
             }
-
-            Log.Debug ("Stop (date='", Commons.DATETIME, "', runtime='", (int)Commons.RUNTIME_SEC, " sec')");
         }
 
         private void printUsage ()
         {
-            Log.Message ("Tasks:");
+            Console.WriteLine ("Usage: " + Commons.EXE_PATH + " [TASK] [OPTIONS]");
+            Console.WriteLine ("");
+            Console.WriteLine ("Tasks:");
             foreach (Task task in Tasks) {
                 task.PrintUsage (indent: "  ");
             }
+            Console.WriteLine ("");
         }
 
         private bool findMatchingTask (string arg, out Task matchingTask)

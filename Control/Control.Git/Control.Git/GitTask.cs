@@ -8,19 +8,16 @@ namespace Control.Git
         public GitTask ()
         {
             Name = "Git";
-            Description = "Git";
+            Description = "Execute git in the config directory";
             Options = new string[] { "git" };
+            ParameterSyntax = "[GIT OPTIONS]";
         }
 
         protected override void InternalRun (string[] args)
         {
             fs.Runtime.RequirePackages ("git");
 
-            if (args.Length == 0) {
-                GitHook.Commit ();
-            } else {
-                GitHook.Execute (args);
-            }
+            GitHook.Execute (args);
         }
     }
 }

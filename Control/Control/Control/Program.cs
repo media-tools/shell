@@ -10,8 +10,12 @@ namespace Control
     {
         private static Task[] mainTasks = new Task[] {
             new MailSyncTask(),
+            new MailFilterTask(),
+            new MailDedupTask(),
+            new MailAllTask(),
             new SeriesTask(),
-            new GitTask()
+            new GitTask(),
+            new GitCommitTask(),
         };
 
         public static void Main (string[] args)

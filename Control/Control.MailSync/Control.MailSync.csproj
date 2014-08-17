@@ -34,10 +34,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Control.MailSync\MailSyncTask.cs" />
     <Compile Include="Control.MailSync\Account.cs" />
     <Compile Include="Control.MailSync\GoogleAccount.cs" />
     <Compile Include="Control.MailSync\Channel.cs" />
+    <Compile Include="Control.MailSync\MailDedupTask.cs" />
+    <Compile Include="Control.MailSync\MailLibrary.cs" />
+    <Compile Include="Control.MailSync\MailSyncTask.cs" />
+    <Compile Include="Control.MailSync\MailFilterTask.cs" />
+    <Compile Include="Control.MailSync\MailAllTask.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

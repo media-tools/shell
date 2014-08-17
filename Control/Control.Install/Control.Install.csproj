@@ -5,10 +5,10 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>10.0.0</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{E1FCC8DF-A8D5-4671-BE92-BC34276ECA5F}</ProjectGuid>
+    <ProjectGuid>{9BB662D5-9C55-485F-B714-E5A4625ADD97}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>Control.Git</RootNamespace>
-    <AssemblyName>Control.Git</AssemblyName>
+    <RootNamespace>Control.Install</RootNamespace>
+    <AssemblyName>Control.Install</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -30,22 +30,13 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Control.Git\GitHook.cs" />
-    <Compile Include="Control.Git\GitTask.cs" />
-    <Compile Include="Control.Git\GitCommitTask.cs" />
+    <Compile Include="Control.Install\InstallTask.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
-    <Folder Include="Control.Git\" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Control.Common\Control.Common.csproj">
-      <Project>{CBB5DE48-A305-4F9C-88F3-F0F071AC3298}</Project>
-      <Name>Control.Common</Name>
-    </ProjectReference>
+    <Folder Include="Control.Install\" />
   </ItemGroup>
 </Project>

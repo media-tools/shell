@@ -21,11 +21,11 @@ namespace Control.Common
             Log.Message (Commons.INFO_STR);
 
             Task matchingTask = null;
-            if (args.Length > 0 && findMatchingTask (args[0], out matchingTask)) {
+            if (args.Length > 0 && findMatchingTask (args [0], out matchingTask)) {
                 Log.Debug ("Start (date='", Commons.DATETIME, "', args='", StringUtils.JoinArgs (args: args, alt: "(null)"), "')");
 
                 HooksBeforeTask (matchingTask);
-                matchingTask.Run (args.Skip(1).ToArray());
+                matchingTask.Run (args.Skip (1).ToArray ());
                 HooksAfterTask (matchingTask);
 
                 Log.Debug ("Stop (date='", Commons.DATETIME, "', runtime='", (int)Commons.RUNTIME_SEC, " sec')");
@@ -36,7 +36,18 @@ namespace Control.Common
 
         private void printUsage ()
         {
-            Console.WriteLine ("Usage: " + Commons.EXE_PATH + " [TASK] [OPTIONS]");
+            Console.ResetColor ();
+            Console.Write ("Usage: ");
+            Console.ForegroundColor = ConsoleColor.DarkBlue;
+            Console.Write (Commons.EXE_PATH);
+            Console.ResetColor ();
+            Console.Write (" ");
+            Console.ForegroundColor = ConsoleColor.DarkGreen;
+            Console.Write ("[TASK]");
+            Console.ResetColor ();
+            Console.Write (" ");
+            Console.ForegroundColor = ConsoleColor.DarkGray;
+            Console.WriteLine ("[OPTIONS]");
             Console.WriteLine ("");
             Console.WriteLine ("Tasks:");
             foreach (Task task in Tasks) {

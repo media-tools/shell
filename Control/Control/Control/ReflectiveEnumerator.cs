@@ -4,6 +4,7 @@ using System.Reflection;
 using Control.Common;
 using System.Linq;
 using System.IO;
+using Control.Common.IO;
 
 namespace Control.Common.Util
 {
@@ -29,9 +30,15 @@ namespace Control.Common.Util
         public static IEnumerable<T> FindSubclasses<T> (Assembly assembly = null) where T : class
         {
             assembly = assembly ?? Assembly.GetAssembly (typeof(T));
+            Console.WriteLine (assembly);
             List<T> objects = new List<T> ();
-            foreach (Type type in assembly.GetTypes().Where(myType => myType.IsClass && !myType.IsAbstract && myType.IsSubclassOf(typeof(T)))) {
-                objects.Add ((T)Activator.CreateInstance (type));
+            try {
+                foreach (Type type in assembly.GetTypes().Where(myType => myType.IsClass && !myType.IsAbstract && myType.IsSubclassOf(typeof(T)))) {
+                    Console.WriteLine (type + "\t" + typeof(T).IsAssignableFrom (type));
+                    objects.Add ((T)Activator.CreateInstance (type));
+                }
+            } catch (ReflectionTypeLoadException ex) {
+                Log.Error (ex);
             }
             return objects;
         }
@@ -41,9 +48,13 @@ namespace Control.Common.Util
             Console.WriteLine (assembly);
             assembly = assembly ?? Assembly.GetAssembly (typeof(T));
             List<T> objects = new List<T> ();
-            foreach (Type type in assembly.GetTypes().Where(myType => myType.IsClass && !myType.IsAbstract && typeof(T).IsAssignableFrom(myType))) {
-                Console.WriteLine (type + "\t" + typeof(T).IsAssignableFrom (type));
-                objects.Add ((T)Activator.CreateInstance (type));
+            try {
+                foreach (Type type in assembly.GetTypes().Where(myType => myType.IsClass && !myType.IsAbstract && typeof(T).IsAssignableFrom(myType))) {
+                    //Console.WriteLine (type + "\t" + typeof(T).IsAssignableFrom (type));
+                    objects.Add ((T)Activator.CreateInstance (type));
+                }
+            } catch (ReflectionTypeLoadException ex) {
+                Log.Error (ex);
             }
             return objects;
         }

@@ -46,7 +46,6 @@
     <Compile Include="Control.Common\Util\StringUtils.cs" />
     <Compile Include="Control.Common\Util\SystemInfo.cs" />
     <Compile Include="Control.Common\Util\Commons.cs" />
-    <Compile Include="Control.Common\Util\ReflectiveEnumerator.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

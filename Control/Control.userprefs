@@ -1,27 +1,25 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Control.Log/Control.Log/LogTask.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Control/Control/Program.cs">
     <Files>
-      <File FileName="Control.MailSync/Control.MailSync/MailDedupTask.cs" Line="17" Column="17" />
-      <File FileName="Control.Install/Control.Install/InstallTask.cs" Line="18" Column="10" />
-      <File FileName="Control.Series/Control.Series/SeriesLibrary.cs" Line="31" Column="60" />
-      <File FileName="Control.Common/Control.Common/FileSystem.cs" Line="111" Column="35" />
-      <File FileName="Control.Series/Control.Series/SeriesScanTask.cs" Line="17" Column="57" />
-      <File FileName="Control.Series/Control.Series/EpisodeFile.cs" Line="46" Column="26" />
-      <File FileName="Control.Series/Control.Series/EpisodeInfo.cs" Line="43" Column="21" />
-      <File FileName="Control.Common/Control.Common/Task.cs" Line="11" Column="9" />
-      <File FileName="Control.Common/Control.Common/Log.cs" Line="20" Column="97" />
-      <File FileName="Control.Log/Control.Log/LogTask.cs" Line="17" Column="13" />
+      <File FileName="Control.Common/Control.Common/Hooks/Hook.cs" Line="12" Column="48" />
+      <File FileName="Control.Common/Control.Common/Util/ReflectiveEnumerator.cs" Line="35" Column="1" />
+      <File FileName="Control/Control/Program.cs" Line="25" Column="22" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
-        <State expanded="True">
+        <State expanded="True" selected="True">
           <Node name="Control" expanded="True">
             <Node name="References" expanded="True" />
             <Node name="Control" expanded="True" />
           </Node>
           <Node name="Control.Common" expanded="True">
-            <Node name="Control.Common" expanded="True" />
+            <Node name="Control.Common" expanded="True">
+              <Node name="Hooks" expanded="True" />
+              <Node name="IO" expanded="True" />
+              <Node name="Tasks" expanded="True" />
+              <Node name="Util" expanded="True" />
+            </Node>
           </Node>
           <Node name="Control.Git" expanded="True">
             <Node name="Control.Git" expanded="True" />
@@ -30,10 +28,7 @@
             <Node name="Control.Install" expanded="True" />
           </Node>
           <Node name="Control.Logging" expanded="True">
-            <Node name="Control.Log" expanded="True" />
-            <Node name="Properties" expanded="True">
-              <Node name="AssemblyInfo.cs" selected="True" />
-            </Node>
+            <Node name="Control.Logging" expanded="True" />
           </Node>
           <Node name="Control.MailSync" expanded="True">
             <Node name="Control.MailSync" expanded="True" />

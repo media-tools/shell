@@ -16,6 +16,7 @@ namespace Control
             new SeriesTask(),
             new GitTask(),
             new GitCommitTask(),
+            new InstallTask(),
         };
 
         public static void Main (string[] args)

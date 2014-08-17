@@ -53,6 +53,10 @@
       <Project>{E1FCC8DF-A8D5-4671-BE92-BC34276ECA5F}</Project>
       <Name>Control.Git</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Control.Install\Control.Install.csproj">
+      <Project>{9BB662D5-9C55-485F-B714-E5A4625ADD97}</Project>
+      <Name>Control.Install</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Control\" />

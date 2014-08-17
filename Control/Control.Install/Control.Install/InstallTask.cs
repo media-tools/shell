@@ -14,17 +14,15 @@ namespace Control.Git
 
         protected override void InternalRun (string[] args)
         {
-            string script = "";
-            script += "cd " + fsConfig.RootDirectory + "\n";
-            Log.Message ("Check if git repository exists in: " + (fsConfig.DirectoryExists (".git") ? "Yes" : "No"));
-            if (!fsConfig.DirectoryExists (".git")) {
-                script += "git init\n";
-            }
-            script += "git add --all\n";
-            script += "git " + string.Join (" ", from arg in args select "\"" + arg + "\"") + "\n";
-            fsRuntime.WriteAllText (path: "git.sh", contents: script);
-            fsRuntime.RequirePackages ("git");
-            fsRuntime.ExecuteScript (path: "git.sh");
+            string script = "sudo bash -c '" +
+                "mkdir /opt/control/;" +
+                "ln -sf " + Commons.EXE_DIRECTORY + "/*.{exe,dll} /opt/control/;" +
+                "echo /opt/control/" + Commons.EXE_FILENAME + " > /opt/control/control.sh;" +
+                "chmod 755 /opt/control/*;" +
+                "ln -sf /opt/control/control.sh /usr/local/bin/cl" +
+                "'\n";
+            fs.Runtime.WriteAllText (path: "install.sh", contents: script);
+            fs.Runtime.ExecuteScript (path: "install.sh");
         }
     }
 }

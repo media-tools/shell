@@ -39,4 +39,10 @@
   <ItemGroup>
     <Folder Include="Control.Install\" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Control.Common\Control.Common.csproj">
+      <Project>{CBB5DE48-A305-4F9C-88F3-F0F071AC3298}</Project>
+      <Name>Control.Common</Name>
+    </ProjectReference>
+  </ItemGroup>
 </Project>

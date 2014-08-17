@@ -9,9 +9,13 @@ namespace Control.Common
 
         public static string VERSION_STR { get { return "0." + VERSION + ""; } }
 
+        public static string EXE_PATH { get { return System.Reflection.Assembly.GetEntryAssembly ().Location; } }
+
         public static string EXE_NAME { get { return Path.GetFileNameWithoutExtension (System.Reflection.Assembly.GetEntryAssembly ().Location); } }
 
-        public static string EXE_PATH { get { return System.Reflection.Assembly.GetEntryAssembly ().Location; } }
+        public static string EXE_FILENAME { get { return Path.GetFileName (System.Reflection.Assembly.GetEntryAssembly ().Location); } }
+
+        public static string EXE_DIRECTORY { get { return Path.GetDirectoryName (System.Reflection.Assembly.GetEntryAssembly ().Location); } }
 
         public static string INFO_STR { get { return EXE_NAME + " " + VERSION_STR + " (C) 2014 Tobias Schulz"; } }
 

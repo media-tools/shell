@@ -9,8 +9,7 @@ namespace Control.Common
     public class FileSystem
     {
         public string RootDirectory = "";
-
-        private static HashSet<string> InstalledPackages = new HashSet<string>();
+        private static HashSet<string> InstalledPackages = new HashSet<string> ();
 
         public FileSystem (Task task, FileSystemType type)
             : this (type: type)
@@ -38,11 +37,12 @@ namespace Control.Common
         }
 
         private static ConfigFile _default;
-        
+
         public bool FileExists (string path)
         {
             return File.Exists (RootDirectory + SystemInfo.PathSeparator + path);
         }
+
         public bool DirectoryExists (string path)
         {
             return Directory.Exists (RootDirectory + SystemInfo.PathSeparator + path);
@@ -68,18 +68,23 @@ namespace Control.Common
             return File.ReadAllText (RootDirectory + SystemInfo.PathSeparator + path);
         }
 
-        public void ExecuteScript (string path)
+        public void ExecuteScript (string path, Action<string> receiveOutput = null, bool verbose = true, bool sudo = false)
         {
             // Use ProcessStartInfo class
             ProcessStartInfo startInfo = new ProcessStartInfo () {
                 CreateNoWindow = false,
                 UseShellExecute = false,
-                FileName = "/bin/bash",
                 WindowStyle = ProcessWindowStyle.Hidden,
-                Arguments = "-x \"" + RootDirectory + SystemInfo.PathSeparator + path + "\"",
                 RedirectStandardError = true,
                 RedirectStandardOutput = true,
             };
+            if (sudo) {
+                startInfo.FileName = "/usr/bin/sudo";
+                startInfo.Arguments = "/bin/bash -x \"" + RootDirectory + SystemInfo.PathSeparator + path + "\"";
+            } else {
+                startInfo.FileName = "/bin/bash";
+                startInfo.Arguments = "-x \"" + RootDirectory + SystemInfo.PathSeparator + path + "\"";
+            }
 
             try {
                 using (Process process = new Process()) {
@@ -87,7 +92,12 @@ namespace Control.Common
                     process.StartInfo = startInfo;
                     Action<object, DataReceivedEventArgs> actionWrite = (sender, e) =>
                     {
-                        Log.Debug ("    ", e.Data);
+                        if (verbose) {
+                            Log.Debug ("    ", e.Data);
+                        }
+                        if (receiveOutput != null && !e.Data.StartsWith("+ ")) {
+                            receiveOutput (e.Data);
+                        }
                     };
 
                     process.ErrorDataReceived += (sender, e) => actionWrite (sender, e);
@@ -107,7 +117,7 @@ namespace Control.Common
 
         public void RequirePackages (params string[] packages)
         {
-            packages = (from pkg in packages where !InstalledPackages.Contains(pkg) select pkg).ToArray();
+            packages = (from pkg in packages where !InstalledPackages.Contains (pkg) select pkg).ToArray ();
 
             if (packages.Length > 0) {
                 string script = "export TOINSTALL=\"\";\n";

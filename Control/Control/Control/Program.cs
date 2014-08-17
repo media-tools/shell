@@ -14,6 +14,7 @@ namespace Control
             new MailDedupTask(),
             new MailAllTask(),
             new SeriesTask(),
+            new SeriesScanTask(),
             new GitTask(),
             new GitCommitTask(),
             new InstallTask(),

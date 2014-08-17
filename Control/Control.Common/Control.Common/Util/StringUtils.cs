@@ -1,6 +1,6 @@
 using System;
 
-namespace Control.Common
+namespace Control.Common.Util
 {
     public class StringUtils
     {

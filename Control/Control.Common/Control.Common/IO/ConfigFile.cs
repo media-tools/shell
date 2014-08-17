@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 
-namespace Control.Common
+namespace Control.Common.IO
 {
     /// <summary>
     /// Repräsentiert eine Einstellungsdatei.

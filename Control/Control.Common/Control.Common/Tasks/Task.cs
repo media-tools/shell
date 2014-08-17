@@ -1,7 +1,8 @@
 using System;
 using System.Linq;
+using Control.Common.IO;
 
-namespace Control.Common
+namespace Control.Common.Tasks
 {
     public abstract class Task
     {

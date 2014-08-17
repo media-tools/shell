@@ -34,19 +34,26 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Control.Common\Task.cs" />
-    <Compile Include="Control.Common\Commons.cs" />
-    <Compile Include="Control.Common\Log.cs" />
-    <Compile Include="Control.Common\SystemInfo.cs" />
-    <Compile Include="Control.Common\StringUtils.cs" />
-    <Compile Include="Control.Common\FileSystem.cs" />
-    <Compile Include="Control.Common\IniFile.cs" />
-    <Compile Include="Control.Common\ConfigFile.cs" />
-    <Compile Include="Control.Common\FileSystemType.cs" />
     <Compile Include="Control.Common\Program.cs" />
+    <Compile Include="Control.Common\IO\FileSystem.cs" />
+    <Compile Include="Control.Common\IO\FileSystemType.cs" />
+    <Compile Include="Control.Common\IO\Log.cs" />
+    <Compile Include="Control.Common\IO\IniFile.cs" />
+    <Compile Include="Control.Common\IO\ConfigFile.cs" />
+    <Compile Include="Control.Common\Tasks\MainTask.cs" />
+    <Compile Include="Control.Common\Tasks\Task.cs" />
+    <Compile Include="Control.Common\Hooks\Hook.cs" />
+    <Compile Include="Control.Common\Util\StringUtils.cs" />
+    <Compile Include="Control.Common\Util\SystemInfo.cs" />
+    <Compile Include="Control.Common\Util\Commons.cs" />
+    <Compile Include="Control.Common\Util\ReflectiveEnumerator.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
     <Folder Include="Control.Common\" />
+    <Folder Include="Control.Common\IO\" />
+    <Folder Include="Control.Common\Tasks\" />
+    <Folder Include="Control.Common\Hooks\" />
+    <Folder Include="Control.Common\Util\" />
   </ItemGroup>
 </Project>

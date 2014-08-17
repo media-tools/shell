@@ -2,9 +2,8 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 
-namespace Control.Common
+namespace Control.Common.Util
 {
-    [ExcludeFromCodeCoverageAttribute]
     public static partial class SystemInfo
     {
         

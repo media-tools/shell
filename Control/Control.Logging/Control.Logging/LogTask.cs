@@ -1,10 +1,12 @@
 using System;
 using Control.Common;
 using System.IO;
+using Control.Common.Tasks;
+using Control.Common.IO;
 
 namespace Control.Logging
 {
-    public class LogTask : Task
+    public class LogTask : Task, MainTask
     {
         public LogTask ()
         {

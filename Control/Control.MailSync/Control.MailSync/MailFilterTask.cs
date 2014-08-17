@@ -1,9 +1,10 @@
 using System;
 using Control.Common;
+using Control.Common.Tasks;
 
 namespace Control.MailSync
 {
-    public class MailFilterTask : Task
+    public class MailFilterTask : Task, MainTask
     {
         public MailFilterTask ()
         {

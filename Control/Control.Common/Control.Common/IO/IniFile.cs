@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 
-namespace Control.Common
+namespace Control.Common.IO
 {
     public sealed class IniFile : IDisposable
     {

@@ -1,32 +1,30 @@
 using System;
+using System.Collections.Generic;
+using System.Reflection;
 using Control.Common;
-using Control.MailSync;
-using Control.Series;
-using Control.Git;
-using Control.Logging;
+using System.Linq;
+using System.IO;
+using Control.Common.Tasks;
+using Control.Common.Util;
+using Control.Common.IO;
+using Control.Common.Hooks;
 
 namespace Control
 {
     public class MainClass
     {
-        private static Task[] mainTasks = new Task[] {
-            new MailSyncTask(),
-            new MailFilterTask(),
-            new MailDedupTask(),
-            new MailAllTask(),
-            new SeriesTask(),
-            new SeriesScanTask(),
-            new GitTask(),
-            new GitCommitTask(),
-            new InstallTask(),
-            new LogTask(),
-        };
+        private static IEnumerable<Task> mainTasks;
 
         public static void Main (string[] args)
         {
             Log.Init (program: "control", version: Commons.VERSION_STR);
 
-            Program.HooksBeforeTask += GitHook.CommitHook;
+            IEnumerable<Assembly> asses = ReflectiveEnumerator.LoadAssemblies ();
+            mainTasks = from ass in asses from type in ReflectiveEnumerator.FindClassImplementingInterface<MainTask> (ass) select type as Task;
+            foreach (Hook hook in from ass in asses from type in ReflectiveEnumerator.FindSubclasses<Hook>(ass) select type as Hook) {
+                Program.HooksBeforeTask += task => hook.HookBeforeTask (task);
+                Program.HooksAfterTask += task => hook.HookAfterTask (task);
+            }
 
             try {
                 new Program (mainTasks).Main (args);
@@ -35,4 +33,5 @@ namespace Control
             }
         }
     }
+
 }

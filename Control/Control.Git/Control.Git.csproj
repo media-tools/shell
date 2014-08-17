@@ -37,6 +37,7 @@
     <Compile Include="Control.Git\GitHook.cs" />
     <Compile Include="Control.Git\GitTask.cs" />
     <Compile Include="Control.Git\GitCommitTask.cs" />
+    <Compile Include="Control.Git\GitLibrary.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

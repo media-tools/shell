@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Control.Common.IO;
+using Control.Common.Tasks;
+using Control.Common.Util;
 
 namespace Control.Common
 {
@@ -11,9 +14,9 @@ namespace Control.Common
         public static Action<Task> HooksBeforeTask = (tsk) => {};
         public static Action<Task> HooksAfterTask = (tsk) => {};
 
-        public Program (Task[] tasks)
+        public Program (IEnumerable<Task> tasks)
         {
-            Tasks = tasks;
+            Tasks = tasks.ToArray ();
         }
 
         public void Main (string[] args)

@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 
-namespace Control.Common
+namespace Control.Common.Util
 {
     public static class Commons
     {

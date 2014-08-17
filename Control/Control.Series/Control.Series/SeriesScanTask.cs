@@ -1,9 +1,10 @@
 using System;
 using Control.Common;
+using Control.Common.Tasks;
 
 namespace Control.Series
 {
-    public class SeriesScanTask : Task
+    public class SeriesScanTask : Task, MainTask
     {
         public SeriesScanTask ()
         {

@@ -1,9 +1,10 @@
 using System;
 using Control.Common;
+using Control.Common.Tasks;
 
 namespace Control.Git
 {
-    public class GitTask : Task
+    public class GitTask : Task, MainTask
     {
         public GitTask ()
         {
@@ -17,7 +18,7 @@ namespace Control.Git
         {
             fs.Runtime.RequirePackages ("git");
 
-            GitHook.Execute (args);
+            GitLibrary.Execute (args);
         }
     }
 }

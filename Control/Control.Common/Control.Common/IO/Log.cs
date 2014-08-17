@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using Control.Common.Util;
 
-namespace Control.Common
+namespace Control.Common.IO
 {
-    [ExcludeFromCodeCoverageAttribute]
     public static class Log
     {
         public static string CURRENT_LOGFILE { get; private set; }

@@ -2,10 +2,12 @@ using System;
 using System.Collections.Generic;
 using Control.Common;
 using System.Linq;
+using Control.Common.Tasks;
+using Control.Common.Util;
 
 namespace Control.Git
 {
-    public class InstallTask : Task
+    public class InstallTask : Task, MainTask
     {
         public InstallTask ()
         {

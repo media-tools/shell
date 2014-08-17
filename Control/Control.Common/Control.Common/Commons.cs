@@ -25,6 +25,8 @@ namespace Control.Common
 
         public static string DATETIME { get { return DateTime.Now.ToString ("dd.MM.yyyy HH:mm:ss"); } }
 
+        public static string DATETIME_LOG { get { return DateTime.Now.ToString ("yyyy.MM.dd HH:mm:ss"); } }
+
         public static DateTime StartedAt;
 
         public static double RUNTIME_SEC { get { return (DateTime.Now - StartedAt).TotalSeconds; } }

@@ -5,10 +5,10 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>10.0.0</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{63C0126A-4870-4769-B6F7-C22179DB5445}</ProjectGuid>
-    <OutputType>Exe</OutputType>
-    <RootNamespace>Control</RootNamespace>
-    <AssemblyName>Control</AssemblyName>
+    <ProjectGuid>{F6161FB1-78A3-4439-A71C-3DECEF250A74}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Control.Logging</RootNamespace>
+    <AssemblyName>Control.Logging</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -18,7 +18,7 @@
     <DefineConstants>DEBUG;</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <Externalconsole>true</Externalconsole>
+    <ConsolePause>false</ConsolePause>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>full</DebugType>
@@ -26,43 +26,23 @@
     <OutputPath>bin\Release</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <Externalconsole>true</Externalconsole>
+    <ConsolePause>false</ConsolePause>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Control\Program.cs" />
+    <Compile Include="Control.Logging\LogTask.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
-    <ProjectReference Include="..\Control.MailSync\Control.MailSync.csproj">
-      <Project>{F03A89B1-EEC4-4121-A6DB-61F729BED16B}</Project>
-      <Name>Control.MailSync</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Control.Series\Control.Series.csproj">
-      <Project>{F1A8B1CE-B30B-4DC8-BB12-D4EB53E53763}</Project>
-      <Name>Control.Series</Name>
-    </ProjectReference>
+    <Folder Include="Control.Logging\" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Control.Common\Control.Common.csproj">
       <Project>{CBB5DE48-A305-4F9C-88F3-F0F071AC3298}</Project>
       <Name>Control.Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Control.Git\Control.Git.csproj">
-      <Project>{E1FCC8DF-A8D5-4671-BE92-BC34276ECA5F}</Project>
-      <Name>Control.Git</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Control.Install\Control.Install.csproj">
-      <Project>{9BB662D5-9C55-485F-B714-E5A4625ADD97}</Project>
-      <Name>Control.Install</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Control.Logging\Control.Logging.csproj">
-      <Project>{F6161FB1-78A3-4439-A71C-3DECEF250A74}</Project>
-      <Name>Control.Logging</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Control\" />
   </ItemGroup>
 </Project>

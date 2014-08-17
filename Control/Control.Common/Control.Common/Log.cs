@@ -9,13 +9,16 @@ namespace Control.Common
     [ExcludeFromCodeCoverageAttribute]
     public static class Log
     {
+        public static string CURRENT_LOGFILE { get; private set; }
+
         private static StreamWriter logFile;
 
         public static void Init (string program = "game", string version = "")
         {
             try {
                 string filename = (string.IsNullOrWhiteSpace (version) ? program : program + "-" + version) + ".log";
-                logFile = File.AppendText (SystemInfo.LogDirectory + SystemInfo.PathSeparator + filename);
+                CURRENT_LOGFILE = SystemInfo.LogDirectory + SystemInfo.PathSeparator + filename;
+                logFile = File.AppendText (CURRENT_LOGFILE);
             } catch (Exception ex) {
                 // we don't give a fuck whether we can open a log file
                 logFile = StreamWriter.Null;
@@ -23,10 +26,24 @@ namespace Control.Common
             }
         }
 
+        public static Action NeedAccessToLogfile {
+            set {
+                logFile.Close ();
+                value ();
+                logFile = File.AppendText (CURRENT_LOGFILE);
+            }
+        }
+
+        private static bool isNewLineInLogfile = true;
+
         private static void LogFileWrite (string text)
         {
+            if (isNewLineInLogfile) {
+                LogFilePrefix ();
+            }
             try {
                 logFile.Write (text);
+                isNewLineInLogfile = false;
             } catch (Exception) {
             }
         }
@@ -35,14 +52,27 @@ namespace Control.Common
 
         private static void LogFileWriteLine (string text)
         {
+            if (isNewLineInLogfile) {
+                LogFilePrefix ();
+            }
             try {
                 logFile.WriteLine (text);
+                isNewLineInLogfile = true;
                 if (k % 100 == 0) {
                     logFile.Flush ();
                 }
             } catch (Exception) {
             }
         }
+
+        private static void LogFilePrefix ()
+        {
+            try {
+                logFile.Write (Commons.DATETIME_LOG + "  ");
+            } catch (Exception) {
+            }
+        }
+
         // Lists
         private static Dictionary<string, ListDefinition> lists = new Dictionary<string, ListDefinition> ();
         private static string lastListId = null;
@@ -71,16 +101,31 @@ namespace Control.Common
         public static void Message (params object[] message)
         {
             EndList ();
-            Console.WriteLine (string.Join ("", message));
-            LogFileWriteLine (string.Join ("", message));
+            MessageConsole (message);
+            MessageLog (message);
         }
 
-        public static void Error (Exception ex)
+        public static void MessageLog (params object[] message)
+        {
+            string str = string.Join ("", message);
+            LogFileWriteLine (str);
+        }
+
+        public static void MessageConsole (params object[] message)
+        {
+            string str = string.Join ("", message);
+            Console.WriteLine (str);
+        }
+
+        public static void Error (params object[] message)
         {
             EndList ();
-            Console.WriteLine (ex.ToString ());
-            LogFileWriteLine (ex.ToString ());
+            string str = string.Join ("", message);
+            Console.ForegroundColor = ConsoleColor.DarkRed;
+            Console.WriteLine (str);
+            LogFileWriteLine (str);
             logFile.Flush ();
+            Console.ResetColor ();
         }
 
         private static void List (object id, object before, object after, object begin, object end)

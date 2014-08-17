@@ -94,6 +94,8 @@ namespace Control.Common
                     {
                         if (verbose) {
                             Log.Debug ("    ", e.Data);
+                        } else {
+                            Log.DebugLog ("    ", e.Data);
                         }
                         if (receiveOutput != null && !e.Data.StartsWith("+ ")) {
                             receiveOutput (e.Data);
@@ -103,12 +105,12 @@ namespace Control.Common
                     process.ErrorDataReceived += (sender, e) => actionWrite (sender, e);
                     process.OutputDataReceived += (sender, e) => actionWrite (sender, e);
                     
-                    Log.Message ("Start Process (date='", Commons.DATETIME, "', run='", RootDirectory + SystemInfo.PathSeparator + path, "')");
+                    Log.MessageLog ("Start Process (date='", Commons.DATETIME, "', run='", RootDirectory + SystemInfo.PathSeparator + path, "')");
                     process.Start ();
                     process.BeginOutputReadLine ();
                     process.BeginErrorReadLine ();
                     process.WaitForExit ();
-                    Log.Message ("Stop Process (date='", Commons.DATETIME, "')");
+                    Log.MessageLog ("Stop Process (date='", Commons.DATETIME, "')");
                 }
             } catch (Exception e) {
                 Log.Error (e);
@@ -126,7 +128,7 @@ namespace Control.Common
                 }
                 script += "echo $TOINSTALL | egrep \"...\" >/dev/null && sudo apt-get install -fyqm $TOINSTALL\n";
                 WriteAllText ("apt.sh", script);
-                ExecuteScript ("apt.sh");
+                ExecuteScript (path: "apt.sh", verbose: false);
             }
 
             foreach (string pkg in packages) {

@@ -1,14 +1,55 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Control.MailSync/Control.MailSync/Program.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Control.Log/Control.Log/LogTask.cs">
     <Files>
-      <File FileName="Control.Common/MyClass.cs" Line="13" Column="1" />
-      <File FileName="Control.Common/Control.Common/Task.cs" Line="10" Column="10" />
-      <File FileName="Control.Common/Control.Common/TaskProgram.cs" Line="16" Column="13" />
-      <File FileName="Control.MailSync/Control.MailSync/MailSyncTask.cs" Line="7" Column="3" />
-      <File FileName="Control.MailSync/Control.MailSync/Program.cs" Line="10" Column="13" />
-      <File FileName="Control.Common/Control.Common/Commons.cs" Line="14" Column="105" />
+      <File FileName="Control.MailSync/Control.MailSync/MailDedupTask.cs" Line="17" Column="17" />
+      <File FileName="Control.Install/Control.Install/InstallTask.cs" Line="18" Column="10" />
+      <File FileName="Control.Series/Control.Series/SeriesLibrary.cs" Line="31" Column="60" />
+      <File FileName="Control.Common/Control.Common/FileSystem.cs" Line="111" Column="35" />
+      <File FileName="Control.Series/Control.Series/SeriesScanTask.cs" Line="17" Column="57" />
+      <File FileName="Control.Series/Control.Series/EpisodeFile.cs" Line="46" Column="26" />
+      <File FileName="Control.Series/Control.Series/EpisodeInfo.cs" Line="43" Column="21" />
+      <File FileName="Control.Common/Control.Common/Task.cs" Line="11" Column="9" />
+      <File FileName="Control.Common/Control.Common/Log.cs" Line="20" Column="97" />
+      <File FileName="Control.Log/Control.Log/LogTask.cs" Line="17" Column="13" />
     </Files>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State expanded="True">
+          <Node name="Control" expanded="True">
+            <Node name="References" expanded="True" />
+            <Node name="Control" expanded="True" />
+          </Node>
+          <Node name="Control.Common" expanded="True">
+            <Node name="Control.Common" expanded="True" />
+          </Node>
+          <Node name="Control.Git" expanded="True">
+            <Node name="Control.Git" expanded="True" />
+          </Node>
+          <Node name="Control.Install" expanded="True">
+            <Node name="Control.Install" expanded="True" />
+          </Node>
+          <Node name="Control.Logging" expanded="True">
+            <Node name="Control.Log" expanded="True" />
+            <Node name="Properties" expanded="True">
+              <Node name="AssemblyInfo.cs" selected="True" />
+            </Node>
+          </Node>
+          <Node name="Control.MailSync" expanded="True">
+            <Node name="Control.MailSync" expanded="True" />
+          </Node>
+          <Node name="Control.Series" expanded="True">
+            <Node name="Control.Series" expanded="True" />
+          </Node>
+        </State>
+      </Pad>
+      <Pad Id="ClassPad">
+        <State expanded="True" selected="True" />
+      </Pad>
+      <Pad Id="MonoDevelop.Debugger.WatchPad">
+        <State />
+      </Pad>
+    </Pads>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore />

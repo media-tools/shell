@@ -3,6 +3,7 @@ using Control.Common;
 using Control.MailSync;
 using Control.Series;
 using Control.Git;
+using Control.Logging;
 
 namespace Control
 {
@@ -18,6 +19,7 @@ namespace Control
             new GitTask(),
             new GitCommitTask(),
             new InstallTask(),
+            new LogTask(),
         };
 
         public static void Main (string[] args)
@@ -26,7 +28,11 @@ namespace Control
 
             Program.HooksBeforeTask += GitHook.CommitHook;
 
-            new Program (mainTasks).Main (args);
+            try {
+                new Program (mainTasks).Main (args);
+            } catch (Exception ex) {
+                Log.Error (ex);
+            }
         }
     }
 }

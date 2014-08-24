@@ -70,7 +70,12 @@ namespace Control.Common.IO
             return File.ReadAllText (RootDirectory + SystemInfo.PathSeparator + path);
         }
 
-        public void ExecuteScript (string path, Action<string> receiveOutput = null, bool verbose = true, bool sudo = false)
+        public ConfigFile OpenConfigFile (string name)
+        {
+            return new ConfigFile (filename: RootDirectory + SystemInfo.PathSeparator + name);
+        }
+
+        public void ExecuteScript (string path, Action<string> receiveOutput = null, bool verbose = true, bool debug = true, bool sudo = false)
         {
             // Use ProcessStartInfo class
             ProcessStartInfo startInfo = new ProcessStartInfo () {
@@ -80,6 +85,7 @@ namespace Control.Common.IO
                 RedirectStandardError = true,
                 RedirectStandardOutput = true,
             };
+            startInfo.EnvironmentVariables ["LC_ALL"] = "C";
             if (sudo) {
                 startInfo.FileName = "/usr/bin/sudo";
                 startInfo.Arguments = "/bin/bash -x \"" + RootDirectory + SystemInfo.PathSeparator + path + "\"";
@@ -94,12 +100,11 @@ namespace Control.Common.IO
                     process.StartInfo = startInfo;
                     Action<object, DataReceivedEventArgs> actionWrite = (sender, e) =>
                     {
-                        if (verbose) {
-                            Log.Debug ("    ", e.Data);
-                        } else {
-                            Log.DebugLog ("    ", e.Data);
+                        if (verbose && (debug || !e.Data.StartsWith ("+ "))) {
+                            Log.DebugConsole ("    ", e.Data);
                         }
-                        if (receiveOutput != null && !e.Data.StartsWith("+ ")) {
+                        Log.DebugLog ("    ", e.Data);
+                        if (receiveOutput != null && !e.Data.StartsWith ("+ ")) {
                             receiveOutput (e.Data);
                         }
                     };

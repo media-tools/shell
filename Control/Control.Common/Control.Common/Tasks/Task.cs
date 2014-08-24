@@ -54,7 +54,12 @@ namespace Control.Common.Tasks
 
         protected abstract void InternalRun (string[] args);
 
-        public virtual void PrintUsage (string indent)
+        public virtual int LengthOfUsageLine (string indent)
+        {
+            return indent.Length + Options [0].Length + 1 + ParameterSyntax.Length;
+        }
+
+        public virtual void PrintUsage (string indent, int maxLength)
         {
             CheckValid ();
 
@@ -64,7 +69,7 @@ namespace Control.Common.Tasks
             lineLength += indent.Length;
             Console.ForegroundColor = ConsoleColor.DarkGreen;
             Console.Write (Options [0]);
-            lineLength += Options[0].Length;
+            lineLength += Options [0].Length;
             if (ParameterSyntax.Length != 0) {
                 Console.ResetColor ();
                 Console.Write (" ");
@@ -74,8 +79,8 @@ namespace Control.Common.Tasks
                 lineLength += ParameterSyntax.Length;
             }
             Console.ResetColor ();
-            Console.Write (String.Concat (Enumerable.Repeat (" ", 40 - lineLength)));
-           // Console.ForegroundColor = ConsoleColor.;
+            Console.Write (String.Concat (Enumerable.Repeat (" ", maxLength - lineLength)));
+            // Console.ForegroundColor = ConsoleColor.;
             Console.WriteLine (Description);
             Console.ResetColor ();
         }

@@ -56,8 +56,11 @@ namespace Control.Common
             Console.WriteLine ("[OPTIONS]");
             Console.WriteLine ("");
             Console.WriteLine ("Tasks:");
+
+            string indent = "  ";
+            int maxLength = Tasks.Max (task => task.LengthOfUsageLine (indent: indent)) + 2;
             foreach (Task task in Tasks) {
-                task.PrintUsage (indent: "  ");
+                task.PrintUsage (indent: indent, maxLength: maxLength);
             }
             Console.WriteLine ("");
         }

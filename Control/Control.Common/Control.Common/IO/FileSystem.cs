@@ -81,7 +81,7 @@ namespace Control.Common.IO
             return new ConfigFile (filename: RootDirectory + SystemInfo.PathSeparator + name);
         }
 
-        public void ExecuteScript (string path, Action<string> receiveOutput = null, bool verbose = true, bool debug = true, bool sudo = false)
+        public void ExecuteScript (string path, Action<string> receiveOutput = null, bool verbose = true, bool debug = true, bool sudo = false, bool ignoreEmptyLines = false)
         {
             // Use ProcessStartInfo class
             ProcessStartInfo startInfo = new ProcessStartInfo () {
@@ -106,12 +106,14 @@ namespace Control.Common.IO
                     process.StartInfo = startInfo;
                     Action<object, DataReceivedEventArgs> actionWrite = (sender, e) =>
                     {
-                        if (verbose && (debug || !e.Data.StartsWith ("+ "))) {
-                            Log.DebugConsole ("    ", e.Data);
-                        }
-                        Log.DebugLog ("    ", e.Data);
-                        if (receiveOutput != null && !e.Data.StartsWith ("+ ")) {
-                            receiveOutput (e.Data);
+                        if (ignoreEmptyLines || !string.IsNullOrWhiteSpace (e.Data)) {
+                            if (verbose && (debug || !e.Data.StartsWith ("+ "))) {
+                                Log.DebugConsole ("    ", e.Data);
+                            }
+                            Log.DebugLog ("    ", e.Data);
+                            if (receiveOutput != null && !e.Data.StartsWith ("+ ")) {
+                                receiveOutput (e.Data);
+                            }
                         }
                     };
 

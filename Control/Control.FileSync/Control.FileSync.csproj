@@ -37,6 +37,7 @@
     <Compile Include="Control.FileSync\FileSyncTask.cs" />
     <Compile Include="Control.FileSync\FileSystemLibrary.cs" />
     <Compile Include="Control.FileSync\FileIndexTask.cs" />
+    <Compile Include="Control.FileSync\Tree.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

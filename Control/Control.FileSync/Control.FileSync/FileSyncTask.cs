@@ -20,8 +20,12 @@ namespace Control.FileSync
         protected override void InternalRun (string[] args)
         {
             IEnumerable<FileInfo> files = FileSystemLibrary.GetFileList (rootDirectory: "/", fileFilter: file => true, dirFilter: dir => true);
+            List<Tree> trees = new List<Tree> ();
             foreach (FileInfo file in files) {
-                Log.MessageConsole ("  ", file.FullName);
+                if (file.Name == "control.ini") {
+                    Log.MessageConsole ("  ", file.FullName);
+                    trees.Add(new Tree (file.FullName));
+                }
             }
         }
     }

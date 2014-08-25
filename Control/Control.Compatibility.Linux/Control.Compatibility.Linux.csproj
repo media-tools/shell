@@ -35,15 +35,16 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Control.Compatibility.Linux\LinuxFileHelper.cs" />
+    <Compile Include="Control.Compatibility.Linux\LinuxSystemHelper.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
     <Folder Include="Control.Compatibility.Linux\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Control.Compatibility.Common\Control.Compatibility.Common.csproj">
-      <Project>{30E9C124-420E-4E52-A36B-DD93243F205A}</Project>
-      <Name>Control.Compatibility.Common</Name>
+    <ProjectReference Include="..\Control.Common\Control.Common.csproj">
+      <Project>{CBB5DE48-A305-4F9C-88F3-F0F071AC3298}</Project>
+      <Name>Control.Common</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>

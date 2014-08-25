@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using Control.Compatibility.Common;
 
 namespace Control.Common.Util
 {
@@ -26,20 +27,21 @@ namespace Control.Common.Util
         {
             return !IsRunningOnLinux ();
         }
-        
 
-        public static string SettingsDirectory
-        {
+        public static string SettingsDirectory {
             get {
                 if (settingsDirectory != null) {
                     return settingsDirectory;
-                }
-                else {
+                } else {
                     string directory;
                     if (SystemInfo.IsRunningOnLinux ()) {
-                        directory = Environment.GetEnvironmentVariable ("HOME") + "/.config/control/";
-                    }
-                    else {
+                        Console.WriteLine (SystemHelper.Instance);
+                        if (SystemHelper.Instance.GetUid () == 0) {
+                            directory = "/etc/control/";
+                        } else {
+                            directory = Environment.GetEnvironmentVariable ("HOME") + "/.config/control/";
+                        }
+                    } else {
                         directory = Environment.GetFolderPath (System.Environment.SpecialFolder.UserProfile) + "\\Control\\";
                     }
                     Directory.CreateDirectory (directory);
@@ -52,20 +54,16 @@ namespace Control.Common.Util
         }
 
         private static string settingsDirectory = null;
-        
 
-        public static string CacheDirectory
-        {
+        public static string CacheDirectory {
             get {
                 if (cacheDirectory != null) {
                     return cacheDirectory;
-                }
-                else {
+                } else {
                     string directory;
                     if (SystemInfo.IsRunningOnLinux ()) {
                         directory = Environment.GetEnvironmentVariable ("HOME") + "/.cache/control/";
-                    }
-                    else {
+                    } else {
                         directory = Environment.GetFolderPath (System.Environment.SpecialFolder.UserProfile) + "\\ControlCache\\";
                     }
                     Directory.CreateDirectory (directory);
@@ -79,25 +77,23 @@ namespace Control.Common.Util
 
         private static string cacheDirectory = null;
 
-        
-        public static string LogDirectory
-        {
+        public static string LogDirectory {
             get {
                 string directory = SettingsDirectory + "logs";
                 Directory.CreateDirectory (directory);
                 return directory;
             }
         }
-        public static string ConfigDirectory
-        {
+
+        public static string ConfigDirectory {
             get {
                 string directory = SettingsDirectory + "config";
                 Directory.CreateDirectory (directory);
                 return directory;
             }
         }
-        public static string RuntimeDirectory
-        {
+
+        public static string RuntimeDirectory {
             get {
                 string directory = CacheDirectory + "runtime";
                 Directory.CreateDirectory (directory);

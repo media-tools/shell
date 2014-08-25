@@ -18,6 +18,7 @@ namespace Control.Common.IO
         {
             RootDirectory += SystemInfo.PathSeparator + task.ConfigName;
             Directory.CreateDirectory (RootDirectory);
+
         }
 
         public FileSystem (FileSystemType type)

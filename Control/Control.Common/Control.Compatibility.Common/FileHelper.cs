@@ -15,9 +15,7 @@ namespace Control.Compatibility.Common
         {
             if (Environment.OSVersion.Platform.ToString ().StartsWith ("Win")) {
                 Instance = new FileHelper ();
-            }
-
-            else {
+            } else {
                 var ufh = Type.GetType ("Control.Compatibility.Linux.LinuxFileHelper");
                 if (ufh == null) {
                     ufh = Type.GetType ("Control.Compatibility.Linux.LinuxFileHelper, Control.Compatibility.Linux");

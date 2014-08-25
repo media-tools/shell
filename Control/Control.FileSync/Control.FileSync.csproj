@@ -47,9 +47,5 @@
       <Project>{CBB5DE48-A305-4F9C-88F3-F0F071AC3298}</Project>
       <Name>Control.Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Control.Compatibility.Common\Control.Compatibility.Common.csproj">
-      <Project>{30E9C124-420E-4E52-A36B-DD93243F205A}</Project>
-      <Name>Control.Compatibility.Common</Name>
-    </ProjectReference>
   </ItemGroup>
 </Project>

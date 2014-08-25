@@ -8,6 +8,13 @@ namespace Control.Common.Tasks
     {
         public string Name { protected set; get; }
 
+        private string _configName;
+
+        public string ConfigName {
+            get { return _configName ?? Name; }
+            set { _configName = value; }
+        }
+
         public string[] Options { protected set; get; }
 
         public string ParameterSyntax { protected set; get; }

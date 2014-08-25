@@ -1,15 +1,19 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Control.Git/Control.Git/UserReposTask.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Control.Compatibility.Linux/Control.Compatibility.Linux/LinuxFileHelper.cs">
     <Files>
       <File FileName="Control.Common/Control.Common/Hooks/Hook.cs" Line="1" Column="1" />
       <File FileName="Control/Control/ReflectiveEnumerator.cs" Line="1" Column="1" />
-      <File FileName="Control.Git/Control.Git/GitHook.cs" Line="1" Column="1" />
-      <File FileName="Control.Git/Control.Git/GitLibrary.cs" Line="40" Column="10" />
-      <File FileName="Control.Git/Control.Git/GitCommitTask.cs" Line="1" Column="1" />
-      <File FileName="Control.Git/Control.Git/GitTask.cs" Line="14" Column="47" />
+      <File FileName="Control.Git/Control.Git/GitHook.cs" Line="12" Column="68" />
+      <File FileName="Control.Git/Control.Git/GitLibrary.cs" Line="38" Column="30" />
+      <File FileName="Control.Git/Control.Git/ConfigCommitTask.cs" Line="7" Column="34" />
+      <File FileName="Control.Git/Control.Git/ConfigGitTask.cs" Line="11" Column="27" />
       <File FileName="Control.Common/Control.Common/Program.cs" Line="61" Column="92" />
-      <File FileName="Control.Git/Control.Git/UserReposTask.cs" Line="31" Column="48" />
+      <File FileName="Control.Git/Control.Git/UserReposTask.cs" Line="38" Column="111" />
+      <File FileName="Control.FileSync/Control.FileSync/FileSystemLibrary.cs" Line="62" Column="12" />
+      <File FileName="Control.FileSync/Control.FileSync/FileSyncTask.cs" Line="15" Column="37" />
+      <File FileName="Control.FileSync/Control.FileSync/FileIndexTask.cs" Line="26" Column="6" />
+      <File FileName="Control.Compatibility.Linux/Control.Compatibility.Linux/LinuxFileHelper.cs" Line="5" Column="33" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
@@ -26,10 +30,17 @@
               <Node name="Util" expanded="True" />
             </Node>
           </Node>
+          <Node name="Control.Compatibility.Common" expanded="True" selected="True" />
+          <Node name="Control.Compatibility.Linux" expanded="True">
+            <Node name="Control.Compatibility.Linux" expanded="True" />
+          </Node>
+          <Node name="Control.FileSync" expanded="True">
+            <Node name="References" expanded="True" />
+            <Node name="Control.FileSync" expanded="True" />
+          </Node>
           <Node name="Control.Git" expanded="True">
-            <Node name="Control.Git" expanded="True">
-              <Node name="UserReposTask.cs" selected="True" />
-            </Node>
+            <Node name="References" expanded="True" />
+            <Node name="Control.Git" expanded="True" />
           </Node>
           <Node name="Control.Install" expanded="True">
             <Node name="Control.Install" expanded="True" />

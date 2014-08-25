@@ -67,6 +67,14 @@
       <Project>{34F8AD42-90C2-4CC1-B7A2-047AD1874BAD}</Project>
       <Name>Control.FileSync</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Control.Compatibility.Common\Control.Compatibility.Common.csproj">
+      <Project>{30E9C124-420E-4E52-A36B-DD93243F205A}</Project>
+      <Name>Control.Compatibility.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Control.Compatibility.Linux\Control.Compatibility.Linux.csproj">
+      <Project>{A556FC86-97B1-4D41-9E1F-02D4FD01A7A0}</Project>
+      <Name>Control.Compatibility.Linux</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Control\" />

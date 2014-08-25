@@ -16,7 +16,7 @@ namespace Control.Common.IO
         public FileSystem (Task task, FileSystemType type)
             : this (type: type)
         {
-            RootDirectory += SystemInfo.PathSeparator + task.Name;
+            RootDirectory += SystemInfo.PathSeparator + task.ConfigName;
             Directory.CreateDirectory (RootDirectory);
         }
 
@@ -51,6 +51,11 @@ namespace Control.Common.IO
         }
 
         public void WriteAllLines (string path, string[] contents)
+        {
+            File.WriteAllLines (RootDirectory + SystemInfo.PathSeparator + path, contents);
+        }
+
+        public void WriteAllLines (string path, IEnumerable<string> contents)
         {
             File.WriteAllLines (RootDirectory + SystemInfo.PathSeparator + path, contents);
         }

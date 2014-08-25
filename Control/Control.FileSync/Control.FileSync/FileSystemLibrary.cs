@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Control.Common.IO;
-using Control.Compatibility.Common;
+using Control.Compatibility;
 
 namespace Control.FileSync
 {

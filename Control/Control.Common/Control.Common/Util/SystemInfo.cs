@@ -1,7 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using Control.Compatibility.Common;
+using Control.Compatibility;
 
 namespace Control.Common.Util
 {

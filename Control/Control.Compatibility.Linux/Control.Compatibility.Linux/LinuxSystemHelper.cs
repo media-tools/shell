@@ -1,5 +1,5 @@
 using System;
-using Control.Compatibility.Common;
+using Control.Compatibility;
 using Mono.Unix.Native;
 
 namespace Control.Compatibility.Linux

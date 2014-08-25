@@ -1,7 +1,7 @@
 using System;
 using System.IO;
+using Control.Compatibility;
 using Mono.Unix;
-using Control.Compatibility.Common;
 
 namespace Control.Compatibility.Linux
 {

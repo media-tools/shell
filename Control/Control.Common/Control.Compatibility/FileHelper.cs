@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Reflection;
 
-namespace Control.Compatibility.Common
+namespace Control.Compatibility
 {
     public class FileHelper
     {

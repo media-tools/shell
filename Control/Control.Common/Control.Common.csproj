@@ -46,8 +46,8 @@
     <Compile Include="Control.Common\Util\StringUtils.cs" />
     <Compile Include="Control.Common\Util\SystemInfo.cs" />
     <Compile Include="Control.Common\Util\Commons.cs" />
-    <Compile Include="Control.Compatibility.Common\FileHelper.cs" />
-    <Compile Include="Control.Compatibility.Common\SystemHelper.cs" />
+    <Compile Include="Control.Compatibility\FileHelper.cs" />
+    <Compile Include="Control.Compatibility\SystemHelper.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -56,5 +56,6 @@
     <Folder Include="Control.Common\Tasks\" />
     <Folder Include="Control.Common\Hooks\" />
     <Folder Include="Control.Common\Util\" />
+    <Folder Include="Control.Compatibility\" />
   </ItemGroup>
 </Project>

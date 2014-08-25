@@ -3,7 +3,7 @@ using System.IO;
 using System.Reflection;
 using System.Security.Principal;
 
-namespace Control.Compatibility.Common
+namespace Control.Compatibility
 {
     public class SystemHelper
     {

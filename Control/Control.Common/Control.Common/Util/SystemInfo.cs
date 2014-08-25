@@ -35,7 +35,6 @@ namespace Control.Common.Util
                 } else {
                     string directory;
                     if (SystemInfo.IsRunningOnLinux ()) {
-                        Console.WriteLine (SystemHelper.Instance);
                         if (SystemHelper.Instance.GetUid () == 0) {
                             directory = "/etc/control/";
                         } else {

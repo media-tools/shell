@@ -40,7 +40,7 @@ namespace Control.Git
             }
             fsRuntime.WriteAllText (path: "git.sh", contents: script);
             fsRuntime.RequirePackages ("git");
-            fsRuntime.ExecuteScript (path: "git.sh", verbose: verbose, debug: false);
+            fsRuntime.ExecuteScript (path: "git.sh", verbose: verbose, debug: false, ignoreEmptyLines: true);
         }
 
         public static void Commit ()

@@ -25,7 +25,7 @@ namespace Control.FileSync
                 && !path.StartsWith ("/dev") && !path.StartsWith ("/cdrom") && !path.StartsWith ("/srv") 
                 && !path.StartsWith ("/var") && !path.StartsWith ("/usr/share") && !path.StartsWith ("/usr/lib") 
                 && !path.StartsWith ("/usr/src") && !path.StartsWith ("/usr/bin") && !path.StartsWith ("/usr/sbin")
-                && !path.StartsWith ("/usr/include");
+                && !path.StartsWith ("/usr/include") && !path.Contains ("lost+found");
         }
 
         public static bool FilterCustomPath (string path)
@@ -66,7 +66,7 @@ namespace Control.FileSync
                 foreach (DirectoryInfo subDirectory in directoryList) {
                     if (dirFilter (subDirectory)) {
                         if (FileHelper.Instance.IsSymLink (subDirectory)) {
-                            Log.Error ("Symbolic Link: " + subDirectory);
+                            Log.DebugLog ("Symbolic Link: " + subDirectory);
                         } else {
                             foreach (FileInfo file in GetFileList(rootDirectory: subDirectory, fileFilter: fileFilter, dirFilter: dirFilter)) {
                                 yield return file;

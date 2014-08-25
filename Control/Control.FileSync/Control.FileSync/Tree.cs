@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using Control.Common.IO;
+using System.Linq;
 
 namespace Control.FileSync
 {
@@ -8,9 +9,10 @@ namespace Control.FileSync
     {
         public static string TREE_CONFIG_FILENAME = "control.ini";
         private static string CONFIG_SECTION = "FileSync";
-
         private ConfigFile config;
+
         public string ConfigPath { get; private set; }
+
         public string RootDirectory { get; private set; }
 
         public Tree (string path)
@@ -20,9 +22,16 @@ namespace Control.FileSync
                 ConfigPath = path;
             } else {
                 throw new ArgumentException ("Illegal tree config file: " + path);
-        }http://de.wiktionary.org/wiki/Apfelbutzen
+            }
 
             config = new ConfigFile (filename: ConfigPath);
+            int fuuuck = (Name + IsEnabled + IsReadable + IsWriteable).GetHashCode ();
+            fuuuck++;
+        }
+
+        public string Name {
+            get { return config [CONFIG_SECTION, "name", RandomString ()]; }
+            set { config [CONFIG_SECTION, "name", RandomString ()] = value; }
         }
 
         public bool IsEnabled {
@@ -45,7 +54,23 @@ namespace Control.FileSync
             set { config [CONFIG_SECTION, "delete", false] = value; }
         }
 
+        public override string ToString ()
+        {
+            return string.Format ("Tree(Name=\"{0}\", RootDirectory=\"{1}\", enabled={2}, read={3}, write={4}, delete={5})", Name, RootDirectory, IsEnabled, IsReadable, IsWriteable, IsDeletable);
+        }
 
+        public override int GetHashCode ()
+        {
+            return ToString ().GetHashCode ();
+        }
+
+        private static string RandomString ()
+        {
+            var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".ToLower ();
+            var random = new Random ();
+            var result = new string (Enumerable.Repeat (chars, 8).Select (s => s [random.Next (s.Length)]).ToArray ());
+            return result;
+        }
     }
 }
 

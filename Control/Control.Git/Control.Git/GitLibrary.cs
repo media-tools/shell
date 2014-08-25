@@ -9,7 +9,7 @@ namespace Control.Git
 {
     public static class GitLibrary
     {
-        private static GitTask task;
+        private static ConfigGitTask task;
 
         public static void Execute (params string[] args)
         {
@@ -23,7 +23,7 @@ namespace Control.Git
 
         public static void Execute (string[][] commands, bool verbose = true, string rootDirectory = null)
         {
-            task = task ?? new GitTask ();
+            task = task ?? new ConfigGitTask ();
             FileSystem fsRuntime = new FileSystem (task, FileSystemType.Runtime);
             FileSystem fsConfig = new FileSystem (FileSystemType.Config);
             rootDirectory = rootDirectory ?? fsConfig.RootDirectory;

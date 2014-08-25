@@ -4,13 +4,13 @@ using Control.Common.Tasks;
 
 namespace Control.Git
 {
-    public class GitCommitTask : Task, MainTask
+    public class ConfigCommitTask : Task, MainTask
     {
-        public GitCommitTask ()
+        public ConfigCommitTask ()
         {
-            Name = "GitCommit";
+            Name = "ConfigCommit";
             Description = "Commit changes in the config directory";
-            Options = new string[] { "git-commit" };
+            Options = new string[] { "config-commit" };
         }
 
         protected override void InternalRun (string[] args)

@@ -15,12 +15,18 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Control.Install", "Control.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Control.Logging", "Control.Logging\Control.Logging.csproj", "{F6161FB1-78A3-4439-A71C-3DECEF250A74}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Control.FileSync", "Control.FileSync\Control.FileSync.csproj", "{34F8AD42-90C2-4CC1-B7A2-047AD1874BAD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{34F8AD42-90C2-4CC1-B7A2-047AD1874BAD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{34F8AD42-90C2-4CC1-B7A2-047AD1874BAD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{34F8AD42-90C2-4CC1-B7A2-047AD1874BAD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{34F8AD42-90C2-4CC1-B7A2-047AD1874BAD}.Release|Any CPU.Build.0 = Release|Any CPU
 		{63C0126A-4870-4769-B6F7-C22179DB5445}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{63C0126A-4870-4769-B6F7-C22179DB5445}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{63C0126A-4870-4769-B6F7-C22179DB5445}.Release|Any CPU.ActiveCfg = Release|Any CPU

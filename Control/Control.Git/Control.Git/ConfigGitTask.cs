@@ -4,13 +4,13 @@ using Control.Common.Tasks;
 
 namespace Control.Git
 {
-    public class GitTask : Task, MainTask
+    public class ConfigGitTask : Task, MainTask
     {
-        public GitTask ()
+        public ConfigGitTask ()
         {
-            Name = "Git";
+            Name = "ConfigGit";
             Description = "Execute git in the config directory";
-            Options = new string[] { "git" };
+            Options = new string[] { "config-git" };
             ParameterSyntax = "[GIT OPTIONS]";
         }
 

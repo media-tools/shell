@@ -9,7 +9,7 @@ namespace Control.Git
     {
         public override void HookBeforeTask (Task task)
         {
-            if (!(task is GitTask)) {
+            if (!(task is ConfigGitTask || task is ConfigCommitTask)) {
                 GitLibrary.Commit ();
             }
         }

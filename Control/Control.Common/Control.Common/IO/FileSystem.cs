@@ -106,7 +106,10 @@ namespace Control.Common.IO
                     process.StartInfo = startInfo;
                     Action<object, DataReceivedEventArgs> actionWrite = (sender, e) =>
                     {
-                        if (ignoreEmptyLines || !string.IsNullOrWhiteSpace (e.Data)) {
+                        if (ignoreEmptyLines && string.IsNullOrWhiteSpace (e.Data)) {
+                            // the line is empty, ignore it
+                        }
+                        else {
                             if (verbose && (debug || !e.Data.StartsWith ("+ "))) {
                                 Log.DebugConsole ("    ", e.Data);
                             }

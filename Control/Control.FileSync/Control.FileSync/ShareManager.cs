@@ -39,15 +39,32 @@ namespace Control.FileSync
         public void Print ()
         {
             if (Shares.Count != 0) {
-                Log.Message ("The following shares and directory trees are available:");
+                Log.Message ("Available shares (count: ", Shares.Count, "):");
+                Log.Indent += 1;
+                int i = 1;
                 foreach (Share share in from share in Shares.Values orderby share.Name select share) {
-                    Log.Message ("  - ", share);
+                    Log.Message (i, ".) ", share);
+                    Log.Indent += 2;
                     foreach (Tree tree in share.Trees) {
-                        Log.Message ("    - ", tree);
+                        Log.Message ("- ", tree);
                     }
+                    Log.Indent -= 2;
+                    i ++;
                 }
+                Log.Indent -= 1;
             } else {
                 Log.Message ("No shares or directory trees available.");
+            }
+        }
+
+        public void Synchronize ()
+        {
+            if (Shares.Count != 0) {
+                foreach (Share share in from share in Shares.Values orderby share.Name select share) {
+                    share.Synchronize ();
+                }
+            } else {
+                Log.Message ("No shares are available for synchronization.");
             }
         }
     }

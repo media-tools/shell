@@ -22,7 +22,7 @@ namespace Control.FileSync
             ShareManager shares = new ShareManager (rootDirectory: "/");
             shares.Initialize ();
             shares.Print ();
-
+            shares.Synchronize ();
         }
     }
 }

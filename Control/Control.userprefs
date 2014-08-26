@@ -1,15 +1,14 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Control.Compatibility.Linux/Control.Compatibility.Linux/LinuxFileHelper.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Control.FileSync/Control.FileSync/SyncAlgo.cs">
     <Files>
-      <File FileName="Control.Common/Control.Common/Hooks/Hook.cs" Line="1" Column="1" />
-      <File FileName="Control.FileSync/Control.FileSync/FileSyncTask.cs" Line="1" Column="1" />
-      <File FileName="Control.FileSync/Control.FileSync/FileIndexTask.cs" Line="23" Column="71" />
-      <File FileName="Control/Control/Program.cs" Line="1" Column="1" />
-      <File FileName="Control.Common/Control.Common/IO/FileSystem.cs" Line="26" Column="77" />
-      <File FileName="Control.Common/Control.Common/Util/SystemInfo.cs" Line="38" Column="65" />
-      <File FileName="Control.Compatibility.Linux/Control.Compatibility.Linux/LinuxFileHelper.cs" Line="4" Column="1" />
-      <File FileName="Control.Compatibility.Linux/Control.Compatibility.Linux/LinuxSystemHelper.cs" Line="9" Column="26" />
+      <File FileName="Control.FileSync/Control.FileSync/Tree.cs" Line="65" Column="10" />
+      <File FileName="Control.FileSync/Control.FileSync/FileSystemLibrary.cs" Line="28" Column="84" />
+      <File FileName="Control.FileSync/Control.FileSync/FileSyncTask.cs" Line="25" Column="27" />
+      <File FileName="Control.FileSync/Control.FileSync/ShareManager.cs" Line="51" Column="36" />
+      <File FileName="Control.FileSync/Control.FileSync/Share.cs" Line="52" Column="84" />
+      <File FileName="Control.Common/Control.Common/IO/Log.cs" Line="78" Column="9" />
+      <File FileName="Control.FileSync/Control.FileSync/SyncAlgo.cs" Line="28" Column="10" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
@@ -21,20 +20,20 @@
           <Node name="Control.Common" expanded="True">
             <Node name="References" expanded="True" />
             <Node name="Control.Common" expanded="True">
-              <Node name="Compatibility" expanded="True" />
               <Node name="Hooks" expanded="True" />
               <Node name="IO" expanded="True" />
               <Node name="Tasks" expanded="True" />
               <Node name="Util" expanded="True" />
             </Node>
-            <Node name="Neuer Ordner" selected="True" />
           </Node>
           <Node name="Control.Compatibility.Linux" expanded="True">
             <Node name="Control.Compatibility.Linux" expanded="True" />
           </Node>
           <Node name="Control.FileSync" expanded="True">
             <Node name="References" expanded="True" />
-            <Node name="Control.FileSync" expanded="True" />
+            <Node name="Control.FileSync" expanded="True">
+              <Node name="SyncAlgo.cs" selected="True" />
+            </Node>
           </Node>
           <Node name="Control.Git" expanded="True">
             <Node name="References" expanded="True" />

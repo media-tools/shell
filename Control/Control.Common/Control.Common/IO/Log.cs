@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using Control.Common.Util;
+using System.Linq;
 
 namespace Control.Common.IO
 {
@@ -73,10 +74,22 @@ namespace Control.Common.IO
             } catch (Exception) {
             }
         }
+        // Indent
+        public static byte Indent {
+            get {
+                return _indent;
+            }
+            set {
+                if (value >= 0 && value <= 10) {
+                    _indent = value;
+                }
+            }
+        }
 
-        // Lists
-        private static Dictionary<string, ListDefinition> lists = new Dictionary<string, ListDefinition> ();
-        private static string lastListId = null;
+        public static readonly int IndentWidth = 2;
+        private static byte _indent = 0;
+
+        public static string IndentString { get { return String.Concat (Enumerable.Repeat (" ", (int)Indent * IndentWidth)); } }
 
         public static void Debug (params object[] message)
         {
@@ -88,14 +101,14 @@ namespace Control.Common.IO
         public static void DebugLog (params object[] message)
         {
             string str = string.Join ("", message);
-            LogFileWriteLine (str);
+            LogFileWriteLine (IndentString + str);
         }
 
         public static void DebugConsole (params object[] message)
         {
             string str = string.Join ("", message);
             Console.ForegroundColor = ConsoleColor.DarkGray;
-            Console.WriteLine (str);
+            Console.WriteLine (IndentString + str);
             Console.ResetColor ();
         }
 
@@ -109,14 +122,14 @@ namespace Control.Common.IO
         public static void MessageLog (params object[] message)
         {
             string str = string.Join ("", message);
-            LogFileWriteLine (str);
+            LogFileWriteLine (IndentString + str);
         }
 
         public static void MessageConsole (params object[] message)
         {
 
             string str = string.Join ("", message);
-            Console.WriteLine (str);
+            Console.WriteLine (IndentString + str);
         }
 
         public static void Error (params object[] message)
@@ -124,11 +137,14 @@ namespace Control.Common.IO
             EndList ();
             string str = string.Join ("", message);
             Console.ForegroundColor = ConsoleColor.DarkRed;
-            Console.WriteLine (str);
-            LogFileWriteLine (str);
+            Console.WriteLine (IndentString + str);
+            LogFileWriteLine (IndentString + str);
             logFile.Flush ();
             Console.ResetColor ();
         }
+        // Lists
+        private static Dictionary<string, ListDefinition> lists = new Dictionary<string, ListDefinition> ();
+        private static string lastListId = null;
 
         private static void List (object id, object before, object after, object begin, object end)
         {

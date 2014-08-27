@@ -109,7 +109,7 @@ namespace Control.Common.IO
 
         public static void DebugConsole (params object[] message)
         {
-            printConsole (LogColor.DarkGray, message);
+            printConsole (new object[] { LogColor.DarkGray }.Concat (message));
         }
 
         public static void Message (params object[] message)
@@ -128,7 +128,7 @@ namespace Control.Common.IO
             printConsole (message);
         }
 
-        private static void printConsole (params object[] message)
+        private static void printConsole (IEnumerable<object> message)
         {
             Console.ResetColor ();
             Console.Write (IndentString);
@@ -146,6 +146,7 @@ namespace Control.Common.IO
                 }
                 Console.WriteLine ();
             } else {
+
                 string str = string.Join ("", NoNull (message));
                 Console.WriteLine (str);
             }
@@ -155,7 +156,7 @@ namespace Control.Common.IO
         public static void Error (params object[] message)
         {
             string str = string.Join ("", NoNull (NoColors (message)));
-            printConsole (LogColor.DarkRed, str);
+            printConsole (new object[] { LogColor.DarkRed, str });
             LogFileWriteLine (str);
             logFile.Flush ();
         }

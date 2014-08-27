@@ -21,9 +21,17 @@ namespace Control.Common
 
         public void Main (string[] args)
         {
+            // check for experimental flag
+            Commons.IS_EXPERIMENTAL = args.Where (arg => arg.StartsWith ("--ex")).Any ();
+            args = (from arg in args where !arg.StartsWith ("--ex") select arg).ToArray ();
+
             Task matchingTask = null;
             if (args.Length > 0 && findMatchingTask (args [0], out matchingTask)) {
                 Log.MessageLog ("Start (date='", Commons.DATETIME, "', args='", StringUtils.JoinArgs (args: args, alt: "(null)"), "')");
+
+                if (Commons.IS_EXPERIMENTAL) {
+                    Log.Message (LogColor.DarkBlue, "=== Experimental mode! ===", LogColor.Reset);
+                }
 
                 HooksBeforeTask (matchingTask);
                 matchingTask.Run (args.Skip (1).ToArray ());

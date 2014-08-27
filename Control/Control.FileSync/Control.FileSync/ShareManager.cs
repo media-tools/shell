@@ -40,6 +40,8 @@ namespace Control.FileSync
                     Shares [tree.Name].Add (tree);
                 } catch (IOException) {
                     Log.Error ("Can't open tree config file: ", file);
+                } catch (ArgumentException ex) {
+                    Log.Error (ex);
                 }
             }
         }

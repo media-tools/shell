@@ -37,6 +37,8 @@ namespace Control.Common.Util
 
         public static int MAX_PID { get; private set; }
 
+        public static bool IS_EXPERIMENTAL = false; 
+
         static Commons ()
         {
             StartedAt = DateTime.Now;

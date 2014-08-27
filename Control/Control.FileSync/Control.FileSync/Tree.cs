@@ -3,6 +3,7 @@ using System.IO;
 using Control.Common.IO;
 using System.Linq;
 using System.Collections.Generic;
+using Control.Common.Util;
 
 namespace Control.FileSync
 {
@@ -33,8 +34,13 @@ namespace Control.FileSync
             }
 
             config = new ConfigFile (filename: ConfigPath);
-            int fuuuck = (Name + IsEnabled + IsReadable + IsWriteable).GetHashCode ();
+            int fuuuck = (Name + IsEnabled + IsReadable + IsWriteable + IsExperimental).GetHashCode ();
             fuuuck++;
+            
+
+            if (Commons.IS_EXPERIMENTAL != IsExperimental) {
+                throw new ArgumentException ("Can't use that in "+(Commons.IS_EXPERIMENTAL?"":"not ")+"experimental mode: " + path);
+            }
         }
 
         public string Name {
@@ -60,6 +66,11 @@ namespace Control.FileSync
         public bool IsDeletable {
             get { return config [CONFIG_SECTION, "delete", false]; }
             set { config [CONFIG_SECTION, "delete", false] = value; }
+        }
+
+        public bool IsExperimental {
+            get { return config [CONFIG_SECTION, "experimental", false]; }
+            set { config [CONFIG_SECTION, "experimental", false] = value; }
         }
 
         public void CreateIndex ()

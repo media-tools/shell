@@ -20,8 +20,12 @@ namespace Control.FileSync
             Shares = new Dictionary<string, Share> ();
         }
 
-        public void Initialize ()
+        public void Initialize (FileSystem config, bool cached)
         {
+            if (!cached) {
+                IEnumerable<FileInfo> files = FileSystemLibrary.GetFileList (rootDirectory: "/", fileFilter: onlyTreeConfig, dirFilter: dir => true);
+                config.WriteAllLines(path: "index.txt", contents: from file in files where file.Name == Tree.TREE_CONFIG_FILENAME select file.FullName);
+            }
             Shares.Clear ();
             Func<FileInfo, bool> onlyTreeConfig = fileInfo => fileInfo.Name == Tree.TREE_CONFIG_FILENAME;
             IEnumerable<FileInfo> files = FileSystemLibrary.GetFileList (rootDirectory: "/", fileFilter: onlyTreeConfig, dirFilter: dir => true);

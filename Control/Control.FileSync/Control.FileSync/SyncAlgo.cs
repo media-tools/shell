@@ -73,7 +73,11 @@ namespace Control.FileSync
             foreach (DataFile destFile in Destination.Files) {
                 DataFile sourceFile;
                 if (!Source.ContainsFile (search: destFile, result: out sourceFile)) {
-                    Changes.Deleted.Add (destFile);
+                    if (!Destination.IsSource && Destination.IsDeletable) {
+                        Changes.Deleted.Add (destFile);
+                    } else {
+                        Changes.Inexistant.Add (destFile);
+                    }
                 }
             }
         }
@@ -104,6 +108,9 @@ namespace Control.FileSync
             }
             foreach (DataFile destFile in Changes.Deleted) {
                 Log.Message (LogColor.DarkRed, "[deleted] ", LogColor.Reset, destFile);
+            }
+            foreach (DataFile destFile in Changes.Inexistant) {
+                Log.Message (LogColor.DarkRed, "[inexistant] ", LogColor.Reset, destFile);
             }
             Log.Indent --;
         }
@@ -177,6 +184,7 @@ namespace Control.FileSync
             public List<DataFile> Changed = new List<DataFile> ();
             public List<DataFile> Created = new List<DataFile> ();
             public List<DataFile> Deleted = new List<DataFile> ();
+            public List<DataFile> Inexistant = new List<DataFile> ();
 
             public ChangesList (Tree source, Tree destination)
             {

@@ -68,7 +68,6 @@ namespace Control.FileSync
                     Changes.Deleted.Add (destFile);
                 }
             }
-            Log.Indent --;
         }
 
         private void PrintChanges ()

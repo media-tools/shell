@@ -16,19 +16,18 @@ namespace Control.FileSync
 
         public ChangesList Changes { get; private set; }
 
-        public SyncAlgo (Tree source, Tree destination)
+        public bool IsUnidirectional { get; private set; }
+
+        public SyncAlgo (Tree source, Tree destination, bool isUnidirectional)
         {
             Source = source;
             Destination = destination;
-            Log.Message ("Synchronization:");
-            Log.Indent ++;
-            Log.Message ("Source:      ", source);
-            Log.Message ("Destination: ", destination);
-            Log.Indent --;
+            IsUnidirectional = isUnidirectional;
         }
 
         public void Synchronize ()
         {
+            PrintInfo ();
             Log.Indent ++;
             Source.CreateIndex ();
             Destination.CreateIndex ();
@@ -36,6 +35,15 @@ namespace Control.FileSync
             LookForChanges ();
             PrintChanges ();
             ApplyChanges ();
+            Log.Indent --;
+        }
+
+        private void PrintInfo ()
+        {
+            Log.Message ("Synchronization:");
+            Log.Indent ++;
+            Log.Message ("Source:      ", Source);
+            Log.Message ("Destination: ", Destination);
             Log.Indent --;
         }
 
@@ -101,7 +109,55 @@ namespace Control.FileSync
 
         private void ApplyChanges ()
         {
+            Log.Message ("Apply changes: ");
+            Log.Indent ++;
+            if (Destination.IsWriteable) {
+                foreach (DataFile sourceFile in Changes.Created) {
+                    Log.Message (LogColor.DarkGreen, "[create] ", LogColor.Reset, sourceFile);
+                    CopyFileExactly (sourceFile: sourceFile, destinationTree: Destination);
+                }
+                foreach (DataFile sourceFile in Changes.Changed) {
+                    Log.Message (LogColor.DarkGreen, "[overwrite] ", LogColor.Reset, sourceFile);
+                    CopyFileExactly (sourceFile: sourceFile, destinationTree: Destination);
+                }
+                foreach (DataFile sourceFile in from tuple in Changes.Newer select tuple.Item1) {
+                    Log.Message (LogColor.DarkGreen, "[overwrite with newer version] ", LogColor.Reset, sourceFile);
+                    CopyFileExactly (sourceFile: sourceFile, destinationTree: Destination);
+                }
+            }
+            if (IsUnidirectional) {
+                foreach (DataFile sourceFile in from tuple in Changes.Older select tuple.Item1) {
+                    Log.Message (LogColor.DarkGreen, "[overwrite with older version] ", LogColor.Reset, sourceFile);
+                    CopyFileExactly (sourceFile: sourceFile, destinationTree: Destination);
+                }
+                foreach (DataFile destFile in Changes.Deleted) {
+                    Log.Message (LogColor.DarkGreen, "[delete] ", LogColor.Reset, destFile);
+                    DeleteFile (path: destFile);
+                }
+            }
+            Log.Indent --;
+        }
 
+        private void CopyFileExactly (DataFile sourceFile, Tree destinationTree)
+        {
+            CopyFileExactly (sourcePath: sourceFile.FullPath, destinationPath: Path.Combine (destinationTree.RootDirectory, sourceFile.RelativePath));
+        }
+
+        private void CopyFileExactly (string sourcePath, string destinationPath)
+        {
+            FileInfo source = new FileInfo (sourcePath);
+
+            source.CopyTo (sourcePath, true);
+
+            FileInfo destination = new FileInfo (destinationPath);
+            destination.CreationTime = source.CreationTime;
+            destination.LastWriteTime = source.LastWriteTime;
+            destination.LastAccessTime = source.LastAccessTime;
+        }
+
+        private void DeleteFile (DataFile path)
+        {
+            File.Delete (path.FullPath);
         }
 
         public class ChangesList

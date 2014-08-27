@@ -57,9 +57,10 @@ namespace Control.FileSync
             int pairs = 0;
             IEnumerable<Tree> readableTrees = from tree in Trees where tree.IsReadable select tree;
             IEnumerable<Tree> writableTrees = from tree in Trees where tree.IsWriteable select tree;
+            bool isUnidirectional = readableTrees.Intersect (writableTrees).Any ();
             foreach (Tree readableTree in readableTrees) {
                 foreach (Tree writableTree in from tree in writableTrees where tree != readableTree select tree) {
-                    SyncAlgo algo = new SyncAlgo (source: readableTree, destination: writableTree);
+                    SyncAlgo algo = new SyncAlgo (source: readableTree, destination: writableTree, isUnidirectional: isUnidirectional);
                     algo.Synchronize ();
                     pairs ++;
                 }

@@ -9,21 +9,23 @@ namespace Control.FileSync
 {
     public class DataFile
     {
-        public string FullPath { get; private set; }
+        public FileInfo FileInfo { get; private set; }
 
         public string RelativePath { get; private set; }
 
-        public string Name { get; private set; }
+        public string FullPath { get { return FileInfo.FullName; } }
 
-        public string Extension { get; private set; }
+        public string Name { get { return FileInfo.Name; } }
+
+        public string Extension { get { return FileInfo.Extension; } }
+
+        public long Length { get { return FileInfo.Length; } }
 
         private static SHA256Managed crypt = new SHA256Managed ();
 
         public DataFile (FileInfo fileInfo, Tree tree)
         {
-            FullPath = fileInfo.FullName;
-            Name = fileInfo.Name;
-            Extension = fileInfo.Extension;
+            FileInfo = fileInfo;
             if (FullPath.StartsWith (tree.RootDirectory)) {
                 RelativePath = FullPath.Replace (tree.RootDirectory, "").Trim ('/', '\\');
             } else {
@@ -38,9 +40,13 @@ namespace Control.FileSync
 
         public bool ContentEquals (DataFile otherFile)
         {
-            byte[] sHash = this.SHA256Hash ();
-            byte[] dHash = otherFile.SHA256Hash ();
-            return sHash.SequenceEqual (dHash);
+            if (Length == otherFile.Length) {
+                byte[] sHash = this.SHA256Hash ();
+                byte[] dHash = otherFile.SHA256Hash ();
+                return sHash.SequenceEqual (dHash);
+            } else {
+                return false;
+            }
         }
 
         public TimeSpan GetWriteTimeDiff (DataFile otherFile)

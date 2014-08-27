@@ -111,29 +111,33 @@ namespace Control.FileSync
         {
             Log.Message ("Apply changes: ");
             Log.Indent ++;
-            if (Destination.IsWriteable) {
-                foreach (DataFile sourceFile in Changes.Created) {
-                    Log.Message (LogColor.DarkGreen, "[create] ", LogColor.Reset, sourceFile);
-                    CopyFileExactly (sourceFile: sourceFile, destinationTree: Destination);
+            if (Changes.ToDo (isUnidirectional: IsUnidirectional) > 0) {
+                if (Destination.IsWriteable) {
+                    foreach (DataFile sourceFile in Changes.Created) {
+                        Log.Message (LogColor.DarkGreen, "[create] ", LogColor.Reset, sourceFile);
+                        CopyFileExactly (sourceFile: sourceFile, destinationTree: Destination);
+                    }
+                    foreach (DataFile sourceFile in Changes.Changed) {
+                        Log.Message (LogColor.DarkGreen, "[overwrite] ", LogColor.Reset, sourceFile);
+                        CopyFileExactly (sourceFile: sourceFile, destinationTree: Destination);
+                    }
+                    foreach (DataFile sourceFile in from tuple in Changes.Newer select tuple.Item1) {
+                        Log.Message (LogColor.DarkGreen, "[overwrite with newer version] ", LogColor.Reset, sourceFile);
+                        CopyFileExactly (sourceFile: sourceFile, destinationTree: Destination);
+                    }
                 }
-                foreach (DataFile sourceFile in Changes.Changed) {
-                    Log.Message (LogColor.DarkGreen, "[overwrite] ", LogColor.Reset, sourceFile);
-                    CopyFileExactly (sourceFile: sourceFile, destinationTree: Destination);
+                if (IsUnidirectional) {
+                    foreach (DataFile sourceFile in from tuple in Changes.Older select tuple.Item1) {
+                        Log.Message (LogColor.DarkYellow, "[overwrite with older version] ", LogColor.Reset, sourceFile);
+                        CopyFileExactly (sourceFile: sourceFile, destinationTree: Destination);
+                    }
+                    foreach (DataFile destFile in Changes.Deleted) {
+                        Log.Message (LogColor.DarkRed, "[delete] ", LogColor.Reset, destFile);
+                        DeleteFile (path: destFile);
+                    }
                 }
-                foreach (DataFile sourceFile in from tuple in Changes.Newer select tuple.Item1) {
-                    Log.Message (LogColor.DarkGreen, "[overwrite with newer version] ", LogColor.Reset, sourceFile);
-                    CopyFileExactly (sourceFile: sourceFile, destinationTree: Destination);
-                }
-            }
-            if (IsUnidirectional) {
-                foreach (DataFile sourceFile in from tuple in Changes.Older select tuple.Item1) {
-                    Log.Message (LogColor.DarkGreen, "[overwrite with older version] ", LogColor.Reset, sourceFile);
-                    CopyFileExactly (sourceFile: sourceFile, destinationTree: Destination);
-                }
-                foreach (DataFile destFile in Changes.Deleted) {
-                    Log.Message (LogColor.DarkGreen, "[delete] ", LogColor.Reset, destFile);
-                    DeleteFile (path: destFile);
-                }
+            } else {
+                Log.Message ("Nothing to do.");
             }
             Log.Indent --;
         }
@@ -147,7 +151,8 @@ namespace Control.FileSync
         {
             FileInfo source = new FileInfo (sourcePath);
 
-            source.CopyTo (sourcePath, true);
+            Directory.CreateDirectory (Path.GetDirectoryName (destinationPath));
+            source.CopyTo (destinationPath, true);
 
             FileInfo destination = new FileInfo (destinationPath);
             destination.CreationTime = source.CreationTime;
@@ -168,6 +173,11 @@ namespace Control.FileSync
             public List<DataFile> Changed = new List<DataFile> ();
             public List<DataFile> Created = new List<DataFile> ();
             public List<DataFile> Deleted = new List<DataFile> ();
+
+            public int ToDo (bool isUnidirectional)
+            {
+                return Newer.Count + Changed.Count + Created.Count + (isUnidirectional ? Deleted.Count + Older.Count : 0);
+            }
         }
     }
 }

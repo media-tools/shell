@@ -14,6 +14,8 @@ namespace Control.FileSync
 
         public Tree Destination { get; private set; }
 
+        public ChangesList Changes { get; private set; }
+
         public SyncAlgo (Tree source, Tree destination)
         {
             Source = source;
@@ -32,39 +34,95 @@ namespace Control.FileSync
             Destination.CreateIndex ();
 
             LookForChanges ();
+            PrintChanges ();
+            ApplyChanges ();
             Log.Indent --;
         }
 
         private void LookForChanges ()
         {
-            Log.Message ("Changes: ");
-            Log.Indent ++;
+            Changes.Clear ();
+
             foreach (DataFile sourceFile in Source.Files) {
                 DataFile destFile;
                 if (Destination.ContainsFile (search: sourceFile, result: out destFile)) {
                     if (sourceFile.ContentEquals (otherFile: destFile)) {
-                        Log.Message (LogColor.DarkGray, "[unchanged] ", LogColor.Reset, sourceFile);
+                        Changes.Unchanged.Add (sourceFile);
                     } else {
                         TimeSpan diff = sourceFile.GetWriteTimeDiff (otherFile: destFile);
                         if (diff.TotalMilliseconds > 0) {
-                            Log.Message (LogColor.DarkGreen, "[newer ", diff.Verbose (), "] ", LogColor.Reset, sourceFile);
+                            Changes.Newer.Add (Tuple.Create (sourceFile, diff));
                         } else if (diff.TotalMilliseconds < 0) {
-                            Log.Message (LogColor.DarkYellow, "[older ", diff.Negate ().Verbose (), "] ", LogColor.Reset, sourceFile);
+                            Changes.Newer.Add (Tuple.Create (sourceFile, diff));
                         } else {
-                            Log.Message (LogColor.DarkGreen, "[changed] ", LogColor.Reset, sourceFile);
+                            Changes.Changed.Add (sourceFile);
                         }
                     }
                 } else {
-                    Log.Message (LogColor.DarkGreen, "[created] ", LogColor.Reset, sourceFile);
+                    Changes.Created.Add (sourceFile);
                 }
             }
             foreach (DataFile destFile in Destination.Files) {
                 DataFile sourceFile;
                 if (!Source.ContainsFile (search: destFile, result: out sourceFile)) {
-                    Log.Message (LogColor.DarkRed, "[deleted] ", LogColor.Reset, destFile);
+                    Changes.Deleted.Add (destFile);
                 }
             }
             Log.Indent --;
+        }
+
+        private void PrintChanges ()
+        {
+            Log.Message ("Changes: ");
+            Log.Indent ++;
+            foreach (DataFile sourceFile in Changes.Unchanged) {
+                Log.Message (LogColor.DarkGray, "[unchanged] ", LogColor.Reset, sourceFile);
+            }
+            foreach (Tuple<DataFile, TimeSpan> tuple in Changes.Newer) {
+                DataFile sourceFile = tuple.Item1;
+                TimeSpan diff = tuple.Item2;
+                Log.Message (LogColor.DarkGreen, "[newer ", diff.Verbose (), "] ", LogColor.Reset, sourceFile);
+            }
+            foreach (Tuple<DataFile, TimeSpan> tuple in Changes.Older) {
+                DataFile sourceFile = tuple.Item1;
+                TimeSpan diff = tuple.Item2;
+                Log.Message (LogColor.DarkYellow, "[older ", diff.Negate ().Verbose (), "] ", LogColor.Reset, sourceFile);
+            }
+            foreach (DataFile sourceFile in Changes.Changed) {
+                Log.Message (LogColor.DarkGreen, "[changed] ", LogColor.Reset, sourceFile);
+            }
+            foreach (DataFile sourceFile in Changes.Created) {
+                Log.Message (LogColor.DarkGreen, "[created] ", LogColor.Reset, sourceFile);
+            }
+            foreach (DataFile destFile in Changes.Deleted) {
+                Log.Message (LogColor.DarkRed, "[deleted] ", LogColor.Reset, destFile);
+            }
+            Log.Indent --;
+        }
+
+        private void ApplyChanges ()
+        {
+
+        }
+
+        public class ChangesList
+        {
+            public List<DataFile> Unchanged = new List<DataFile> ();
+            public List<Tuple<DataFile, TimeSpan>> Newer = new List<Tuple<DataFile, TimeSpan>> ();
+            public List<Tuple<DataFile, TimeSpan>> Older = new List<Tuple<DataFile, TimeSpan>> ();
+            public List<DataFile> Changed = new List<DataFile> ();
+            public List<DataFile> Created = new List<DataFile> ();
+            public List<DataFile> Deleted = new List<DataFile> ();
+
+            public void Clear ()
+            {
+                Unchanged.Clear ();
+                Newer.Clear ();
+                Older.Clear ();
+                Changed.Clear ();
+                Created.Clear ();
+                Deleted.Clear ();
+            }
         }
     }
 }

@@ -36,7 +36,6 @@ namespace Control.FileSync
             config = new ConfigFile (filename: ConfigPath);
             int fuuuck = (Name + IsEnabled + IsReadable + IsWriteable + IsExperimental).GetHashCode ();
             fuuuck++;
-            
 
             if (Commons.IS_EXPERIMENTAL != IsExperimental) {
                 throw new ArgumentException ("Can't use that in "+(Commons.IS_EXPERIMENTAL?"":"not ")+"experimental mode: " + path);
@@ -49,8 +48,8 @@ namespace Control.FileSync
         }
 
         public bool IsEnabled {
-            get { return config [CONFIG_SECTION, "enabled", true]; }
-            set { config [CONFIG_SECTION, "enabled", true] = value; }
+            get { return config [CONFIG_SECTION, "enabled", false]; }
+            set { config [CONFIG_SECTION, "enabled", false] = value; }
         }
 
         public bool IsReadable {

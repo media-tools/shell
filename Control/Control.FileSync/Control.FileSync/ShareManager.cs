@@ -34,10 +34,14 @@ namespace Control.FileSync
             foreach (string file in files) {
                 try {
                     Tree tree = new Tree (file);
-                    if (!Shares.ContainsKey (tree.Name)) {
-                        Shares [tree.Name] = new Share (tree.Name);
+                    if (tree.IsEnabled) {
+                        if (!Shares.ContainsKey (tree.Name)) {
+                            Shares [tree.Name] = new Share (tree.Name);
+                        }
+                        Shares [tree.Name].Add (tree);
+                    } else {
+                        Log.Error ("Can't use, not enabled: ", tree);
                     }
-                    Shares [tree.Name].Add (tree);
                 } catch (IOException) {
                     Log.Error ("Can't open tree config file: ", file);
                 } catch (ArgumentException ex) {

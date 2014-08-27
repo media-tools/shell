@@ -20,7 +20,7 @@ namespace Control.FileSync
         protected override void InternalRun (string[] args)
         {
             ShareManager shares = new ShareManager (rootDirectory: "/");
-            shares.Initialize (config: fs.Config, cached: true);
+            shares.Initialize (filesystems: fs, cached: true);
             shares.Print ();
             shares.Synchronize ();
         }

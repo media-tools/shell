@@ -172,5 +172,10 @@ namespace Control.Common.IO
         {
             return from obj in message select obj is LogColor ? "" : obj;
         }
+
+        public static ProgressBar OpenProgressBar (string identifier, string description)
+        {
+            return new ProgressBar (identifier: identifier, description: description);
+        }
     }
 }

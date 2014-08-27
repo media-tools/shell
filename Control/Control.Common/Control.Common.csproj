@@ -49,6 +49,8 @@
     <Compile Include="Control.Compatibility\FileHelper.cs" />
     <Compile Include="Control.Compatibility\SystemHelper.cs" />
     <Compile Include="Control.Common\IO\LogColor.cs" />
+    <Compile Include="Control.Common\Tasks\Library.cs" />
+    <Compile Include="Control.Common\IO\ProgressBar.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

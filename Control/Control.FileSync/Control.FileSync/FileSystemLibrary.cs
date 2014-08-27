@@ -7,14 +7,16 @@ using Control.Compatibility;
 
 namespace Control.FileSync
 {
-    public static class FileSystemLibrary
+    public class FileSystemLibrary : Library
     {
         public static IEnumerable<FileInfo> GetFileList (string rootDirectory, Func<FileInfo, bool> fileFilter, Func<DirectoryInfo, bool> dirFilter)
         {
-            Func<FileInfo, bool> _fileFilter = info => fileFilter (info);// && !info.FullName.StartsWith ("/proc");
+            ProgressBar progressBar = Log.OpenProgressBar (identifier: "FileSystemLibrary:" + rootDirectory, description: "Searching for shares...");
+            Func<FileInfo, bool> _fileFilter = info => fileFilter (info);
             Func<DirectoryInfo, bool> _dirFilter = info => dirFilter (info) && FilterSystemPath (info.FullName) && FilterCustomPath (info.FullName);
             DirectoryInfo root = new DirectoryInfo (rootDirectory);
-            return GetFileList (rootDirectory: root, fileFilter: _fileFilter, dirFilter: _dirFilter);
+            IEnumerable<FileInfo> result = GetFileList (rootDirectory: root, fileFilter: _fileFilter, dirFilter: _dirFilter, progressBar : progressBar);
+            return result;
         }
 
         public static bool FilterSystemPath (string path)
@@ -33,17 +35,18 @@ namespace Control.FileSync
             return !path.EndsWith (".git") && !path.EndsWith ("HardLinks");
         }
 
-        private static IEnumerable<FileInfo> GetFileList (DirectoryInfo rootDirectory, Func<FileInfo, bool> fileFilter, Func<DirectoryInfo, bool> dirFilter)
+        private static IEnumerable<FileInfo> GetFileList (DirectoryInfo rootDirectory, Func<FileInfo, bool> fileFilter, Func<DirectoryInfo, bool> dirFilter, ProgressBar progressBar, int depth = 0)
         {
             IEnumerable<FileInfo> fileList = null;
             try {
                 fileList = rootDirectory.GetFiles ();
             } catch (UnauthorizedAccessException ex) {
-                Log.Error ("UnauthorizedAccessException: " + ex.Message);
+                Log.DebugLog ("UnauthorizedAccessException: " + ex.Message);
                 yield break;
             }
             if (fileList != null) {
                 foreach (FileInfo file in fileList) {
+                    progressBar.Next ();
                     if (fileFilter (file)) {
                         if (FileHelper.Instance.IsSymLink (file)) {
                             //Log.Error ("Symbolic Link: " + file);
@@ -59,7 +62,7 @@ namespace Control.FileSync
             try {
                 directoryList = rootDirectory.GetDirectories ();
             } catch (UnauthorizedAccessException ex) {
-                Log.Error ("UnauthorizedAccessException: " + ex.Message);
+                Log.DebugLog ("UnauthorizedAccessException: " + ex.Message);
                 yield break;
             }
             if (directoryList != null) {
@@ -68,12 +71,16 @@ namespace Control.FileSync
                         if (FileHelper.Instance.IsSymLink (subDirectory)) {
                             Log.DebugLog ("Symbolic Link: " + subDirectory);
                         } else {
-                            foreach (FileInfo file in GetFileList(rootDirectory: subDirectory, fileFilter: fileFilter, dirFilter: dirFilter)) {
+                            foreach (FileInfo file in GetFileList(rootDirectory: subDirectory, fileFilter: fileFilter, dirFilter: dirFilter, depth: depth + 1, progressBar: progressBar)) {
                                 yield return file;
                             }
                         }
                     }
                 }
+            }
+
+            if (depth == 0) {
+                progressBar.Finish ();
             }
         }
     }

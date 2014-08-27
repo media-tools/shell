@@ -8,8 +8,10 @@ using Control.Common.Tasks;
 
 namespace Control.FileSync
 {
-    class ShareManager
+    public class ShareManager
     {
+        public static string TREE_LIST_CONFIG = "control.ini";
+
         public string RootDirectory { get; private set; }
 
         public Dictionary<string, Share> Shares { get; private set; }
@@ -20,23 +22,24 @@ namespace Control.FileSync
             Shares = new Dictionary<string, Share> ();
         }
 
-        public void Initialize (FileSystem config, bool cached)
+        public void Initialize (FileSystems filesystems, bool cached)
         {
-            if (!cached) {
-                IEnumerable<FileInfo> files = FileSystemLibrary.GetFileList (rootDirectory: "/", fileFilter: onlyTreeConfig, dirFilter: dir => true);
-                config.WriteAllLines(path: "index.txt", contents: from file in files where file.Name == Tree.TREE_CONFIG_FILENAME select file.FullName);
+            if (!cached || !filesystems.Config.FileExists (path: "trees.txt")) {
+                Func<FileInfo, bool> onlyTreeConfig = fileInfo => fileInfo.Name == Tree.TREE_CONFIG_FILENAME;
+                IEnumerable<FileInfo> configFiles = FileSystemLibrary.GetFileList (rootDirectory: "/", fileFilter: onlyTreeConfig, dirFilter: dir => true);
+                filesystems.Config.WriteAllLines (path: "trees.txt", contents: from file in configFiles where file.Name == Tree.TREE_CONFIG_FILENAME select file.FullName);
             }
             Shares.Clear ();
-            Func<FileInfo, bool> onlyTreeConfig = fileInfo => fileInfo.Name == Tree.TREE_CONFIG_FILENAME;
-            IEnumerable<FileInfo> files = FileSystemLibrary.GetFileList (rootDirectory: "/", fileFilter: onlyTreeConfig, dirFilter: dir => true);
-            foreach (FileInfo file in files) {
-                if (file.Name == Tree.TREE_CONFIG_FILENAME) {
-                    Log.MessageConsole ("  ", file.FullName);
-                    Tree tree = new Tree (file.FullName);
+            string[] files = filesystems.Config.ReadAllLines (path: "trees.txt");
+            foreach (string file in files) {
+                try {
+                    Tree tree = new Tree (file);
                     if (!Shares.ContainsKey (tree.Name)) {
                         Shares [tree.Name] = new Share (tree.Name);
                     }
                     Shares [tree.Name].Add (tree);
+                } catch (IOException) {
+                    Log.Error ("Can't open tree config file: ", file);
                 }
             }
         }
@@ -44,7 +47,7 @@ namespace Control.FileSync
         public void Print ()
         {
             if (Shares.Count != 0) {
-                Log.Message ("Available shares (count: ", Shares.Count, "):");
+                Log.Message ("List of shares:");
                 Log.Indent ++;
                 int i = 1;
                 foreach (Share share in from share in Shares.Values orderby share.Name select share) {
@@ -57,6 +60,7 @@ namespace Control.FileSync
                     i ++;
                 }
                 Log.Indent --;
+                Log.Message ();
             } else {
                 Log.Message ("No shares or directory trees available.");
             }

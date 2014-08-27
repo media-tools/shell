@@ -21,7 +21,7 @@ namespace Control.FileSync
         protected override void InternalRun (string[] args)
         {
             ShareManager shares = new ShareManager (rootDirectory: "/");
-            shares.Initialize (config: fs.Config, cached: false);
+            shares.Initialize (filesystems: fs, cached: false);
             shares.Print ();
             //IEnumerable<FileInfo> files = FileSystemLibrary.GetFileList (rootDirectory: "/", fileFilter: file => true, dirFilter: dir => true);
             //fs.Config.WriteAllLines(path: "index.txt", contents: from file in files select file.FullName);

@@ -71,11 +71,11 @@ namespace Control.FileSync
                 }
             }
             
-            Log.Message ("Index of: ", RootDirectory);
+            Log.DebugLog ("Index of: ", RootDirectory);
             Log.Indent ++;
             foreach (DataFile file in Files) {
 
-                Log.MessageConsole ("- ", file);
+                Log.DebugLog ("- ", file);
             }
             Log.Indent --;
         }
@@ -93,8 +93,7 @@ namespace Control.FileSync
 
         public override string ToString ()
         {
-            return string.Format 
-("Tree(Name=\"{0}\", RootDirectory=\"{1}\", enabled={2}, read={3}, write={4}, delete={5})", Name, RootDirectory, IsEnabled, IsReadable, IsWriteable, IsDeletable);
+            return string.Format ("Tree(name=\"{0}\", rootDirectory=\"{1}\", enabled={2}, read={3}, write={4}, delete={5})", Name, RootDirectory, IsEnabled, IsReadable, IsWriteable, IsDeletable);
         }
 
         public override int GetHashCode ()

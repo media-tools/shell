@@ -34,7 +34,7 @@ namespace Control.FileSync
 
         public override string ToString ()
         {
-            return string.Format ("Share(Name=\"{0}\")", Name);
+            return string.Format ("Share(name=\"{0}\")", Name);
         }
 
         public override int GetHashCode ()

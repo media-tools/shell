@@ -21,6 +21,14 @@ namespace Control.Common.IO
 
         }
 
+        public FileSystem (Library library, FileSystemType type)
+            : this (type: type)
+        {
+            RootDirectory += SystemInfo.PathSeparator + library.GetType().Name;
+            Directory.CreateDirectory (RootDirectory);
+
+        }
+
         public FileSystem (FileSystemType type)
         {
             RootDirectory = (type == FileSystemType.Config ? SystemInfo.SettingsDirectory + SystemInfo.PathSeparator + "config" : SystemInfo.CacheDirectory + SystemInfo.PathSeparator + "runtime");

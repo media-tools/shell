@@ -102,6 +102,26 @@ namespace Control.Common.Tasks
             }
             return false;
         }
+
+        public override string ToString ()
+        {
+            return string.Format ("Task({0})", Name);
+        }
+
+        public override int GetHashCode ()
+        {
+            return ToString ().GetHashCode ();
+        }
+
+        public override bool Equals (object obj)
+        {
+            return Equals (obj as Task);
+        }
+
+        public bool Equals (Task obj)
+        {
+            return obj != null && GetHashCode () == obj.GetHashCode ();
+        }
     }
 
     public struct FileSystems

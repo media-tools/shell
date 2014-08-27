@@ -37,10 +37,12 @@ namespace Control.Common.IO
 
         private static bool isNewLineInLogfile = true;
 
-        private static void LogFileWrite (string text)
+        private static void LogFileWrite (params object[] message)
         {
+            string text = string.Join ("", NoNull (NoColors (message)));
             if (isNewLineInLogfile) {
                 LogFilePrefix ();
+                logFile.Write (IndentString);
             }
             try {
                 logFile.Write (text);
@@ -51,10 +53,12 @@ namespace Control.Common.IO
 
         private static int k = 0;
 
-        private static void LogFileWriteLine (string text)
+        private static void LogFileWriteLine (params object[] message)
         {
+            string text = string.Join ("", NoNull (NoColors (message)));
             if (isNewLineInLogfile) {
                 LogFilePrefix ();
+                logFile.Write (IndentString);
             }
             try {
                 logFile.WriteLine (text);
@@ -93,128 +97,77 @@ namespace Control.Common.IO
 
         public static void Debug (params object[] message)
         {
-            EndList ();
             DebugConsole (message);
             DebugLog (message);
         }
 
         public static void DebugLog (params object[] message)
         {
-            string str = string.Join ("", message);
-            LogFileWriteLine (IndentString + str);
+            string str = string.Join ("", NoNull (message));
+            LogFileWriteLine (str);
         }
 
         public static void DebugConsole (params object[] message)
         {
-            string str = string.Join ("", message);
-            Console.ForegroundColor = ConsoleColor.DarkGray;
-            Console.WriteLine (IndentString + str);
-            Console.ResetColor ();
+            printConsole (LogColor.DarkGray, message);
         }
 
         public static void Message (params object[] message)
         {
-            EndList ();
             MessageConsole (message);
             MessageLog (message);
         }
 
         public static void MessageLog (params object[] message)
         {
-            string str = string.Join ("", message);
-            LogFileWriteLine (IndentString + str);
+            LogFileWriteLine (message);
         }
 
         public static void MessageConsole (params object[] message)
         {
+            printConsole (message);
+        }
 
-            string str = string.Join ("", message);
-            Console.WriteLine (IndentString + str);
+        private static void printConsole (params object[] message)
+        {
+            Console.ResetColor ();
+            Console.Write (IndentString);
+            if (message.OfType<LogColor> ().Any ()) {
+                foreach (object obj in message) {
+                    if (obj is LogColor) {
+                        if ((LogColor)obj == LogColor.Reset) {
+                            Console.ResetColor ();
+                        } else {
+                            Console.ForegroundColor = ((LogColor)obj).ToConsoleColor ();
+                        }
+                    } else {
+                        Console.Write (obj.ToString ());
+                    }
+                }
+                Console.WriteLine ();
+            } else {
+                string str = string.Join ("", NoNull (message));
+                Console.WriteLine (str);
+            }
+            Console.ResetColor ();
         }
 
         public static void Error (params object[] message)
         {
-            EndList ();
-            string str = string.Join ("", message);
-            Console.ForegroundColor = ConsoleColor.DarkRed;
-            Console.WriteLine (IndentString + str);
-            LogFileWriteLine (IndentString + str);
+            string str = string.Join ("", NoNull (NoColors (message)));
+            printConsole (LogColor.DarkRed, str);
+            LogFileWriteLine (str);
             logFile.Flush ();
-            Console.ResetColor ();
-        }
-        // Lists
-        private static Dictionary<string, ListDefinition> lists = new Dictionary<string, ListDefinition> ();
-        private static string lastListId = null;
-
-        private static void List (object id, object before, object after, object begin, object end)
-        {
-            ListDefinition def = new ListDefinition {
-                Id = id.ToString (),
-                Before = before.ToString (),
-                After = after.ToString (),
-                Begin = begin.ToString (),
-                End = end.ToString ()
-            };
-            lists [def.Id] = def;
         }
 
-        public static void BlockList (object id, object before, object after, object begin, object end)
+        private static IEnumerable<object> NoNull (IEnumerable<object> message)
         {
-            string beforeStr = before.ToString ();
-            string afterStr = after + Environment.NewLine;
-            string beginStr = begin + Environment.NewLine;
-            string endStr = end.ToString ().Length > 0 ? end + Environment.NewLine : "";
-            List (id, beforeStr, afterStr, beginStr, endStr);
+            return from obj in message select obj != null ? obj : "null";
         }
 
-        public static void InlineList (object id, object before, object after, object begin, object end)
+        private static IEnumerable<object> NoColors (IEnumerable<object> message)
         {
-            List (id, before, after, begin, end + Environment.NewLine);
-        }
-
-        public static void EndList ()
-        {
-            if (lastListId != null) {
-                Console.Write (lists [lastListId].End);
-                LogFileWrite (lists [lastListId].End);
-                lastListId = null;
-            }
-        }
-
-        public static void ListElement (object id, string element)
-        {
-            if (lists.ContainsKey (id.ToString ())) {
-                ListDefinition def = lists [id.ToString ()];
-                if (lastListId != id.ToString ()) {
-                    EndList ();
-                    Console.Write (def.Begin);
-                    LogFileWrite (def.Begin);
-                }
-                Console.Write (def.Before);
-                Console.Write (element.ToString ());
-                Console.Write (def.After);
-                LogFileWrite (def.Before);
-                LogFileWrite (element.ToString ());
-                LogFileWrite (def.After);
-
-                lastListId = id.ToString ();
-            } else {
-                Message ("Error! Invalid list ID in ListElement (", id, ", ", element, ")");
-            }
-        }
-
-        public static void ListElement (object id, params object[] element)
-        {
-            ListElement (id, string.Join ("", element));
-        }
-
-        private struct ListDefinition
-        {
-            public string Id;
-            public string Before;
-            public string After;
-            public string Begin;
-            public string End;
+            return from obj in message select obj is LogColor ? "" : obj;
         }
     }
 }

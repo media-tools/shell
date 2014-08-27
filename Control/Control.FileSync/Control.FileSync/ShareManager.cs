@@ -23,9 +23,10 @@ namespace Control.FileSync
         public void Initialize ()
         {
             Shares.Clear ();
-            IEnumerable<FileInfo> files = FileSystemLibrary.GetFileList (rootDirectory: "/", fileFilter: file => true, dirFilter: dir => true);
+            Func<FileInfo, bool> onlyTreeConfig = fileInfo => fileInfo.Name == Tree.TREE_CONFIG_FILENAME;
+            IEnumerable<FileInfo> files = FileSystemLibrary.GetFileList (rootDirectory: "/", fileFilter: onlyTreeConfig, dirFilter: dir => true);
             foreach (FileInfo file in files) {
-                if (file.Name == "control.ini") {
+                if (file.Name == Tree.TREE_CONFIG_FILENAME) {
                     Log.MessageConsole ("  ", file.FullName);
                     Tree tree = new Tree (file.FullName);
                     if (!Shares.ContainsKey (tree.Name)) {
@@ -40,18 +41,18 @@ namespace Control.FileSync
         {
             if (Shares.Count != 0) {
                 Log.Message ("Available shares (count: ", Shares.Count, "):");
-                Log.Indent += 1;
+                Log.Indent ++;
                 int i = 1;
                 foreach (Share share in from share in Shares.Values orderby share.Name select share) {
-                    Log.Message (i, ".) ", share);
-                    Log.Indent += 2;
+                    Log.Message (share, ":");
+                    Log.Indent ++;
                     foreach (Tree tree in share.Trees) {
                         Log.Message ("- ", tree);
                     }
-                    Log.Indent -= 2;
+                    Log.Indent --;
                     i ++;
                 }
-                Log.Indent -= 1;
+                Log.Indent --;
             } else {
                 Log.Message ("No shares or directory trees available.");
             }

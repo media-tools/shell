@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using Control.Common.IO;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace Control.FileSync
 {
@@ -14,6 +15,10 @@ namespace Control.FileSync
         public string ConfigPath { get; private set; }
 
         public string RootDirectory { get; private set; }
+
+        public IEnumerable<DataFile> Files { get { return from file in FileMap.Keys select file; } }
+
+        private Dictionary<DataFile, DataFile> FileMap;
 
         public Tree (string path)
         {
@@ -54,14 +59,57 @@ namespace Control.FileSync
             set { config [CONFIG_SECTION, "delete", false] = value; }
         }
 
+        public void CreateIndex ()
+        {
+            if (FileMap == null) {
+                FileMap = new Dictionary<DataFile, DataFile> ();
+                Func<FileInfo, bool> excludeTreeConfig = fileInfo => fileInfo.Name != Tree.TREE_CONFIG_FILENAME;
+                IEnumerable<FileInfo> files = FileSystemLibrary.GetFileList (rootDirectory: RootDirectory, fileFilter: excludeTreeConfig, dirFilter: dir => true);
+                foreach (FileInfo fileInfo in files) {
+                    DataFile file = new DataFile (fileInfo: fileInfo, tree: this);
+                    FileMap [file] = file;
+                }
+            }
+            
+            Log.Message ("Index of: ", RootDirectory);
+            Log.Indent ++;
+            foreach (DataFile file in Files) {
+
+                Log.MessageConsole ("- ", file);
+            }
+            Log.Indent --;
+        }
+
+        public bool ContainsFile (DataFile search, out DataFile result)
+        {
+            if (FileMap.ContainsKey (search)) {
+                result = FileMap [search];
+                return true;
+            } else {
+                result = null;
+                return false;
+            }
+        }
+
         public override string ToString ()
         {
-            return string.Format ("Tree(Name=\"{0}\", RootDirectory=\"{1}\", enabled={2}, read={3}, write={4}, delete={5})", Name, RootDirectory, IsEnabled, IsReadable, IsWriteable, IsDeletable);
+            return string.Format 
+("Tree(Name=\"{0}\", RootDirectory=\"{1}\", enabled={2}, read={3}, write={4}, delete={5})", Name, RootDirectory, IsEnabled, IsReadable, IsWriteable, IsDeletable);
         }
 
         public override int GetHashCode ()
         {
             return ToString ().GetHashCode ();
+        }
+
+        public override bool Equals (object obj)
+        {
+            return Equals (obj as Tree);
+        }
+
+        public bool Equals (Tree obj)
+        {
+            return obj != null && GetHashCode () == obj.GetHashCode ();
         }
 
         private static string RandomString ()

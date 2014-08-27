@@ -48,6 +48,7 @@
     <Compile Include="Control.Common\Util\Commons.cs" />
     <Compile Include="Control.Compatibility\FileHelper.cs" />
     <Compile Include="Control.Compatibility\SystemHelper.cs" />
+    <Compile Include="Control.Common\IO\LogColor.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

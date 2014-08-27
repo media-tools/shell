@@ -42,6 +42,16 @@ namespace Control.FileSync
             return Name.GetHashCode ();
         }
 
+        public override bool Equals (object obj)
+        {
+            return Equals (obj as Share);
+        }
+
+        public bool Equals (Share obj)
+        {
+            return obj != null && GetHashCode () == obj.GetHashCode ();
+        }
+
         public void Synchronize ()
         {
             int pairs = 0;

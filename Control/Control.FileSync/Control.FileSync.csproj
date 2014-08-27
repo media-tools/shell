@@ -41,6 +41,8 @@
     <Compile Include="Control.FileSync\Share.cs" />
     <Compile Include="Control.FileSync\ShareManager.cs" />
     <Compile Include="Control.FileSync\SyncAlgo.cs" />
+    <Compile Include="Control.FileSync\DataFile.cs" />
+    <Compile Include="Control.FileSync\TimeSpanExtensions.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

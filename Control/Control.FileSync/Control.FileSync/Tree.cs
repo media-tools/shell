@@ -10,15 +10,18 @@ namespace Control.FileSync
     {
         public static string TREE_CONFIG_FILENAME = "control.ini";
         private static string CONFIG_SECTION = "FileSync";
-        private ConfigFile config;
 
         public string ConfigPath { get; private set; }
 
         public string RootDirectory { get; private set; }
 
         public IEnumerable<DataFile> Files { get { return from file in FileMap.Keys select file; } }
+        
+        public bool IsSource { get; set; }
+        public bool IsDestination { get; set; }
 
         private Dictionary<DataFile, DataFile> FileMap;
+        private ConfigFile config;
 
         public Tree (string path)
         {

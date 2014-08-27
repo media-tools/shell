@@ -54,20 +54,23 @@ namespace Control.FileSync
 
         public void Synchronize ()
         {
-            int pairs = 0;
             IEnumerable<Tree> readableTrees = from tree in Trees where tree.IsReadable select tree;
             IEnumerable<Tree> writableTrees = from tree in Trees where tree.IsWriteable select tree;
-            bool isUnidirectional = readableTrees.Intersect (writableTrees).Any ();
+            List<SyncAlgo> pairs = new List<SyncAlgo> ();
             foreach (Tree readableTree in readableTrees) {
                 foreach (Tree writableTree in from tree in writableTrees where tree != readableTree select tree) {
-                    SyncAlgo algo = new SyncAlgo (source: readableTree, destination: writableTree, isUnidirectional: isUnidirectional);
-                    algo.Synchronize ();
-                    pairs ++;
+                    SyncAlgo algo = new SyncAlgo (source: readableTree, destination: writableTree);
+                    pairs.Add (algo);
                 }
             }
 
-            if (pairs == 0) {
-                Log.Message ("No trees are available for synchronization.");
+            if (pairs.Count == 0) {
+                Log.Message ("No directory trees are available for synchronization.");
+                return;
+            }
+
+            foreach (SyncAlgo algo in pairs) {
+                algo.Synchronize ();
             }
         }
     }

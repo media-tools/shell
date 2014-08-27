@@ -110,7 +110,7 @@ namespace Control.FileSync
                 Log.Message (LogColor.DarkRed, "[deleted] ", LogColor.Reset, destFile);
             }
             foreach (DataFile destFile in Changes.Inexistant) {
-                Log.Message (LogColor.DarkRed, "[inexistant] ", LogColor.Reset, destFile);
+                Log.Message (LogColor.DarkGray, "[inexistant] ", LogColor.Reset, destFile);
             }
             Log.Indent --;
         }
@@ -143,6 +143,9 @@ namespace Control.FileSync
                     Log.Message (LogColor.DarkRed, "[delete] ", LogColor.Reset, destFile);
                     DeleteFile (path: destFile);
                 }
+            }
+            foreach (DataFile destFile in Changes.Inexistant) {
+                Log.Message (LogColor.DarkGray, "[don't delete] ", LogColor.Reset, destFile);
             }
 
             if (done == 0) {

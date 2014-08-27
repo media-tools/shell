@@ -41,7 +41,7 @@ namespace Control.FileSync
 
         private void LookForChanges ()
         {
-            Changes.Clear ();
+            Changes = new ChangesList ();
 
             foreach (DataFile sourceFile in Source.Files) {
                 DataFile destFile;
@@ -53,7 +53,7 @@ namespace Control.FileSync
                         if (diff.TotalMilliseconds > 0) {
                             Changes.Newer.Add (Tuple.Create (sourceFile, diff));
                         } else if (diff.TotalMilliseconds < 0) {
-                            Changes.Newer.Add (Tuple.Create (sourceFile, diff));
+                            Changes.Older.Add (Tuple.Create (sourceFile, diff));
                         } else {
                             Changes.Changed.Add (sourceFile);
                         }
@@ -78,15 +78,15 @@ namespace Control.FileSync
             foreach (DataFile sourceFile in Changes.Unchanged) {
                 Log.Message (LogColor.DarkGray, "[unchanged] ", LogColor.Reset, sourceFile);
             }
-            foreach (Tuple<DataFile, TimeSpan> tuple in Changes.Newer) {
-                DataFile sourceFile = tuple.Item1;
-                TimeSpan diff = tuple.Item2;
-                Log.Message (LogColor.DarkGreen, "[newer ", diff.Verbose (), "] ", LogColor.Reset, sourceFile);
-            }
             foreach (Tuple<DataFile, TimeSpan> tuple in Changes.Older) {
                 DataFile sourceFile = tuple.Item1;
                 TimeSpan diff = tuple.Item2;
                 Log.Message (LogColor.DarkYellow, "[older ", diff.Negate ().Verbose (), "] ", LogColor.Reset, sourceFile);
+            }
+            foreach (Tuple<DataFile, TimeSpan> tuple in Changes.Newer) {
+                DataFile sourceFile = tuple.Item1;
+                TimeSpan diff = tuple.Item2;
+                Log.Message (LogColor.DarkGreen, "[newer ", diff.Verbose (), "] ", LogColor.Reset, sourceFile);
             }
             foreach (DataFile sourceFile in Changes.Changed) {
                 Log.Message (LogColor.DarkGreen, "[changed] ", LogColor.Reset, sourceFile);
@@ -113,16 +113,6 @@ namespace Control.FileSync
             public List<DataFile> Changed = new List<DataFile> ();
             public List<DataFile> Created = new List<DataFile> ();
             public List<DataFile> Deleted = new List<DataFile> ();
-
-            public void Clear ()
-            {
-                Unchanged.Clear ();
-                Newer.Clear ();
-                Older.Clear ();
-                Changed.Clear ();
-                Created.Clear ();
-                Deleted.Clear ();
-            }
         }
     }
 }

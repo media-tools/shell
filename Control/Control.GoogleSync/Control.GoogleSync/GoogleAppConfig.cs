@@ -1,8 +1,14 @@
 using System;
 using Control.Common.IO;
-using Google.GData.Client;
 using Control.Common;
 using System.Collections.Generic;
+using Google.Apis.Auth.OAuth2;
+using Google.Apis.Plus.v1;
+using System.Threading;
+using Google.Apis.Services;
+using Google.Apis.Plus.v1.Data;
+using Google.Apis.Auth.OAuth2.Flows;
+using Google.Apis.Auth.OAuth2.Responses;
 
 namespace Control.GoogleSync
 {
@@ -12,58 +18,59 @@ namespace Control.GoogleSync
 
         public string ClientSecret { get; private set; }
 
+        public ClientSecrets Secrets { get; private set; }
+
+
         public static readonly string ApplicationName = "Control.Google";
         // Installed (non-web) application
         public static string RedirectUri = "urn:ietf:wg:oauth:2.0:oob";
         // Requesting access to Contacts API
-        private static string scopes = "https://www.google.com/m8/feeds/";
+        private static IEnumerable<string> scopes = new[] {
+            PlusService.Scope.PlusLogin,
+            PlusService.Scope.UserinfoProfile,
+            PlusService.Scope.UserinfoEmail
+        };
         public List<GoogleAccount> Accounts = new List<GoogleAccount> ();
 
         public GoogleAppConfig ()
         {
             ConfigName = "Google";
             ConfigFile appConfig = fs.Config.OpenConfigFile ("app.ini");
-            ClientId = appConfig ["GoogleApp", "client_id", "574696664370-fjvhqijeokikvqblaqmf30hpk9g280r4.apps.googleusercontent.com"];
-            ClientSecret = appConfig ["GoogleApp", "client_secret", "6RPbdpnnaCDgJr3iNTmpgmjT"];
+            Secrets = new ClientSecrets () {
+                ClientId = appConfig ["GoogleApp", "client_id", "574696664370-fjvhqijeokikvqblaqmf30hpk9g280r4.apps.googleusercontent.com"],
+                ClientSecret = appConfig ["GoogleApp", "client_secret", "6RPbdpnnaCDgJr3iNTmpgmjT"]
+            };
         }
 
-        public void Authenticate ()
+        public bool Authenticate ()
         {
+            return Authenticate (account: null);
+        }
 
+        public bool Authenticate (GoogleAccount account)
+        {
+            System.Net.ServicePointManager.ServerCertificateValidationCallback = (a, b, c, d) => true;
 
+            DictionaryDataStore dataStore = new DictionaryDataStore ();
 
+            if (account != null) {
+                account.LoadDataStore (dataStore: ref dataStore);
+            }
 
-            OAuth2Parameters parameters = new OAuth2Parameters () {
-                ClientId = ClientId,
-                ClientSecret = ClientSecret,
-                RedirectUri = RedirectUri,
-                Scope = scopes
-            };
-
-            string url = OAuthUtil.CreateOAuth2AuthorizationUrl (parameters);
-            Log.MessageConsole ("Authorize URI: ", LogColor.DarkBlue, url, LogColor.Reset);
-
-            bool done = false;
-            do {
-                Console.Write ("Access Code: ");
-                parameters.AccessCode = Console.ReadLine ();
-                
-                Console.Write ("Account Name: ");
-                string accountName = Console.ReadLine ();
-
-            
-                if (string.IsNullOrWhiteSpace (parameters.AccessCode)) {
-                    done = false;
-                    Log.Error ("The access code is invalid.");
-                } else if (string.IsNullOrWhiteSpace (accountName)) {
-                    done = false;
-                    Log.Error ("The account name is invalid.");
-                } else {
-                    OAuthUtil.GetAccessToken (parameters);
-                    Accounts.Add (new GoogleAccount (name: accountName, parameters: parameters));
-                    done = true;
-                }
-            } while (!done);
+            try {
+                UserCredential credential = GoogleWebAuthorizationBroker.AuthorizeAsync (
+                                                clientSecrets: Secrets,
+                                                scopes: scopes,
+                                                user: "me",
+                                                taskCancellationToken: CancellationToken.None,
+                                                dataStore: dataStore
+                                            ).Result;
+                Accounts.Add (GoogleAccount.SaveAccount (credential: credential, dataStore: dataStore));
+                return true;
+            } catch (TokenResponseException ex) {
+                Log.Error (ex);
+                return false;
+            }
         }
     }
 }

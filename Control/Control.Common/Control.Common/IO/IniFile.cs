@@ -92,7 +92,7 @@ namespace Control.Common.IO
                 if (!Data.ContainsKey (section)) {
                     Data [section] = new Dictionary<string,string> ();
                 }
-                Data [section] [key] = value;
+                Data [section] [key] = value??"";
                 Save ();
             }
         }

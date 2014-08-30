@@ -4,13 +4,13 @@ using Control.Common.IO;
 
 namespace Control.GoogleSync
 {
-    public class GoogleConfigTask : Task, MainTask
+    public class GoogleUserTask : Task, MainTask
     {
-        public GoogleConfigTask ()
+        public GoogleUserTask ()
         {
-            Name = "GoogleConfig";
-            Description = "Edit Google App settings";
-            Options = new string[] { "google-config", "g-config" };
+            Name = "GoogleUser";
+            Description = "Modify the list of google accounts";
+            Options = new string[] { "google-users", "g-users" };
             ConfigName = "Google";
             ParameterSyntax = "add | list | auth";
         }

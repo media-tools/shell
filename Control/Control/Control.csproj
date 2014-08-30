@@ -71,6 +71,10 @@
       <Project>{A556FC86-97B1-4D41-9E1F-02D4FD01A7A0}</Project>
       <Name>Control.Compatibility.Linux</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Control.GoogleSync\Control.GoogleSync.csproj">
+      <Project>{B5516B19-633A-4601-8698-61AC2CBD6865}</Project>
+      <Name>Control.GoogleSync</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Control\" />

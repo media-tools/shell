@@ -124,7 +124,7 @@ namespace Control.Common.Tasks
         }
     }
 
-    public struct FileSystems
+    public class FileSystems
     {
         public FileSystem Config;
         public FileSystem Runtime;

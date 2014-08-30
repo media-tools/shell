@@ -20,7 +20,7 @@ namespace Control.Common.Util
             IEnumerable<string> files = Directory.EnumerateFiles (path: directory);
             List<Assembly> assemblies = new List<Assembly> ();
             foreach (string file in files) {
-                if (file.ToLower ().EndsWith ("dll")) {
+                if (file.ToLower ().EndsWith ("dll") && Path.GetFileName(file).ToLower().Contains("control")) {
                     assemblies.Add (Assembly.LoadFrom (file));
                 }
             }
@@ -37,6 +37,7 @@ namespace Control.Common.Util
                     objects.Add ((T)Activator.CreateInstance (type));
                 }
             } catch (ReflectionTypeLoadException ex) {
+                Log.Message ("Error in assembly: ", assembly.FullName);
                 Log.Error (ex);
             }
             return objects;
@@ -52,6 +53,7 @@ namespace Control.Common.Util
                     objects.Add ((T)Activator.CreateInstance (type));
                 }
             } catch (ReflectionTypeLoadException ex) {
+                Log.Message ("Error in assembly: ", assembly.FullName);
                 Log.Error (ex);
             }
             return objects;

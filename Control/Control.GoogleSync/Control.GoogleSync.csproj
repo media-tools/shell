@@ -103,13 +103,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Control.GoogleSync\ContactsAccess.cs" />
     <Compile Include="Control.GoogleSync\GoogleAccount.cs" />
     <Compile Include="Control.GoogleSync\DictionaryDataStore.cs" />
     <Compile Include="Control.GoogleSync\GoogleUserTask.cs" />
     <Compile Include="Control.GoogleSync\GDataExtensions.cs" />
     <Compile Include="Control.GoogleSync\GoogleApp.cs" />
     <Compile Include="Control.GoogleSync\GoogleContactsTask.cs" />
+    <Compile Include="Control.GoogleSync\Contacts.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

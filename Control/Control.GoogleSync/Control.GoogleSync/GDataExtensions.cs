@@ -58,16 +58,21 @@ namespace Control.GoogleSync
             }
         }
 
+        public static string Print (this Contact contact)
+        {
+            return contact.Name.FullName + " <" + contact.Emails.PrimaryAddress () + ">";
+        }
+
         public static bool IsIncludedInSynchronisation (this Contact contact)
         {
-            return (from name in ContactsAccess.IncludeNames
+            return (from name in Contacts.IncludeNames
                              where contact.Name.FullName != null && contact.Name.FullName.ToLower ().Contains (name.ToLower ())
                              select name).Any ();
         }
 
         public static bool IsMasterAccount (this GoogleAccount account)
         {
-            return (from id in ContactsAccess.MasterAccountIds
+            return (from id in Contacts.MasterAccountIds
                              where account.Id == id
                              select id).Any ();
         }

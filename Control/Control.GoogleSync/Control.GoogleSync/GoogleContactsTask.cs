@@ -46,7 +46,7 @@ namespace Control.GoogleSync
                 Log.Message ("Google Account: ", acc);
                 Log.Indent++;
                 acc.Refresh ();
-                ContactsAccess contacts = new ContactsAccess (account: acc);
+                Contacts contacts = new Contacts (account: acc);
                 contacts.PrintAllContacts ();
                 Log.Indent--;
             }
@@ -123,25 +123,25 @@ namespace Control.GoogleSync
         void setMasterAccount (GoogleAccount account)
         {
             Log.Message ("Set as master: ", account);
-            HashSet<string> ids = ContactsAccess.MasterAccountIds;
+            HashSet<string> ids = Contacts.MasterAccountIds;
             ids.Add (account.Id);
-            ContactsAccess.MasterAccountIds = ids;
+            Contacts.MasterAccountIds = ids;
         }
 
         void setSlaveAccount (GoogleAccount account)
         {
             Log.Message ("Set as slave: ", account);
-            HashSet<string> ids = ContactsAccess.MasterAccountIds;
+            HashSet<string> ids = Contacts.MasterAccountIds;
             ids.Remove (account.Id);
-            ContactsAccess.MasterAccountIds = ids;
+            Contacts.MasterAccountIds = ids;
         }
 
         void printIncludedNames ()
         {
             Log.Message ("Contacts whose name contains one the following strings are synchronized:");
             Log.Indent++;
-            if (ContactsAccess.IncludeNames.Any ()) {
-                foreach (string name in ContactsAccess.IncludeNames) {
+            if (Contacts.IncludeNames.Any ()) {
+                foreach (string name in Contacts.IncludeNames) {
                     Log.Message ("- ", LogColor.DarkCyan, name, LogColor.Reset);
                 }
             } else {
@@ -153,22 +153,39 @@ namespace Control.GoogleSync
         void addIncludedName ()
         {
             string name = Log.AskForString ("Which name do you want to add? ");
-            HashSet<string> names = ContactsAccess.IncludeNames;
+            HashSet<string> names = Contacts.IncludeNames;
             names.Add (name);
-            ContactsAccess.IncludeNames = names;
+            Contacts.IncludeNames = names;
         }
 
         void removeIncludedName ()
         {
             string name = Log.AskForString ("Which name do you want to remove? ");
-            HashSet<string> names = ContactsAccess.IncludeNames;
+            HashSet<string> names = Contacts.IncludeNames;
             names.Remove (name);
-            ContactsAccess.IncludeNames = names;
+            Contacts.IncludeNames = names;
         }
 
         void sync ()
         {
-            throw new NotImplementedException ();
+            IEnumerable<GoogleAccount> accounts = GoogleAccount.List ();
+            IEnumerable<GoogleAccount> masters = accounts.Where (acc => acc.IsMasterAccount ());
+            IEnumerable<GoogleAccount> slaves = accounts.Where (acc => acc.IsSlaveAccount ());
+            if (!accounts.Any ()) {
+                Log.Error ("There are no accounts.");
+            } else if (!masters.Any ()) {
+                Log.Error ("There are no master accounts!");
+            } else if (!slaves.Any ()) {
+                Log.Error ("There are no slave accounts!");
+            } else {
+                foreach (GoogleAccount master in masters) {
+                    foreach (GoogleAccount slave in slaves) {
+                        Contacts masterContacts = new Contacts (account: master);
+                        Contacts slaveContacts = new Contacts (account: slave);
+                        masterContacts.SyncTo (other: slaveContacts);
+                    }
+                }
+            }
         }
 
         void error ()

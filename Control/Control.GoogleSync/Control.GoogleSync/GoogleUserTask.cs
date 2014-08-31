@@ -17,7 +17,6 @@ namespace Control.GoogleSync
 
         protected override void InternalRun (string[] args)
         {
-
             if (args.Length >= 1) {
                 switch (args [0].ToLower ()) {
                 case "add":

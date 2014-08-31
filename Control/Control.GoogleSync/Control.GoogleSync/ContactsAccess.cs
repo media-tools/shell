@@ -48,12 +48,17 @@ namespace Control.GoogleSync
                         Name name = entry.Name;
                         Log.Debug (name.FullName);
                     }
-                    Log.Indent ++;
+                    Log.Indent++;
                     foreach (EMail email in entry.Emails) {
                         Log.Debug (email.Address);
                     }
-                    Log.Indent --;
+                    Log.Indent--;
                 }
+
+                Log.Message (f.Entries.ToStringTable (new[] { "First Name", "Last Name" },
+                    c => c.Name.FullName,
+                    c => c.Emails.Join (";")
+                ));
             });
         }
     }

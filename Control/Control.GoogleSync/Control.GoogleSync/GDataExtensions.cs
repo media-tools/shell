@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Google.GData.Client;
+using Google.GData.Extensions;
 
 namespace Control.GoogleSync
 {
@@ -19,6 +22,11 @@ namespace Control.GoogleSync
             parameters.RefreshToken = account.RefreshToken;
 
             return parameters;
+        }
+
+        public static string Join (this IEnumerable<EMail> mails, string separator)
+        {
+            return string.Join (separator, from mail in mails select mail.Address);
         }
     }
 }

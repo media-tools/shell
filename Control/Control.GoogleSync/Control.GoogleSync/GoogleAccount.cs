@@ -7,6 +7,9 @@ using Google.Apis.Plus.v1;
 using Google.Apis.Services;
 using Google.Apis.Plus.v1.Data;
 using System.Collections.Generic;
+using Google.Apis.Auth.OAuth2.Responses;
+using Google.Apis.Auth.OAuth2.Flows;
+using System.Threading;
 
 namespace Control.GoogleSync
 {
@@ -24,7 +27,7 @@ namespace Control.GoogleSync
 
         public string Url { get { return accountConfig [section, "Url", ""]; } }
 
-        public string AccessToken { get { return accountConfig [section, "AccessToken", ""]; } }
+        public string AccessToken { get { return accountConfig [section, "AccessToken", ""]; } private set { accountConfig [section, "AccessToken", ""] = value; } }
 
         public string RefreshToken { get { return accountConfig [section, "RefreshToken", ""]; } }
 
@@ -98,10 +101,38 @@ namespace Control.GoogleSync
             return "Account_" + id;
         }
 
+        public bool Refresh ()
+        {
+            NetworkHelper.DisableCertificateChecks ();
+
+            TokenResponse token = new TokenResponse {
+                AccessToken = AccessToken,
+                RefreshToken = RefreshToken
+            };
+
+            IAuthorizationCodeFlow flow =
+                new GoogleAuthorizationCodeFlow (new GoogleAuthorizationCodeFlow.Initializer {
+                    ClientSecrets = new GoogleApp ().Secrets,
+                    Scopes = new string[] { PlusService.Scope.PlusLogin }
+                });
+
+            UserCredential credential = new UserCredential (flow, "me", token);
+            bool success = credential.RefreshTokenAsync (CancellationToken.None).Result;
+
+            if (success) {
+                token = credential.Token;
+                AccessToken = token.AccessToken;
+                return true;
+            } else {
+                Log.Error ("Refresh failed: ", this);
+                return false;
+            }
+        }
+
         public bool Reauthenticate ()
         {
             Log.Message (LogColor.DarkYellow, "Google Account needs to be re-authenticated: ", this, LogColor.Reset);
-            return new GoogleApp().Authenticate ();
+            return new GoogleApp ().Authenticate ();
         }
 
         public override string ToString ()

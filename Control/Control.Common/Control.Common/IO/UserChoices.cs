@@ -20,29 +20,34 @@ namespace Control.Common.IO
         public void Ask (string question)
         {
             Log.Message ();
-            Log.Message ("Actions:");
+            Log.Message (LogColor.DarkGray, "Actions:", LogColor.Reset);
             Log.Indent++;
             foreach (UserChoice choice in Choices) {
-                Log.Message (choice);
+                Log.Message (LogColor.DarkGray, choice, LogColor.Reset);
             }
             Log.Indent--;   
  
             do {
                 Log.Message ();
-                Console.Write (question.TrimEnd(' ')+" ");
-                Console.Out.Flush ();
-                string chosen = Console.ReadLine ().Trim (' ', '\r', '\n', '\t');
-                Log.MessageLog ("User Input => ", chosen);
-                IEnumerable<UserChoice> chosenChoices = Choices.Where (c => c.Number.ToString () == chosen);
+                string chosen = Log.AskForString (question: question, color: LogColor.DarkGray);
+                IEnumerable<UserChoice> chosenChoices = Choices.Where (c => c.Number == chosen);
+
+                // found a direct match?
                 if (chosenChoices.Any ()) {
                     Log.Message ();
                     chosenChoices.First ().Action ();
                     return;
-                } else {
+                }
+                // Ctrl-D? fuck you!
+                else if (chosen == "") {
+                    Commons.OnCancel ();
+                    System.Environment.Exit (0);
+                }
+                // fuck it!
+                else {
                     Log.Error ("Invalid input. Please choose one of the following options: ", string.Join (", ", Choices.Select (c => c.Number)));
                 }
             } while (true);
         }
     }
-
 }

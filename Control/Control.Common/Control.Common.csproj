@@ -57,6 +57,7 @@
     <Compile Include="Control.Common\IO\ControlCharacters.cs" />
     <Compile Include="Control.Common\IO\UserChoice.cs" />
     <Compile Include="Control.Common\IO\UserChoices.cs" />
+    <Compile Include="Control.Common\IO\UserChoiceExtensions.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

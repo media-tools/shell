@@ -1,6 +1,8 @@
 using System;
 using Control.Common.Tasks;
 using Control.Common.IO;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Control.GoogleSync
 {
@@ -46,8 +48,16 @@ namespace Control.GoogleSync
 
         void list ()
         {
-            foreach (GoogleAccount acc in GoogleAccount.List()) {
-                Log.Message ("Google Account: ", acc);
+            IEnumerable<GoogleAccount> accounts = GoogleAccount.List ();
+            if (accounts.Any ()) {
+                Log.Message (accounts.ToStringTable (
+                    new[] { "Name", "E-Mail Address", "ID" },
+                    acc => acc.DisplayName,
+                    acc => acc.Emails,
+                    acc => acc.Id
+                ));
+            } else {
+                Log.Message ("There are no accounts.");
             }
         }
 
@@ -56,13 +66,13 @@ namespace Control.GoogleSync
             GoogleApp appConfig = new GoogleApp ();
             foreach (GoogleAccount acc in GoogleAccount.List()) {
                 Log.Message ("Google Account: ", acc);
-                Log.Indent ++;
+                Log.Indent++;
                 if (appConfig.Authenticate (acc)) {
                     Log.Message ("Success!");
                 } else {
                     Log.Message ("Failure!");
                 }
-                Log.Indent --;
+                Log.Indent--;
             }
         }
 

@@ -10,13 +10,18 @@ namespace Control.Common.IO
 {
     public class UserChoice
     {
-        public int Number { get; private set; }
+        public string Number { get; private set; }
 
         public string Name { get; private set; }
 
         public Action Action { get; private set; }
 
         public UserChoice (int number, string name, Action action)
+            : this (number: number.ToString(), name: name, action: action)
+        {
+        }
+
+        public UserChoice (string number, string name, Action action)
         {
             Number = number;
             Name = name;
@@ -25,7 +30,7 @@ namespace Control.Common.IO
 
         public override string ToString ()
         {
-            return string.Format ("{0}. {1}", Number.ToString ().PadLeft (2), Name);
+            return string.Format ("{0}. {1}", Number.PadLeft (2), Name);
         }
     }
 

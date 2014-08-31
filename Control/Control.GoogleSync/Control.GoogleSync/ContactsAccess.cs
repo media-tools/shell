@@ -29,6 +29,15 @@ namespace Control.GoogleSync
             }
         }
 
+        public static HashSet<string> MasterAccountIds {
+            get {
+                return syncConfig ["General", "MasterAccounts", ""].SplitValues ().ToHashSet ();
+            }
+            set {
+                syncConfig ["General", "MasterAccounts", ""] = value.JoinValues ();
+            }
+        }
+
         public ContactsAccess (GoogleAccount account)
             : this ()
         {
@@ -72,9 +81,12 @@ namespace Control.GoogleSync
                                                             where c.Name.FullName != null
                                                             orderby c.Name.FullName
                                                             select c;
-                Log.Message (contacts.ToStringTable (new[] { "Full Name", "Emails" },
+                Log.Message (contacts.ToStringTable (
+                    c => c.IsIncludedInSynchronisation () ? (account.IsMasterAccount () ? LogColor.DarkYellow : LogColor.DarkCyan) : LogColor.Reset,
+                    new[] { "Full Name", "E-Mail Address", "Role" },
                     c => c.Name.FullName,
-                    c => c.Emails.PrintShort ()
+                    c => c.Emails.PrintShort (),
+                    c => c.IsIncludedInSynchronisation () ? (account.IsMasterAccount () ? "master" : "slave") : ""
                 ));
             });
         }

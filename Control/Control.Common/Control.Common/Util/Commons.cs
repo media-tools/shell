@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Diagnostics;
 using System.Linq;
+using Control.Common.IO;
 
 namespace Control.Common.Util
 {
@@ -50,6 +51,12 @@ namespace Control.Common.Util
                 MAX_PID = (int)Math.Pow (2, 22);
                 Console.WriteLine (ex);
             }
+        }
+
+        public static void OnCancel ()
+        {
+            Log.MessageConsole ();
+            Log.MessageLog ("Cancelled!");
         }
     }
 }

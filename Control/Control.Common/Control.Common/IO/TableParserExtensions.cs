@@ -18,45 +18,54 @@ namespace Control.Common.IO
     {
         public static object[] ToStringTable<T> (this IEnumerable<T> values, string[] columnHeaders, params Func<T, object>[] valueSelectors)
         {
-            return ToStringTable (values.ToArray (), columnHeaders, valueSelectors);
+            return ToStringTable (values: values, highlightColor: v => LogColor.Reset, columnHeaders: columnHeaders, valueSelectors: valueSelectors);
         }
 
-        public static object[] ToStringTable<T> (this T[] values, string[] columnHeaders, params Func<T, object>[] valueSelectors)
+        public static object[] ToStringTable<T> (this IEnumerable<T> values, Func<T, LogColor> highlightColor, string[] columnHeaders, params Func<T, object>[] valueSelectors)
         {
+            T[] _values = values.ToArray ();
+
             Debug.Assert (columnHeaders.Length == valueSelectors.Length);
 
-            var arrValues = new string[values.Length + 1, valueSelectors.Length];
+            string[,] arrValues = new string[_values.Length + 1, valueSelectors.Length];
+            LogColor[] highlightColors = new LogColor[_values.Length + 1];
 
             // Fill headers
             for (int colIndex = 0; colIndex < arrValues.GetLength (1); colIndex++) {
                 arrValues [0, colIndex] = columnHeaders [colIndex];
             }
+            highlightColors [0] = LogColor.Reset;
 
             // Fill table rows
             for (int rowIndex = 1; rowIndex < arrValues.GetLength (0); rowIndex++) {
                 for (int colIndex = 0; colIndex < arrValues.GetLength (1); colIndex++) {
-                    object value = valueSelectors [colIndex].Invoke (values [rowIndex - 1]);
+                    object value = valueSelectors [colIndex].Invoke (_values [rowIndex - 1]);
 
                     arrValues [rowIndex, colIndex] = value != null ? value.ToString () : "null";
                 }
+                highlightColors [rowIndex] = highlightColor (_values [rowIndex - 1]);
             }
 
-            return ToStringTable (arrValues);
+            return ToStringTable (arrValues: arrValues, highlightColors: highlightColors);
         }
 
-        public static object[] ToStringTable (this string[,] arrValues)
+        private static object[] ToStringTable (this string[,] arrValues, LogColor[] highlightColors)
         {
             int[] maxColumnsWidth = GetMaxColumnsWidth (arrValues);
             string headerSplitter = new string ('-', maxColumnsWidth.Sum (i => i + 3) - 1);
 
             List<object> objs = new List<object> ();
+            objs.Add (ControlCharacters.Newline);
             for (int rowIndex = 0; rowIndex < arrValues.GetLength (0); rowIndex++) {
+
+                LogColor highlightColor = highlightColors [rowIndex];
+
                 for (int colIndex = 0; colIndex < arrValues.GetLength (1); colIndex++) {
                     // Print cell
                     string cell = arrValues [rowIndex, colIndex];
                     cell = cell.PadRight (maxColumnsWidth [colIndex]);
                     objs.AddRange (LogColor.DarkBlue, " | ", LogColor.Reset);
-                    objs.Add (cell);
+                    objs.AddRange (highlightColor, cell, LogColor.Reset);
                 }
 
                 // Print end of line

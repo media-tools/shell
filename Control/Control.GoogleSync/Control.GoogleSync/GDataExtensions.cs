@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Google.GData.Client;
 using Google.GData.Extensions;
+using Google.Contacts;
 
 namespace Control.GoogleSync
 {
@@ -55,6 +56,25 @@ namespace Control.GoogleSync
             } else {
                 return "";
             }
+        }
+
+        public static bool IsIncludedInSynchronisation (this Contact contact)
+        {
+            return (from name in ContactsAccess.IncludeNames
+                             where contact.Name.FullName != null && contact.Name.FullName.ToLower ().Contains (name.ToLower ())
+                             select name).Any ();
+        }
+
+        public static bool IsMasterAccount (this GoogleAccount account)
+        {
+            return (from id in ContactsAccess.MasterAccountIds
+                             where account.Id == id
+                             select id).Any ();
+        }
+
+        public static bool IsSlaveAccount (this GoogleAccount account)
+        {
+            return !account.IsMasterAccount ();
         }
     }
 }

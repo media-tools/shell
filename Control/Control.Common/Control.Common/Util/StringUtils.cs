@@ -16,7 +16,7 @@ namespace Control.Common.Util
 
         public static string Padding (int length)
         {
-            return String.Concat (Enumerable.Repeat (" ", length));
+            return length <= 0 ? "" : String.Concat (Enumerable.Repeat (" ", length));
         }
     }
 }

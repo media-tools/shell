@@ -18,8 +18,7 @@ namespace Control
         public static void Main (string[] args)
         {
             Console.CancelKeyPress += delegate(object sender, ConsoleCancelEventArgs e) {
-                Log.MessageConsole ();
-                Log.MessageLog ("Cancelled!");
+                Commons.OnCancel ();
                 e.Cancel = false;
             };
 

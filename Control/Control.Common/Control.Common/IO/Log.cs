@@ -39,11 +39,11 @@ namespace Control.Common.IO
 
         private static void LogFileWrite (params object[] message)
         {
-            string text = string.Join ("", NoNull (NoColors (message)));
+            string text = string.Join ("", NoNull (NoColors (NoControlCharacters (message))));
             if (isNewLineInLogfile) {
-                LogFilePrefix ();
-                logFile.Write (IndentString);
+                logFile.Write (LogFilePrefix + IndentString);
             }
+            text = text.Replace ("\n", "\n" + LogFilePrefix + IndentString);
             try {
                 logFile.Write (text);
                 isNewLineInLogfile = false;
@@ -55,11 +55,11 @@ namespace Control.Common.IO
 
         private static void LogFileWriteLine (params object[] message)
         {
-            string text = string.Join ("", NoNull (NoColors (message)));
+            string text = string.Join ("", NoNull (NoColors (NoControlCharacters (message))));
             if (isNewLineInLogfile) {
-                LogFilePrefix ();
-                logFile.Write (IndentString);
+                logFile.Write (LogFilePrefix + IndentString);
             }
+            text = text.Replace ("\n", "\n" + LogFilePrefix + IndentString);
             try {
                 logFile.WriteLine (text);
                 isNewLineInLogfile = true;
@@ -70,14 +70,9 @@ namespace Control.Common.IO
             }
         }
 
-        private static void LogFilePrefix ()
-        {
-            try {
+        // Prefix
+        private static string LogFilePrefix { get { return Commons.DATETIME_LOG + " " + Commons.PID + " "; } }
 
-                logFile.Write (Commons.DATETIME_LOG + " " + Commons.PID + " ");
-            } catch (Exception) {
-            }
-        }
         // Indent
         public static byte Indent {
             get {
@@ -178,6 +173,12 @@ namespace Control.Common.IO
                             select obj is LogColor ? "" : obj;
         }
 
+        private static IEnumerable<object> NoControlCharacters (IEnumerable<object> message)
+        {
+            return from obj in message
+                            select obj is ControlCharacters && (ControlCharacters)obj == ControlCharacters.Newline ? "\n" : obj;
+        }
+
         public static ProgressBar OpenProgressBar (string identifier, string description)
         {
             return new ProgressBar (identifier: identifier, description: description);
@@ -186,6 +187,21 @@ namespace Control.Common.IO
         public static void UserChoice (string msg, params UserChoice[] choices)
         {
             new UserChoices (choices).Ask (question: msg);
+        }
+
+        public static string AskForString (string question, LogColor color = LogColor.Reset)
+        {
+            Log.MessageLog ("Question => ", question);
+            Console.ResetColor ();
+            if (color != LogColor.Reset)
+                Console.ForegroundColor = color.ToConsoleColor ();
+            Console.Write (question.TrimEnd (' ') + " ");
+            Console.ResetColor ();
+            Console.Out.Flush ();
+            string input = Console.ReadLine () ?? "";
+            input = input.Trim (' ', '\r', '\n', '\t');
+            Log.MessageLog ("User Input => ", input);
+            return input;
         }
     }
 }

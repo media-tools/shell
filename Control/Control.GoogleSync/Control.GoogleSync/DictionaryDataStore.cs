@@ -1,9 +1,10 @@
 ﻿using System;
-using Google.Apis.Util.Store;
-using Google.Apis.Json;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Control.Common.IO;
-using System.Collections.Generic;
+using Control.Common.Util;
+using Google.Apis.Json;
+using Google.Apis.Util.Store;
 
 namespace Control.GoogleSync
 {
@@ -93,12 +94,12 @@ namespace Control.GoogleSync
             foreach (var pair in Store) {
                 configFile [section, "store_" + pair.Key, ""] = pair.Value;
             }
-            configFile [section, "store_keys", ""] = string.Join (";", Store.Keys);
+            configFile [section, "store_keys", ""] = Store.Keys.JoinValues ();
         }
 
         public void Load (ConfigFile configFile, string section)
         {
-            string[] keys = configFile [section, "store_keys", ""].Split (new string[]{ ";" }, StringSplitOptions.RemoveEmptyEntries);
+            string[] keys = configFile [section, "store_keys", ""].SplitValues ();
             foreach (string key in keys) {
                 Store [key] = configFile [section, "store_" + key, ""];
             }

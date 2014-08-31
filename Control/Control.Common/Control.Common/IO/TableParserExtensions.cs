@@ -9,17 +9,19 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
+using Control.Common.IO;
+using Control.Common.Util;
 
-namespace Control.Common
+namespace Control.Common.IO
 {
     public static class TableParserExtensions
     {
-        public static string ToStringTable<T> (this IEnumerable<T> values, string[] columnHeaders, params Func<T, object>[] valueSelectors)
+        public static object[] ToStringTable<T> (this IEnumerable<T> values, string[] columnHeaders, params Func<T, object>[] valueSelectors)
         {
             return ToStringTable (values.ToArray (), columnHeaders, valueSelectors);
         }
 
-        public static string ToStringTable<T> (this T[] values, string[] columnHeaders, params Func<T, object>[] valueSelectors)
+        public static object[] ToStringTable<T> (this T[] values, string[] columnHeaders, params Func<T, object>[] valueSelectors)
         {
             Debug.Assert (columnHeaders.Length == valueSelectors.Length);
 
@@ -42,33 +44,33 @@ namespace Control.Common
             return ToStringTable (arrValues);
         }
 
-        public static string ToStringTable (this string[,] arrValues)
+        public static object[] ToStringTable (this string[,] arrValues)
         {
             int[] maxColumnsWidth = GetMaxColumnsWidth (arrValues);
-            var headerSpliter = new string ('-', maxColumnsWidth.Sum (i => i + 3) - 1);
+            string headerSplitter = new string ('-', maxColumnsWidth.Sum (i => i + 3) - 1);
 
-            var sb = new StringBuilder ();
+            List<object> objs = new List<object> ();
             for (int rowIndex = 0; rowIndex < arrValues.GetLength (0); rowIndex++) {
                 for (int colIndex = 0; colIndex < arrValues.GetLength (1); colIndex++) {
                     // Print cell
                     string cell = arrValues [rowIndex, colIndex];
                     cell = cell.PadRight (maxColumnsWidth [colIndex]);
-                    sb.Append (" | ");
-                    sb.Append (cell);
+                    objs.AddRange (LogColor.DarkBlue, " | ", LogColor.Reset);
+                    objs.Add (cell);
                 }
 
                 // Print end of line
-                sb.Append (" | ");
-                sb.AppendLine ();
+                objs.AddRange (LogColor.DarkBlue, " | ", LogColor.Reset);
+                objs.Add (ControlCharacters.Newline);
 
                 // Print splitter
                 if (rowIndex == 0) {
-                    sb.AppendFormat (" |{0}| ", headerSpliter);
-                    sb.AppendLine ();
+                    objs.AddRange (LogColor.DarkBlue, string.Format (" |{0}| ", headerSplitter), LogColor.Reset);
+                    objs.Add (ControlCharacters.Newline);
                 }
             }
 
-            return sb.ToString ();
+            return objs.ToArray ();
         }
 
         private static int[] GetMaxColumnsWidth (string[,] arrValues)
@@ -88,7 +90,7 @@ namespace Control.Common
             return maxColumnsWidth;
         }
 
-        public static string ToStringTable<T> (this IEnumerable<T> values, params Expression<Func<T, object>>[] valueSelectors)
+        public static object[] ToStringTable<T> (this IEnumerable<T> values, params Expression<Func<T, object>>[] valueSelectors)
         {
             var headers = valueSelectors.Select (func => GetProperty (func).Name).ToArray ();
             var selectors = valueSelectors.Select (exp => exp.Compile ()).ToArray ();

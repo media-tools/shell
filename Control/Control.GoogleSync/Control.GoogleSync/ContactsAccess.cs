@@ -1,9 +1,12 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Control.Common.IO;
-using Google.GData.Client;
+using Control.Common.Util;
 using Google.Contacts;
+using Google.GData.Client;
+using Google.GData.Contacts;
 using Google.GData.Extensions;
-using Control.Common;
 
 namespace Control.GoogleSync
 {
@@ -12,15 +15,34 @@ namespace Control.GoogleSync
         private RequestSettings settings;
         private GoogleAccount account;
 
+        private static ConfigFile _syncConfig;
+
+        private static ConfigFile syncConfig { get { return _syncConfig = _syncConfig ?? new ContactsAccess ().fs.Config.OpenConfigFile ("sync.ini"); } }
+
+
+        public static HashSet<string> NamesToSynchronize {
+            get {
+                return syncConfig ["General", "NamesToSynchronize", ""].SplitValues ().ToHashSet ();
+            }
+            set {
+                syncConfig ["General", "NamesToSynchronize", ""] = value.JoinValues ();
+            }
+        }
+
         public ContactsAccess (GoogleAccount account)
+            : this ()
         {
-            ConfigName = "Google";
             this.account = account;
 
             NetworkHelper.DisableCertificateChecks ();
 
             OAuth2Parameters parameters = account.GetOAuth2Parameters ();
             settings = new RequestSettings (GoogleApp.ApplicationName, parameters);
+        }
+
+        private ContactsAccess ()
+        {
+            ConfigName = "Google";
         }
 
         public void CatchErrors (Action todo)
@@ -42,22 +64,17 @@ namespace Control.GoogleSync
             CatchErrors (() => {
                 ContactsRequest cr = new ContactsRequest (settings);
 
-                Feed<Contact> f = cr.GetContacts ();
-                foreach (Contact entry in f.Entries) {
-                    if (entry.Name != null) {
-                        Name name = entry.Name;
-                        Log.Debug (name.FullName);
-                    }
-                    Log.Indent++;
-                    foreach (EMail email in entry.Emails) {
-                        Log.Debug (email.Address);
-                    }
-                    Log.Indent--;
-                }
+                ContactsQuery query = new ContactsQuery (ContactsQuery.CreateContactsUri ("default"));
+                query.NumberToRetrieve = 9999;
+                Feed<Contact> feed = cr.Get<Contact> (query);
 
-                Log.Message (f.Entries.ToStringTable (new[] { "First Name", "Last Name" },
+                IEnumerable<Contact> contacts = from c in feed.Entries
+                                                            where c.Name.FullName != null
+                                                            orderby c.Name.FullName
+                                                            select c;
+                Log.Message (contacts.ToStringTable (new[] { "Full Name", "Emails" },
                     c => c.Name.FullName,
-                    c => c.Emails.Join (";")
+                    c => c.Emails.PrintShort ()
                 ));
             });
         }

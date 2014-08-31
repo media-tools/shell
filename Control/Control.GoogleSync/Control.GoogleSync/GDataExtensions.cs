@@ -26,7 +26,35 @@ namespace Control.GoogleSync
 
         public static string Join (this IEnumerable<EMail> mails, string separator)
         {
-            return string.Join (separator, from mail in mails select mail.Address);
+            return string.Join (separator, from mail in mails
+                                                    select mail.Address);
+        }
+
+        public static string PrintShort (this IEnumerable<EMail> mails)
+        {
+            string[] addrs = (from mail in mails
+                                       select mail.Address).ToArray ();
+            if (addrs.Length == 1) {
+                return addrs [0];
+            } else if (addrs.Length > 1) {
+                return mails.PrimaryAddress () + ";...";
+            } else {
+                return "";
+            }
+        }
+
+        public static string PrimaryAddress (this IEnumerable<EMail> mails)
+        {
+            IEnumerable<EMail> gmail = from mail in mails
+                                                where mail.Address.Contains ("gmail.com")
+                                                select mail;
+            if (gmail.Any ()) {
+                return gmail.First ().Address;
+            } else if (mails.Any ()) {
+                return mails.First ().Address;
+            } else {
+                return "";
+            }
         }
     }
 }

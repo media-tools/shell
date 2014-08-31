@@ -135,7 +135,10 @@ namespace Control.Common.IO
             // if there are any colored objects in the message
             if (message.OfType<LogColor> ().Any ()) {
                 foreach (object obj in NoNull (message)) {
-                    if (obj is LogColor) {
+                    if (obj is ControlCharacters && (ControlCharacters)obj == ControlCharacters.Newline) {
+                        Console.WriteLine ();
+                        Console.Write (IndentString);
+                    } else if (obj is LogColor) {
                         if ((LogColor)obj == LogColor.Reset) {
                             Console.ResetColor ();
                         } else {
@@ -165,12 +168,14 @@ namespace Control.Common.IO
 
         private static IEnumerable<object> NoNull (IEnumerable<object> message)
         {
-            return from obj in message select obj != null ? obj : "null";
+            return from obj in message
+                            select obj != null ? obj : "null";
         }
 
         private static IEnumerable<object> NoColors (IEnumerable<object> message)
         {
-            return from obj in message select obj is LogColor ? "" : obj;
+            return from obj in message
+                            select obj is LogColor ? "" : obj;
         }
 
         public static ProgressBar OpenProgressBar (string identifier, string description)

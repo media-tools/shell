@@ -37,11 +37,6 @@ namespace Control.GoogleSync
             }
         }
 
-        void config ()
-        {
-            throw new NotImplementedException ();
-        }
-
         void list ()
         {
             foreach (GoogleAccount acc in GoogleAccount.List()) {
@@ -52,6 +47,11 @@ namespace Control.GoogleSync
                 contacts.PrintAllContacts ();
                 Log.Indent --;
             }
+        }
+
+        void config ()
+        {
+
         }
 
         void sync ()

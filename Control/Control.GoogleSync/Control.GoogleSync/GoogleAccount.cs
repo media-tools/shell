@@ -1,15 +1,15 @@
 using System;
-using Control.Common;
-using Control.Common.IO;
-using System.Linq;
-using Google.Apis.Auth.OAuth2;
-using Google.Apis.Plus.v1;
-using Google.Apis.Services;
-using Google.Apis.Plus.v1.Data;
 using System.Collections.Generic;
-using Google.Apis.Auth.OAuth2.Responses;
-using Google.Apis.Auth.OAuth2.Flows;
+using System.Linq;
 using System.Threading;
+using Control.Common.IO;
+using Control.Common.Util;
+using Google.Apis.Auth.OAuth2;
+using Google.Apis.Auth.OAuth2.Flows;
+using Google.Apis.Auth.OAuth2.Responses;
+using Google.Apis.Plus.v1;
+using Google.Apis.Plus.v1.Data;
+using Google.Apis.Services;
 
 namespace Control.GoogleSync
 {
@@ -63,7 +63,7 @@ namespace Control.GoogleSync
 
             ConfigFile accountConfig = dummy.accountConfig;
 
-            accountConfig ["General", "account_list", ""] = string.Join (";", new HashSet<string> (accountConfig ["General", "account_list", ""].Split (new string[] { ";" }, StringSplitOptions.RemoveEmptyEntries).Concat (new string[] { id })));
+            accountConfig ["General", "account_list", ""] = accountConfig ["General", "account_list", ""].SplitValues ().Concat (id).JoinValues ();
             accountConfig [section, "AccessToken", ""] = credential.Token.AccessToken;
             accountConfig [section, "RefreshToken", ""] = credential.Token.RefreshToken;
             accountConfig [section, "Id", ""] = me.Id;
@@ -84,7 +84,7 @@ namespace Control.GoogleSync
             GoogleAccount dummy = new GoogleAccount ();
             ConfigFile accountConfig = dummy.fs.Config.OpenConfigFile ("accounts.ini");
 
-            string[] ids = accountConfig ["General", "account_list", ""].Split (new string[]{ ";" }, StringSplitOptions.RemoveEmptyEntries);
+            string[] ids = accountConfig ["General", "account_list", ""].SplitValues ();
             foreach (string id in ids) {
                 GoogleAccount acc = new GoogleAccount (id: id);
                 yield return acc;

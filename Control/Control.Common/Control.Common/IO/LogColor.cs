@@ -1,6 +1,6 @@
 using System;
 
-namespace Control.Common
+namespace Control.Common.IO
 {
     [Serializable]
     public enum LogColor

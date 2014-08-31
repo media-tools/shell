@@ -20,12 +20,12 @@ namespace Control.GoogleSync
         private static ConfigFile syncConfig { get { return _syncConfig = _syncConfig ?? new ContactsAccess ().fs.Config.OpenConfigFile ("sync.ini"); } }
 
 
-        public static HashSet<string> NamesToSynchronize {
+        public static HashSet<string> IncludeNames {
             get {
-                return syncConfig ["General", "NamesToSynchronize", ""].SplitValues ().ToHashSet ();
+                return syncConfig ["General", "IncludeNames", ""].SplitValues ().ToHashSet ();
             }
             set {
-                syncConfig ["General", "NamesToSynchronize", ""] = value.JoinValues ();
+                syncConfig ["General", "IncludeNames", ""] = value.JoinValues ();
             }
         }
 

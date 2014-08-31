@@ -1,12 +1,13 @@
 using System;
 using Control.Common.Tasks;
 using Control.Common.IO;
+using System.Linq;
 
 namespace Control.GoogleSync
 {
-    public class GoogleContactsSyncTask : Task, MainTask
+    public class GoogleContactsTask : Task, MainTask
     {
-        public GoogleContactsSyncTask ()
+        public GoogleContactsTask ()
         {
             Name = "GoogleContacts";
             Description = "fuck";
@@ -41,15 +42,40 @@ namespace Control.GoogleSync
         {
             foreach (GoogleAccount acc in GoogleAccount.List()) {
                 Log.Message ("Google Account: ", acc);
-                Log.Indent ++;
+                Log.Indent++;
                 acc.Refresh ();
                 ContactsAccess contacts = new ContactsAccess (account: acc);
                 contacts.PrintAllContacts ();
-                Log.Indent --;
+                Log.Indent--;
             }
         }
 
         void config ()
+        {
+            printIncludedNames ();
+            chooseAction ();
+        }
+
+        void printIncludedNames ()
+        {
+            Log.Message ("Contacts which contain the following name are synchronized:");
+            Log.Indent++;
+            if (ContactsAccess.IncludeNames.Any ()) {
+                foreach (string name in ContactsAccess.IncludeNames) {
+                    Log.Message (name);
+                }
+            } else {
+                Log.Message ("None.");
+            }
+            Log.Indent--;
+        }
+
+        void chooseAction ()
+        {
+            Log.UserChoice ("What do you want to do?", new UserChoice (1, "Add an included name", addIncludedName), new UserChoice (2, "Remove an included name", addIncludedName), new UserChoice (3, "List all included names", addIncludedName));
+        }
+
+        void addIncludedName ()
         {
 
         }

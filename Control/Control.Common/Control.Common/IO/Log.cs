@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using Control.Common.Util;
 using System.Linq;
+using Control.Common.Util;
 
 namespace Control.Common.IO
 {
@@ -181,6 +181,11 @@ namespace Control.Common.IO
         public static ProgressBar OpenProgressBar (string identifier, string description)
         {
             return new ProgressBar (identifier: identifier, description: description);
+        }
+
+        public static void UserChoice (string msg, params UserChoice[] choices)
+        {
+            new UserChoices (choices).Ask (question: msg);
         }
     }
 }

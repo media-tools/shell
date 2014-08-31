@@ -41,7 +41,7 @@ namespace Control.GoogleSync
 
         void addAccount ()
         {
-            GoogleAppConfig appConfig = new GoogleAppConfig ();
+            GoogleApp appConfig = new GoogleApp ();
             appConfig.Authenticate ();
         }
 
@@ -54,7 +54,7 @@ namespace Control.GoogleSync
 
         void auth ()
         {
-            GoogleAppConfig appConfig = new GoogleAppConfig ();
+            GoogleApp appConfig = new GoogleApp ();
             foreach (GoogleAccount acc in GoogleAccount.List()) {
                 Log.Message ("Google Account: ", acc);
                 Log.Indent ++;

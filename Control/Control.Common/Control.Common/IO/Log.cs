@@ -134,7 +134,7 @@ namespace Control.Common.IO
             Console.Write (IndentString);
             // if there are any colored objects in the message
             if (message.OfType<LogColor> ().Any ()) {
-                foreach (object obj in message) {
+                foreach (object obj in NoNull (message)) {
                     if (obj is LogColor) {
                         if ((LogColor)obj == LogColor.Reset) {
                             Console.ResetColor ();

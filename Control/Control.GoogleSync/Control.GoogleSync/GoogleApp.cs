@@ -12,7 +12,7 @@ using Google.Apis.Auth.OAuth2.Responses;
 
 namespace Control.GoogleSync
 {
-    public class GoogleAppConfig : Library
+    public class GoogleApp : Library
     {
         public string ClientId { get; private set; }
 
@@ -25,14 +25,15 @@ namespace Control.GoogleSync
         // Installed (non-web) application
         public static string RedirectUri = "urn:ietf:wg:oauth:2.0:oob";
         // Requesting access to Contacts API
-        private static IEnumerable<string> scopes = new[] {
+        public static IEnumerable<string> Scopes = new[] {
             PlusService.Scope.PlusLogin,
             PlusService.Scope.UserinfoProfile,
-            PlusService.Scope.UserinfoEmail
+            PlusService.Scope.UserinfoEmail,
+            "https://www.google.com/m8/feeds"
         };
         public List<GoogleAccount> Accounts = new List<GoogleAccount> ();
 
-        public GoogleAppConfig ()
+        public GoogleApp ()
         {
             ConfigName = "Google";
             ConfigFile appConfig = fs.Config.OpenConfigFile ("app.ini");
@@ -49,7 +50,7 @@ namespace Control.GoogleSync
 
         public bool Authenticate (GoogleAccount account)
         {
-            System.Net.ServicePointManager.ServerCertificateValidationCallback = (a, b, c, d) => true;
+            NetworkHelper.DisableCertificateChecks ();
 
             DictionaryDataStore dataStore = new DictionaryDataStore ();
 
@@ -60,7 +61,7 @@ namespace Control.GoogleSync
             try {
                 UserCredential credential = GoogleWebAuthorizationBroker.AuthorizeAsync (
                                                 clientSecrets: Secrets,
-                                                scopes: scopes,
+                                                scopes: Scopes,
                                                 user: "me",
                                                 taskCancellationToken: CancellationToken.None,
                                                 dataStore: dataStore
@@ -68,7 +69,11 @@ namespace Control.GoogleSync
                 Accounts.Add (GoogleAccount.SaveAccount (credential: credential, dataStore: dataStore));
                 return true;
             } catch (TokenResponseException ex) {
-                Log.Error (ex);
+                if (ex.Message.Contains ("invalid_grant")) {
+                    return account.Reauthenticate ();
+                } else {
+                    Log.Error (ex);
+                }
                 return false;
             }
         }

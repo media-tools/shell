@@ -24,6 +24,10 @@ namespace Control.GoogleSync
 
         public string Url { get { return accountConfig [section, "Url", ""]; } }
 
+        public string AccessToken { get { return accountConfig [section, "AccessToken", ""]; } }
+
+        public string RefreshToken { get { return accountConfig [section, "RefreshToken", ""]; } }
+
         public GoogleAccount (string id)
             : this ()
         {
@@ -45,7 +49,7 @@ namespace Control.GoogleSync
             // Create the service.
             PlusService plusService = new PlusService (new BaseClientService.Initializer () {
                 HttpClientInitializer = credential,
-                ApplicationName = GoogleAppConfig.ApplicationName,
+                ApplicationName = GoogleApp.ApplicationName,
             });
 
             Person me = plusService.People.Get ("me").Execute ();
@@ -92,6 +96,12 @@ namespace Control.GoogleSync
         private static string id2section (string id)
         {
             return "Account_" + id;
+        }
+
+        public bool Reauthenticate ()
+        {
+            Log.Message (LogColor.DarkYellow, "Google Account needs to be re-authenticated: ", this, LogColor.Reset);
+            return new GoogleApp().Authenticate ();
         }
 
         public override string ToString ()

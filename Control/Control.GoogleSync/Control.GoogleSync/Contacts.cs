@@ -63,7 +63,8 @@ namespace Control.GoogleSync
                     account.Reauthenticate ();
                     todo ();
                 } else {
-                    Log.Error (ex);
+                    Log.Error ("GDataRequestException: ", ex.ResponseString);
+                    // Log.Error (ex);
                 }
             }
         }
@@ -101,9 +102,9 @@ namespace Control.GoogleSync
             });
         }
 
-        public void SyncTo (Contacts other)
+        public void SyncTo (Contacts otherContacts)
         {
-            Log.Message ("Synchronizing contacts: ", account, " => ", other.account);
+            Log.Message ("Synchronizing contacts: ", account, " => ", otherContacts.account);
             Log.Indent++;
             CatchErrors (() => {
                 Contact[] masterContacts = (from c in ContactList
@@ -111,20 +112,70 @@ namespace Control.GoogleSync
                                                         select c).ToArray ();
 
                 foreach (Contact masterContact in masterContacts) {
-                    Log.Message ("Contact: ", masterContact.Print ());
+                    Log.Message ("Contact: ", masterContact);
                     Log.Indent++;
 
                     Contact slaveContact;
-                    if (other.FindContact (checkFor: masterContact, result: out slaveContact)) {
-                        Log.Message ("Update contact: ", slaveContact.Print ());
+                    if (otherContacts.FindContact (checkFor: masterContact, result: out slaveContact)) {
+                        Log.Message ("Update contact: ", slaveContact);
+                        otherContacts.UpdateContact (slave: slaveContact, master: masterContact);
                     } else {
                         Log.Message ("Create contact.");
+                        otherContacts.CreateContact (template: masterContact);
                     }
 
                     Log.Indent--;
                 }
             });
             Log.Indent--;
+        }
+
+        public void UpdateContact (Contact slave, Contact master)
+        {
+            CatchErrors (() => {
+                MergeContact (slave: slave, master: master);
+
+                ContactsRequest cr = new ContactsRequest (settings);
+                cr.Update (slave);
+            });
+        }
+
+        public void CreateContact (Contact template)
+        {
+            CatchErrors (() => {
+                Contact newContact = new Contact ();
+
+                MergeContact (slave: newContact, master: template);
+
+                Uri feedUri = new Uri (ContactsQuery.CreateContactsUri ("default"));
+                ContactsRequest cr = new ContactsRequest (settings);
+                Contact createdEntry = cr.Insert (address: feedUri, entry: newContact);
+                Log.Message ("Contact's ID: " + createdEntry.Id);
+            });
+        }
+
+        void MergeContact (Contact slave, Contact master)
+        {
+            slave.Name = master.Name;
+            slave.ContactEntry.Birthday = master.ContactEntry.Birthday;
+            slave.Organizations.Clear ();
+
+            Log.Debug ("Birthday:", slave.ContactEntry.Birthday);
+
+            GDataExtensions.Merge (slave.Emails, master.Emails, mail => mail.Address);
+            slave.Emails.ForEach (mail => mail.Primary = slave.Emails.Count > 1 && mail.Address == slave.Emails.PrimaryAddress ());
+            GDataExtensions.Merge (slave.Organizations, master.Organizations, org => org.JobDescription + org.Title + org.Department + org.Name + org.Location);
+            GDataExtensions.Merge (slave.Languages, master.Languages, l => l.Value);
+            GDataExtensions.Merge (slave.IMs, master.IMs, l => l.Value);
+            GDataExtensions.Merge (slave.Phonenumbers, master.Phonenumbers, l => l.Value, GDataExtensions.UniqueFormat);
+            GDataExtensions.Merge (slave.PostalAddresses, master.PostalAddresses, a => a.City);
+
+            Log.Debug ("Emails:", string.Join (", ", slave.Emails.Select (e => e.Address)));
+            Log.Debug ("Organizations:", string.Join (", ", slave.Organizations.Select (org => org.JobDescription + org.Title + org.Department + org.Name + org.Location)));
+            Log.Debug ("Languages:", string.Join (", ", slave.Languages.Select (l => l.Value)));
+            Log.Debug ("IMs:", string.Join (", ", slave.IMs.Select (i => i.Value)));
+            Log.Debug ("Phonenumbers:", string.Join (", ", slave.Phonenumbers.Select (p => p.Value + " (" + (p.Rel != null ? p.Rel : p.Label) + ")")));
+            Log.Debug ("PostalAddresses:", string.Join ("; ", slave.PostalAddresses.Select (a => a.Format ())));
         }
 
         public bool HasContact (Contact checkFor)
@@ -136,7 +187,7 @@ namespace Control.GoogleSync
         public bool FindContact (Contact checkFor, out Contact result)
         {
             foreach (Contact contact in ContactList) {
-                if (contact.Name.FullName == checkFor.Name.FullName) {
+                if (contact.Name.FullName.ToLower ().RemoveNonAlphanumeric () == checkFor.Name.FullName.ToLower ().RemoveNonAlphanumeric ()) {
                     result = contact;
                     return true;
                 }

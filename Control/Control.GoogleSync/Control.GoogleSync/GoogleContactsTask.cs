@@ -169,6 +169,7 @@ namespace Control.GoogleSync
         void sync ()
         {
             IEnumerable<GoogleAccount> accounts = GoogleAccount.List ();
+            accounts.ForEach(acc => acc.Refresh ());
             IEnumerable<GoogleAccount> masters = accounts.Where (acc => acc.IsMasterAccount ());
             IEnumerable<GoogleAccount> slaves = accounts.Where (acc => acc.IsSlaveAccount ());
             if (!accounts.Any ()) {
@@ -182,7 +183,7 @@ namespace Control.GoogleSync
                     foreach (GoogleAccount slave in slaves) {
                         Contacts masterContacts = new Contacts (account: master);
                         Contacts slaveContacts = new Contacts (account: slave);
-                        masterContacts.SyncTo (other: slaveContacts);
+                        masterContacts.SyncTo (otherContacts: slaveContacts);
                     }
                 }
             }

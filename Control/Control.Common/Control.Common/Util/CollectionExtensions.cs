@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace Control.Common.Util
 {
@@ -29,6 +30,26 @@ namespace Control.Common.Util
         public static HashSet<A> ToHashSet <A> (this IEnumerable<A> values)
         {
             return new HashSet<A> (values);
+        }
+
+        public static void ForEach <A> (this IEnumerable<A> enumerable, Action<A> action)
+        {
+            foreach (A obj in enumerable) {
+                action (obj);
+            }
+        }
+
+        public static string RemoveNonAlphanumeric (this string text)
+        {
+            StringBuilder result = new StringBuilder (text.Length);
+
+            foreach (char c in text) {
+                if (c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9') {
+                    result.Append (c);
+                }
+            }
+
+            return result.ToString ();
         }
     }
 }

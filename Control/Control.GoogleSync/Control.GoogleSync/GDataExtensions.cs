@@ -4,6 +4,7 @@ using System.Linq;
 using Google.GData.Client;
 using Google.GData.Extensions;
 using Google.Contacts;
+using Control.Common.IO;
 
 namespace Control.GoogleSync
 {
@@ -58,10 +59,21 @@ namespace Control.GoogleSync
             }
         }
 
+        public static string PrimaryNumber (this IEnumerable<PhoneNumber> numbers)
+        {
+            if (numbers.Any ()) {
+                return numbers.First ().ToString ();
+            } else {
+                return "";
+            }
+        }
+
+        /*
         public static string Print (this Contact contact)
         {
-            return contact.Name.FullName + " <" + contact.Emails.PrimaryAddress () + ">";
-        }
+            string email = contact.Emails.PrimaryAddress ();
+            return contact.Name.FullName + (email.Length == 0 ? " <?>" : " <" + email + ">");
+        }*/
 
         public static bool IsIncludedInSynchronisation (this Contact contact)
         {
@@ -80,6 +92,49 @@ namespace Control.GoogleSync
         public static bool IsSlaveAccount (this GoogleAccount account)
         {
             return !account.IsMasterAccount ();
+        }
+
+        public static void Merge <A> (ExtensionCollection<A> to, ExtensionCollection<A> from, Func<A, string> comparable, Func<A, A> format = null) where A : class, IExtensionElementFactory, new()
+        {
+            format = format ?? (a => a);
+            ExtensionCollection<A> merged = new ExtensionCollection<A> ();
+            HashSet<string> uniqueStrings = new HashSet<string> ();
+            foreach (A _obj in from.Concat(to)) {
+                A obj = format (_obj);
+                string comp = comparable (obj);
+                if (!uniqueStrings.Contains (comp)) {
+                    merged.Add (obj);
+                    uniqueStrings.Add (comp);
+                }
+            }
+
+            to.Clear ();
+            foreach (A obj in merged) {
+                to.Add (obj);
+            }
+        }
+
+        public static PhoneNumber UniqueFormat (this PhoneNumber number)
+        {
+            string value = number.Value;
+            value = value.Replace ("-", "").Replace (" ", "");
+            if (value.StartsWith ("0")) {
+                value = "+49" + value.Substring (1);
+            }
+            if (number.Rel != null) {
+                return new PhoneNumber () { Value = value, Rel = number.Rel };
+            } else {
+                return new PhoneNumber () { Value = value, Label = number.Label };
+            }
+        }
+
+        public static string Format (this StructuredPostalAddress address)
+        {
+            if (address.Street == null || address.City == null || address.Postcode == null) {
+                return address.FormattedAddress.Replace ("\n", ", ") + " (unstructured)";
+            } else {
+                return string.Format ("{0}, {1} {2}", address.Street.Trim (), address.Postcode.Trim (), address.City.Trim ()).Replace ("\n", ", ");
+            }
         }
     }
 }

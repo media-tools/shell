@@ -168,6 +168,7 @@ namespace Control.GoogleSync
             GDataExtensions.Merge (slave.Languages, master.Languages, l => l.Value);
             GDataExtensions.Merge (slave.IMs, master.IMs, l => l.Value);
             GDataExtensions.Merge (slave.Phonenumbers, master.Phonenumbers, l => l.Value, GDataExtensions.UniqueFormat);
+            slave.Phonenumbers.Remove (slave.Phonenumbers.Where (n => n.Value == "+4915234218133").FirstOrDefault ());
             GDataExtensions.Merge (slave.PostalAddresses, master.PostalAddresses, a => a.City);
 
             Log.Debug ("Emails:", string.Join (", ", slave.Emails.Select (e => e.Address)));

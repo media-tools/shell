@@ -205,9 +205,13 @@ namespace Control.GoogleSync
             } else if (!slaves.Any ()) {
                 Log.Error ("There are no slave accounts!");
             } else {
-                foreach (GoogleAccount slave in slaves) {
-                    Contacts slaveContacts = new Contacts (account: slave);
-                    slaveContacts.CleanContacts ();
+                foreach (GoogleAccount account in slaves) {
+                    Contacts contacts = new Contacts (account: account);
+                    contacts.CleanContacts ();
+                }
+                foreach (GoogleAccount account in masters) {
+                    Contacts contacts = new Contacts (account: account);
+                    contacts.CleanContacts ();
                 }
             }
         }

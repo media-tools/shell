@@ -15,7 +15,7 @@ namespace Control.GoogleSync
             Description = "fuck";
             Options = new string[] { "google-contacts", "g-contacts" };
             ConfigName = "Google";
-            ParameterSyntax = "list | config | sync";
+            ParameterSyntax = "list | config | sync | clean";
         }
 
         protected override void InternalRun (string[] args)
@@ -30,6 +30,9 @@ namespace Control.GoogleSync
                     break;
                 case "sync":
                     sync ();
+                    break;
+                case "clean":
+                    clean ();
                     break;
                 default:
                     error ();
@@ -169,7 +172,7 @@ namespace Control.GoogleSync
         void sync ()
         {
             IEnumerable<GoogleAccount> accounts = GoogleAccount.List ();
-            accounts.ForEach(acc => acc.Refresh ());
+            accounts.ForEach (acc => acc.Refresh ());
             IEnumerable<GoogleAccount> masters = accounts.Where (acc => acc.IsMasterAccount ());
             IEnumerable<GoogleAccount> slaves = accounts.Where (acc => acc.IsSlaveAccount ());
             if (!accounts.Any ()) {
@@ -185,6 +188,26 @@ namespace Control.GoogleSync
                         Contacts slaveContacts = new Contacts (account: slave);
                         masterContacts.SyncTo (otherContacts: slaveContacts);
                     }
+                }
+            }
+        }
+
+        void clean ()
+        {
+            IEnumerable<GoogleAccount> accounts = GoogleAccount.List ();
+            accounts.ForEach (acc => acc.Refresh ());
+            IEnumerable<GoogleAccount> masters = accounts.Where (acc => acc.IsMasterAccount ());
+            IEnumerable<GoogleAccount> slaves = accounts.Where (acc => acc.IsSlaveAccount ());
+            if (!accounts.Any ()) {
+                Log.Error ("There are no accounts.");
+            } else if (!masters.Any ()) {
+                Log.Error ("There are no master accounts!");
+            } else if (!slaves.Any ()) {
+                Log.Error ("There are no slave accounts!");
+            } else {
+                foreach (GoogleAccount slave in slaves) {
+                    Contacts slaveContacts = new Contacts (account: slave);
+                    slaveContacts.CleanContacts ();
                 }
             }
         }

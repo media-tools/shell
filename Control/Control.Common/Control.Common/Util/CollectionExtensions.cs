@@ -51,6 +51,31 @@ namespace Control.Common.Util
 
             return result.ToString ();
         }
+
+        public static string FormatName (this string text)
+        {
+            string result = "";
+
+            foreach (char c in text??"") {
+                if (c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c == 'ü' || c == 'ä' || c == 'ö' || c == '-' || (c == ' ' && (result.Length == 0 || !result.EndsWith (" ")))) {
+                    result += c;
+                }
+            }
+
+            result = string.Join (" ", result.Split (new string[]{ " " }, StringSplitOptions.RemoveEmptyEntries).Select (word => word.ToUpperFirst ()));
+
+            return result.ToString ();
+        }
+
+        public static string ToUpperFirst (this string s)
+        {
+            if (string.IsNullOrEmpty (s)) {
+                return string.Empty;
+            }
+            char[] a = s.ToCharArray ();
+            a [0] = char.ToUpper (a [0]);
+            return new string (a);
+        }
     }
 }
 

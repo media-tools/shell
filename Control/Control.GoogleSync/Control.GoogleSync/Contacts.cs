@@ -22,7 +22,7 @@ namespace Control.GoogleSync
 
         public static HashSet<string> IncludeNames {
             get {
-                return syncConfig ["General", "IncludeNames", ""].SplitValues ().ToHashSet ();
+                return syncConfig ["General", "IncludeNames", ""].SplitValues ().Where (v => v.Length > 1).ToHashSet ();
             }
             set {
                 syncConfig ["General", "IncludeNames", ""] = value.JoinValues ();
@@ -156,7 +156,7 @@ namespace Control.GoogleSync
 
         void MergeContact (Contact slave, Contact master)
         {
-            slave.Name = master.Name;
+            slave.Name = master.Name.Format ();
             slave.ContactEntry.Birthday = master.ContactEntry.Birthday;
             slave.Organizations.Clear ();
 
@@ -204,6 +204,53 @@ namespace Control.GoogleSync
             }
             result = null;
             return false;
+        }
+
+        public void CleanContacts ()
+        {
+            Log.Message ("Cleaning contacts: ", account);
+            Log.Indent++;
+            CatchErrors (() => {
+                foreach (Contact contact in ContactList) {
+                    Log.Message ("Contact: ", contact);
+                    Log.Indent++;
+
+                    CleanContact (contact: contact);
+
+                    Log.Indent--;
+                }
+            });
+            Log.Indent--;
+        }
+
+        void CleanContact (Contact contact)
+        {
+            contact.Name = contact.Name.Format ();
+            contact.Organizations.Clear ();
+
+            Log.Debug ("Family Name: ", contact.Name.FamilyName.FormatName ());
+            Log.Debug ("Given Name: ", contact.Name.GivenName.FormatName ());
+            Log.Debug ("Birthday:", contact.ContactEntry.Birthday);
+
+            GDataExtensions.Merge (contact.Emails, contact.Emails, mail => mail.Address);
+            contact.Emails.ForEach (mail => mail.Primary = contact.Emails.Count > 1 && mail.Address == contact.Emails.PrimaryAddress ());
+            GDataExtensions.Merge (contact.Organizations, contact.Organizations, org => org.JobDescription + org.Title + org.Department + org.Name + org.Location);
+            GDataExtensions.Merge (contact.Languages, contact.Languages, l => l.Value);
+            GDataExtensions.Merge (contact.IMs, contact.IMs, l => l.Value);
+            GDataExtensions.Merge (contact.Phonenumbers, contact.Phonenumbers, l => l.Value, GDataExtensions.UniqueFormat);
+            GDataExtensions.Merge (contact.PostalAddresses, contact.PostalAddresses, a => a.City);
+
+            Log.Debug ("Emails:", string.Join (", ", contact.Emails.Select (e => e.Address)));
+            Log.Debug ("Organizations:", string.Join (", ", contact.Organizations.Select (org => org.JobDescription + org.Title + org.Department + org.Name + org.Location)));
+            Log.Debug ("Languages:", string.Join (", ", contact.Languages.Select (l => l.Value)));
+            Log.Debug ("IMs:", string.Join (", ", contact.IMs.Select (i => i.Value)));
+            Log.Debug ("Phonenumbers:", string.Join (", ", contact.Phonenumbers.Select (p => p.Value + " (" + (p.Rel != null ? p.Rel : p.Label) + ")")));
+            Log.Debug ("PostalAddresses:", string.Join ("; ", contact.PostalAddresses.Select (a => a.Format ())));
+
+            CatchErrors (() => {
+                ContactsRequest cr = new ContactsRequest (settings);
+                cr.Update (contact);
+            });
         }
     }
 }

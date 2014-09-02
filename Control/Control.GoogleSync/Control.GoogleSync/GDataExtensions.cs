@@ -5,6 +5,7 @@ using Google.GData.Client;
 using Google.GData.Extensions;
 using Google.Contacts;
 using Control.Common.IO;
+using Control.Common.Util;
 
 namespace Control.GoogleSync
 {
@@ -121,6 +122,7 @@ namespace Control.GoogleSync
             if (value.StartsWith ("0")) {
                 value = "+49" + value.Substring (1);
             }
+            value = value.Trim ();
             if (number.Rel != null) {
                 return new PhoneNumber () { Value = value, Rel = number.Rel };
             } else {
@@ -135,6 +137,43 @@ namespace Control.GoogleSync
             } else {
                 return string.Format ("{0}, {1} {2}", address.Street.Trim (), address.Postcode.Trim (), address.City.Trim ()).Replace ("\n", ", ");
             }
+        }
+
+        public static Name Format (this Name name)
+        {
+            string[] InvalidFamilyNames = new string[] {
+                "(kein Familienname)",
+                "kein Familienname",
+                "Kein Familienname",
+                "(fehlender Familienname)",
+                "Fehlender Familienname",
+                "(Fehlender Familienname)",
+                "missing family name",
+                "(missing family name)",
+                "Familienname"
+            };
+            HashSet<string> IsInvalidFamilyName = new HashSet<string> (InvalidFamilyNames);
+
+            Log.Message (name.FullName);
+            name.FullName = name.FullName.FormatName ();
+            name.FullName = name.FullName ?? "Unknown";
+            if (string.IsNullOrWhiteSpace (name.FamilyName) || string.IsNullOrWhiteSpace (name.GivenName)) {
+                string[] names = name.FullName.Split (new string[]{ " " }, StringSplitOptions.RemoveEmptyEntries);
+                if (names.Length >= 2) {
+                    name.FamilyName = names [names.Length - 1];
+                    name.GivenName = string.Join (" ", names.Except (new string[]{ names [names.Length - 1] }));
+                } else {
+                    name.FamilyName = InvalidFamilyNames [0];
+                    name.GivenName = name.FullName;
+                }
+            }
+            name.GivenName = name.GivenName.FormatName ();
+            if (IsInvalidFamilyName.Select (n => n.FormatName ()).Contains (name.FamilyName.FormatName ()))
+                name.FamilyName = InvalidFamilyNames [0];
+            else
+                name.FamilyName = name.FamilyName.FormatName ();
+            name.FullName = (name.NamePrefix + " " + name.GivenName + " " + name.FamilyName + " " + name.NameSuffix).Replace ("  ", " ").Trim ();
+            return name;
         }
     }
 }

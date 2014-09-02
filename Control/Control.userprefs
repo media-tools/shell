@@ -1,78 +1,38 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Control.GoogleSync/Control.GoogleSync/GoogleAppConfig.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Control.GoogleSync/Control.GoogleSync/GDataExtensions.cs">
     <Files>
-      <File FileName="Control.FileSync/Control.FileSync/Tree.cs" Line="1" Column="1" />
-      <File FileName="Control.FileSync/Control.FileSync/FileSystemLibrary.cs" Line="1" Column="1" />
-      <File FileName="Control.FileSync/Control.FileSync/FileSyncTask.cs" Line="25" Column="27" />
-      <File FileName="Control.FileSync/Control.FileSync/ShareManager.cs" Line="1" Column="1" />
-      <File FileName="Control.FileSync/Control.FileSync/Share.cs" Line="1" Column="1" />
-      <File FileName="Control.Common/Control.Common/IO/Log.cs" Line="1" Column="1" />
-      <File FileName="Control.FileSync/Control.FileSync/SyncAlgo.cs" Line="28" Column="10" />
-      <File FileName="Control.GoogleSync/Control.GoogleSync/GoogleContactsSyncTask.cs" Line="13" Column="35" />
-      <File FileName="Control.GoogleSync/Control.GoogleSync/ContactsAccess.cs" Line="6" Column="6" />
-      <File FileName="Control.GoogleSync/Control.GoogleSync/GoogleConfigTask.cs" Line="13" Column="65" />
-      <File FileName="Control.GoogleSync/Control.GoogleSync/GoogleAppConfig.cs" Line="58" Column="45" />
-      <File FileName="Control.GoogleSync/Control.GoogleSync/GoogleAccount.cs" Line="30" Column="22" />
-      <File FileName="Control/Control/ReflectiveEnumerator.cs" Line="23" Column="79" />
+      <File FileName="Control.GoogleSync/Control.GoogleSync/GoogleContactsTask.cs" Line="60" Column="60" />
+      <File FileName="Control.GoogleSync/Control.GoogleSync/Contacts.cs" Line="13" Column="13" />
+      <File FileName="Control.GoogleSync/Control.GoogleSync/GDataExtensions.cs" Line="52" Column="52" />
+      <File FileName="Control.GoogleSync/Control.GoogleSync/GoogleUserTask.cs" Line="54" Column="54" />
+      <File FileName="Control.GoogleSync/Control.GoogleSync/GoogleApp.cs" Line="36" Column="36" />
+      <File FileName="Control.GoogleSync/Control.GoogleSync/GoogleAccount.cs" Line="31" Column="31" />
+      <File FileName="Control.GoogleSync/Control.GoogleSync/DictionaryDataStore.cs" Line="30" Column="30" />
+      <File FileName="Control.Common/Control.Common/IO/TableParserExtensions.cs" Line="74" Column="74" />
+      <File FileName="Control.Common/Control.Common/IO/Log.cs" Line="56" Column="56" />
+      <File FileName="Control.Common/Control.Common/IO/UserChoices.cs" Line="1" Column="1" />
+      <File FileName="Control.Common/Control.Common/Util/CollectionExtensions.cs" Line="31" Column="31" />
     </Files>
-    <Pads>
-      <Pad Id="ProjectPad">
-        <State expanded="True">
-          <Node name="Control" expanded="True">
-            <Node name="References" expanded="True" />
-            <Node name="Control" expanded="True" />
-          </Node>
-          <Node name="Control.Common" expanded="True">
-            <Node name="References" expanded="True" />
-            <Node name="Control.Common" expanded="True">
-              <Node name="Hooks" expanded="True" />
-              <Node name="IO" expanded="True" />
-              <Node name="Tasks" expanded="True" />
-              <Node name="Util" expanded="True" />
-            </Node>
-          </Node>
-          <Node name="Control.Compatibility.Linux" expanded="True">
-            <Node name="Control.Compatibility.Linux" expanded="True" />
-          </Node>
-          <Node name="Control.FileSync" expanded="True">
-            <Node name="References" expanded="True" />
-            <Node name="Control.FileSync" expanded="True" />
-          </Node>
-          <Node name="Control.Git" expanded="True">
-            <Node name="References" expanded="True" />
-            <Node name="Control.Git" expanded="True" />
-          </Node>
-          <Node name="Control.GoogleSync" expanded="True">
-            <Node name="References" expanded="True" />
-            <Node name="Control.GoogleSync" expanded="True">
-              <Node name="GoogleAppConfig.cs" selected="True" />
-            </Node>
-          </Node>
-          <Node name="Control.Install" expanded="True">
-            <Node name="Control.Install" expanded="True" />
-          </Node>
-          <Node name="Control.Logging" expanded="True">
-            <Node name="Control.Logging" expanded="True" />
-          </Node>
-          <Node name="Control.MailSync" expanded="True">
-            <Node name="Control.MailSync" expanded="True" />
-          </Node>
-          <Node name="Control.Series" expanded="True">
-            <Node name="Control.Series" expanded="True" />
-          </Node>
-        </State>
-      </Pad>
-      <Pad Id="ClassPad">
-        <State expanded="True" selected="True" />
-      </Pad>
-      <Pad Id="MonoDevelop.Debugger.WatchPad">
-        <State />
-      </Pad>
-    </Pads>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore />
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MonoDevelop.Ide.ItemProperties.Control>
+    <MonoDevelop.Ide.CustomExecutionModes>
+      <Data Name="Standard (Benutzerdefiniert)" Id="f0812484-cda8-4b61-af87-b6e1b08c35ce" ModeId="Default" PromptForParameters="True">
+        <CommandData>
+          <Item Key="MonoDevelop.Ide.Execution.CustomArgsCustomizer">
+            <Value Arguments="google-contacts clean" ctype="CustomArgsExecutionModeData">
+              <EnvironmentVariables />
+            </Value>
+          </Item>
+          <Item Key="MonoDevelop.Ide.Execution.MonoExecutionCustomizer">
+            <Value ctype="MonoExecutionParameters" />
+          </Item>
+        </CommandData>
+      </Data>
+    </MonoDevelop.Ide.CustomExecutionModes>
+  </MonoDevelop.Ide.ItemProperties.Control>
 </Properties>

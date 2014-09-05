@@ -5,10 +5,10 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{A556FC86-97B1-4D41-9E1F-02D4FD01A7A0}</ProjectGuid>
+    <ProjectGuid>{65136320-8B2B-409E-A9B7-AF45C1D6DAE9}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>Shell.Compatibility.Linux</RootNamespace>
-    <AssemblyName>Shell.Compatibility.Linux</AssemblyName>
+    <RootNamespace>Shell.HolePunching</RootNamespace>
+    <AssemblyName>Shell.HolePunching</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -30,21 +30,16 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="Mono.Posix" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Shell.Compatibility.Linux\LinuxFileHelper.cs" />
-    <Compile Include="Shell.Compatibility.Linux\LinuxSystemHelper.cs" />
+    <Compile Include="Shell.HolePunching\MyClass.cs" />
+    <Compile Include="Shell.HolePunching\HolePunchingClient.cs" />
+    <Compile Include="Shell.HolePunching\HolePunchingServer.cs" />
+    <Compile Include="Shell.HolePunching\MessageType.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
-    <Folder Include="Shell.Compatibility.Linux\" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Shell.Common\Shell.Common.csproj">
-      <Project>{CBB5DE48-A305-4F9C-88F3-F0F071AC3298}</Project>
-      <Name>Shell.Common</Name>
-    </ProjectReference>
+    <Folder Include="Shell.HolePunching\" />
   </ItemGroup>
 </Project>

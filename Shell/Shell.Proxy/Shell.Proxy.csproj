@@ -33,25 +33,26 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Shell.Proxy\Extensions.cs" />
-    <Compile Include="Shell.Proxy\Socks5Server.cs" />
-    <Compile Include="Shell.Proxy\Socks\Socks.cs" />
-    <Compile Include="Shell.Proxy\Socks\SocksClient.cs" />
-    <Compile Include="Shell.Proxy\Socks\SocksTunnel.cs" />
-    <Compile Include="Shell.Proxy\TCP\Client.cs" />
-    <Compile Include="Shell.Proxy\TCP\ClientEventArgs.cs" />
-    <Compile Include="Shell.Proxy\TCP\DataEventArgs.cs" />
-    <Compile Include="Shell.Proxy\TCP\TcpServer.cs" />
-    <Compile Include="Shell.Proxy\Socks5ServerTask.cs" />
+    <Compile Include="Test\Extensions.cs" />
+    <Compile Include="Test\Socks5Server.cs" />
+    <Compile Include="Test\Socks5ServerTask.cs" />
+    <Compile Include="Test\Socks\Socks.cs" />
+    <Compile Include="Test\Socks\SocksClient.cs" />
+    <Compile Include="Test\Socks\SocksTunnel.cs" />
+    <Compile Include="Test\TCP\Client.cs" />
+    <Compile Include="Test\TCP\ClientEventArgs.cs" />
+    <Compile Include="Test\TCP\DataEventArgs.cs" />
+    <Compile Include="Test\TCP\TcpServer.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <ItemGroup>
-    <Folder Include="Shell.Proxy\" />
-  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Shell.Common\Shell.Common.csproj">
       <Project>{CBB5DE48-A305-4F9C-88F3-F0F071AC3298}</Project>
       <Name>Shell.Common</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Test\" />
+    <Folder Include="Shell.Proxy\" />
   </ItemGroup>
 </Project>

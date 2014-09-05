@@ -8,7 +8,7 @@ using System.Net.Sockets;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 
-namespace HolePunching
+namespace Shell.HolePunching
 {
     public class HolePunchingServer
     {

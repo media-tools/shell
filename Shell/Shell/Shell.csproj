@@ -75,6 +75,14 @@
       <Project>{B5516B19-633A-4601-8698-61AC2CBD6865}</Project>
       <Name>Shell.GoogleSync</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Shell.HolePunching\Shell.HolePunching.csproj">
+      <Project>{65136320-8B2B-409E-A9B7-AF45C1D6DAE9}</Project>
+      <Name>Shell.HolePunching</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Shell.Proxy\Shell.Proxy.csproj">
+      <Project>{478068DD-C4BB-4363-A331-F9AB00BDFEA5}</Project>
+      <Name>Shell.Proxy</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Shell\" />

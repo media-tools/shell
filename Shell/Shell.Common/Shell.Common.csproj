@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{CBB5DE48-A305-4F9C-88F3-F0F071AC3298}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Shell.Common</RootNamespace>
+    <AssemblyName>Shell.Common</AssemblyName>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>full</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Shell.Common\Program.cs" />
+    <Compile Include="Shell.Common\IO\FileSystem.cs" />
+    <Compile Include="Shell.Common\IO\FileSystemType.cs" />
+    <Compile Include="Shell.Common\IO\Log.cs" />
+    <Compile Include="Shell.Common\IO\IniFile.cs" />
+    <Compile Include="Shell.Common\IO\ConfigFile.cs" />
+    <Compile Include="Shell.Common\Tasks\MainTask.cs" />
+    <Compile Include="Shell.Common\Tasks\Task.cs" />
+    <Compile Include="Shell.Common\Hooks\Hook.cs" />
+    <Compile Include="Shell.Common\Util\StringUtils.cs" />
+    <Compile Include="Shell.Common\Util\SystemInfo.cs" />
+    <Compile Include="Shell.Common\Util\Commons.cs" />
+    <Compile Include="Shell.Compatibility\FileHelper.cs" />
+    <Compile Include="Shell.Compatibility\SystemHelper.cs" />
+    <Compile Include="Shell.Common\IO\LogColor.cs" />
+    <Compile Include="Shell.Common\Tasks\Library.cs" />
+    <Compile Include="Shell.Common\IO\ProgressBar.cs" />
+    <Compile Include="Shell.Common\IO\NetworkHelper.cs" />
+    <Compile Include="Shell.Common\IO\TableParserExtensions.cs" />
+    <Compile Include="Shell.Common\Util\CollectionExtensions.cs" />
+    <Compile Include="Shell.Common\IO\ShellCharacters.cs" />
+    <Compile Include="Shell.Common\IO\UserChoice.cs" />
+    <Compile Include="Shell.Common\IO\UserChoices.cs" />
+    <Compile Include="Shell.Common\IO\UserChoiceExtensions.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <Folder Include="Shell.Common\" />
+    <Folder Include="Shell.Common\IO\" />
+    <Folder Include="Shell.Common\Tasks\" />
+    <Folder Include="Shell.Common\Hooks\" />
+    <Folder Include="Shell.Common\Util\" />
+    <Folder Include="Shell.Compatibility\" />
+  </ItemGroup>
+</Project>

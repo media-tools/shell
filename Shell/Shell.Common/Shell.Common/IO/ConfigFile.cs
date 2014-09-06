@@ -19,7 +19,8 @@ namespace Shell.Common.IO
         /// </summary>
         public static string False { get { return "false"; } }
 
-        private string Filename;
+        public string Filename { get; private set; }
+
         private IniFile ini;
 
         public ConfigFile (string filename)
@@ -30,6 +31,11 @@ namespace Shell.Common.IO
             // create a new ini parser
             using (StreamWriter w = File.AppendText (Filename)) {
             }
+            ini = new IniFile (Filename);
+        }
+
+        public void Reload ()
+        {
             ini = new IniFile (Filename);
         }
 
@@ -65,19 +71,29 @@ namespace Shell.Common.IO
             return GetOption (section, option, defaultValue ? True : False) == True ? true : false;
         }
 
-        public void SetOption (string section, string option, float _value)
+        public void SetOptionFloat (string section, string option, float _value)
         {
             SetOption (section, option, floatToString (_value));
         }
 
-        public float GetOption (string section, string option, float defaultValue)
+        public void SetOptionInt (string section, string option, int _value)
+        {
+            SetOption (section, option, intToString (_value));
+        }
+
+        public float GetOptionFloat (string section, string option, float defaultValue)
         {
             return stringToFloat (GetOption (section, option, floatToString (defaultValue)));
         }
 
+        public int GetOptionInt (string section, string option, int defaultValue)
+        {
+            return stringToInt (GetOption (section, option, intToString (defaultValue)));
+        }
+
         private string floatToString (float f)
         {
-            return String.Empty + ((int) (f * 1000)).ToString ();
+            return String.Empty + ((int)(f * 1000)).ToString ();
         }
 
         private float stringToFloat (string s)
@@ -86,14 +102,28 @@ namespace Shell.Common.IO
             bool result = Int32.TryParse (s, out i);
             if (true == result) {
                 return ((float)i) / 1000f;
-            }
-            else {
+            } else {
                 return 0;
             }
         }
 
-        public bool this [string section, string option, bool defaultValue = false]
+        private string intToString (int f)
         {
+            return String.Empty + f.ToString ();
+        }
+
+        private int stringToInt (string s)
+        {
+            int i;
+            bool result = Int32.TryParse (s, out i);
+            if (true == result) {
+                return i;
+            } else {
+                return 0;
+            }
+        }
+
+        public bool this [string section, string option, bool defaultValue = false] {
             get {
                 return GetOption (section, option, defaultValue);
             }
@@ -102,18 +132,16 @@ namespace Shell.Common.IO
             }
         }
 
-        public float this [string section, string option, float defaultValue = 0f]
-        {
+        public float this [string section, string option, float defaultValue = 0f] {
             get {
-                return GetOption (section, option, defaultValue);
+                return GetOptionFloat (section, option, defaultValue);
             }
             set {
-                SetOption (section, option, value);
+                SetOptionFloat (section, option, value);
             }
         }
 
-        public string this [string section, string option, string defaultValue = null]
-        {
+        public string this [string section, string option, string defaultValue = null] {
             get {
                 return GetOption (section, option, defaultValue);
             }

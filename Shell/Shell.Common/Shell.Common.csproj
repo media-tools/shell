@@ -60,6 +60,7 @@
     <Compile Include="Shell.Common\IO\UserChoiceExtensions.cs" />
     <Compile Include="Shell.Common\Util\DateTimeExtensions.cs" />
     <Compile Include="Shell.Common\Util\NetworkUtils.cs" />
+    <Compile Include="Shell.Common\Util\ThreadingUtils.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

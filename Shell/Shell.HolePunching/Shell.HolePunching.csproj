@@ -33,11 +33,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Shell.HolePunching\HolePunchingClient.cs" />
-    <Compile Include="Shell.HolePunching\HolePunchingServer.cs" />
-    <Compile Include="Shell.HolePunching\MessageType.cs" />
-    <Compile Include="Shell.HolePunching\ServerTask.cs" />
     <Compile Include="Shell.HolePunching\ClientTask.cs" />
+    <Compile Include="Shell.HolePunching\NatTraverse.cs" />
+    <Compile Include="Shell.HolePunching\FuckTask.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

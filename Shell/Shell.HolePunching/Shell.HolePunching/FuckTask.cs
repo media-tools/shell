@@ -4,9 +4,9 @@ using Shell.Common;
 
 namespace Shell.HolePunching
 {
-    public class ServerTask : Task, MainTask
+    public class FuckTask : Task, MainTask
     {
-        public ServerTask ()
+        public FuckTask ()
         {
             Name = "HolePunchingServer";
             Description = "Run the hole punching server";
@@ -19,9 +19,6 @@ namespace Shell.HolePunching
         {
             int port = NetworkUtils.CurrentPort (0);
             int backlog = 10;
-
-            HolePunchingServer hps = new HolePunchingServer (port, backlog);
-            hps.BeginServer ();
 
             Console.ReadLine ();
         }

@@ -38,7 +38,9 @@ namespace Shell.Common.Util
 
         public static int MAX_PID { get; private set; }
 
-        public static bool IS_EXPERIMENTAL = false; 
+        public static bool IS_EXPERIMENTAL = false;
+
+        public static Platforms CurrentPlatform { get { return Environment.OSVersion.Platform.ToString ().StartsWith ("Win") ? Platforms.Windows : Platforms.Linux; } }
 
         static Commons ()
         {
@@ -58,6 +60,12 @@ namespace Shell.Common.Util
             Log.MessageConsole ();
             Log.MessageLog ("Cancelled!");
         }
+    }
+
+    public enum Platforms
+    {
+        Windows,
+        Linux
     }
 }
 

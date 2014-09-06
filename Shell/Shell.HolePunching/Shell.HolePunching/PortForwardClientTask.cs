@@ -33,53 +33,80 @@ namespace Shell.HolePunching
 
             LocalPort local = Networking.OpenLocalPort (offset: myoffset);
 
-            Listen (local, peer, peeroffset);
+            List<ForwardedTcpPort> ports = new List<ForwardedTcpPort> ();
+            ports.Add (new ForwardedTcpPort { Source = 10001, Target = 2200 });
+
+            Listen (forwardedPorts: ports, local: local, remoteHost: peer, remoteOffset: peeroffset);
         }
 
-        void Listen (LocalPort local, string peer, int peeroffset)
+        void Listen (List<ForwardedTcpPort> forwardedPorts, LocalPort local, string remoteHost, int remoteOffset)
+        {
+            List<Task> tasks = new List<Task> ();
+            foreach (ForwardedTcpPort forwardedPort in forwardedPorts) {
+                tasks.Add (Task.Run (() => Listen (forwardedPort: forwardedPort, local: local, remoteHost: remoteHost, remoteOffset: remoteOffset)));
+            }
+            while (true) {
+                Thread.Sleep (1000);
+            }
+        }
+
+        async Task Listen (ForwardedTcpPort forwardedPort, LocalPort local, string remoteHost, int remoteOffset)
+        {
+            Log.Message ("Starting TCP Server: ", forwardedPort);
+            TcpListener tcpServer = new TcpListener (IPAddress.Any, 9000);
+            tcpServer.ExclusiveAddressUse = false;
+            try {
+                tcpServer.Start ();
+                while (true) {
+                    TcpClient tcpClient = await tcpServer.AcceptTcpClientAsync ();
+                    Log.Message ("Connected: ", tcpClient);
+                    ProcessClient (tcp: tcpClient, forwardedPort: forwardedPort, local: local, remoteHost: remoteHost, remoteOffset: remoteOffset);
+                }
+            } catch (Exception ex) {
+                Log.Error (ex);
+            } finally {
+                tcpServer.Stop ();
+            }
+            Log.Message ("Stopped TCP Server: ", forwardedPort);
+        }
+
+        void ProcessClient (TcpClient tcp, ForwardedTcpPort forwardedPort, LocalPort local, string remoteHost, int remoteOffset)
         {
             while (true) {
-                UdpConnection conn = local.OpenConnection (remoteHost: peer, remoteOffset: peeroffset);
+                UdpConnection conn = local.OpenConnection (remoteHost: remoteHost, remoteOffset: remoteOffset);
                 conn.PunchHole ();
 
-                ushort targetPort;
-                if (GetTarget (connection: conn, targetPort: out targetPort)) {
-                    TcpClient tcpSock = ConnectTcp (port: targetPort);
-                    if (tcpSock != null) {
-                        Task.Run (async () => await ForwardPort (udp: conn, tcp: tcpSock));
-                    } else {
-                        Log.Error ("Unable to connect to tcp target.");
-                    }
+                if (SendTarget (connection: conn, targetPort: forwardedPort.Target)) {
+                    Task.Run (async () => await HolePunchingUtil.RedirectEverything (udp: conn, tcp: tcp));
                 } else {
-                    Log.Error ("Unable to get target port.");
+                    Log.Error ("Unable to send target port.");
                 }
             }
         }
 
-        bool GetTarget (UdpConnection connection, out ushort targetPort)
+        bool SendTarget (UdpConnection connection, ushort targetPort)
         {
             bool running = true;
             bool success = false;
             int _targetPort = 0;
             int timeout = HolePunchingUtil.KEEP_ALIVE_TIMEOUT;
 
+            connection.Send ("TARGET:" + targetPort + "");
+
             System.Threading.Tasks.Task.Run (async () => {
                 while (running) {
                     Packet packet = await connection.ReceiveAsync ();
                     string receivedString = packet.BufferString;
-                    if (receivedString.StartsWith ("TARGET:")) {
-                        string target = receivedString.Substring (7);
-                        Log.Message ("Received target: ", target);
-                        if (int.TryParse (target, out _targetPort)) {
-                            running = false;
-                            success = true;
-                        } else {
-                            Log.Error ("Invalid target port: ", target);
-                            running = false;
-                            success = false;
-                        }
+                    if (receivedString.Contains ("TARGET OK")) {
+                        Log.Message ("Received ack for target!");
+                        running = false;
+                        success = true;
                         timeout = HolePunchingUtil.KEEP_ALIVE_TIMEOUT;
-
+                    } else if (packet.IsErrorPacket) {
+                        Log.Error ("Received error packet: ", packet.ErrorString);
+                        running = false;
+                        success = false;
+                        timeout = HolePunchingUtil.KEEP_ALIVE_TIMEOUT;
                     } else {
                         Log.Debug ("Received shit while waiting for target: ", receivedString);
                     }
@@ -100,52 +127,16 @@ namespace Shell.HolePunching
 
             return success;
         }
+    }
 
-        TcpClient ConnectTcp (ushort port)
+    public struct ForwardedTcpPort
+    {
+        public ushort Source;
+        public ushort Target;
+
+        public override string ToString ()
         {
-            TcpClient tcpSock;
-            try {
-                tcpSock = new TcpClient ();
-                tcpSock.Connect ("127.0.0.1", port);
-            } catch (Exception ex) {
-                Log.Error (ex);
-                tcpSock = null;
-            }
-            return tcpSock;
-        }
-
-        async Task ForwardPort (UdpConnection udp, TcpClient tcp)
-        {
-            Log.Debug ("ficken1");
-            bool running = true;
-
-            List<Task> tasks = new List<Task> ();
-
-            tasks.Add(Task.Run (async () => {
-                while (running) {
-                    Packet packet = await udp.ReceiveAsync ();
-
-                    await tcp.GetStream ().WriteAsync (buffer: packet.Buffer, offset: 0, count: packet.Buffer.Length);
-                    Log.Debug ("Forward (udp -> tcp): ", packet.Buffer.Length, " bytes");
-                }
-            }));
-
-            tasks.Add(Task.Run (async () => {
-                byte[] buffer = new byte[8 * 1024];
-
-                while (running) {
-                    int bytesRead = await tcp.GetStream ().ReadAsync (buffer, 0, (int)buffer.Length);
-                    udp.Send (buffer, bytesRead);
-                }
-            }));
-
-            udp.SendKeepAlivePackets (() => running);
-
-            Log.Debug ("ficken2");
-
-            await Task.WhenAll (tasks);
-
-            Log.Debug ("ficken3");
+            return string.Format ("ForwardedPort: {0} -> {1}", Source, Target);
         }
     }
 }

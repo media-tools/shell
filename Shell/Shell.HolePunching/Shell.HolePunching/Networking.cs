@@ -196,6 +196,11 @@ namespace Shell.HolePunching
             Send (bytes: bytes);
         }
 
+        public void SendError (params object[] message)
+        {
+            Send ("ERROR:" + string.Join ("", message));
+        }
+
         public async Task<Packet> ReceiveAsync ()
         {
             Packet packet;
@@ -235,6 +240,10 @@ namespace Shell.HolePunching
         {
             return string.Format ("[Packet(cid={0},buffer={1})]", CID, BufferString);
         }
+
+        public bool IsErrorPacket { get { return BufferString.StartsWith ("ERROR:"); } }
+
+        public string ErrorString { get { return IsErrorPacket ? BufferString.Substring (6) : ""; } }
     }
 
     public struct ConnectionID

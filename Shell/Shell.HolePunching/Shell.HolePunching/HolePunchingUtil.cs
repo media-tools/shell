@@ -7,6 +7,8 @@ using System.Net.Sockets;
 using System.Net;
 using System.Text;
 using System.Linq;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace Shell.HolePunching
 {
@@ -36,6 +38,40 @@ namespace Shell.HolePunching
                     Thread.Sleep (2000);
                 }
             });
+        }
+
+        public static async Task RedirectEverything (UdpConnection udp, TcpClient tcp)
+        {
+            Log.Debug ("ficken1");
+            bool running = true;
+
+            List<Task> tasks = new List<Task> ();
+
+            tasks.Add (Task.Run (async () => {
+                while (running) {
+                    Packet packet = await udp.ReceiveAsync ();
+
+                    await tcp.GetStream ().WriteAsync (buffer: packet.Buffer, offset: 0, count: packet.Buffer.Length);
+                    Log.Debug ("Forward (udp -> tcp): ", packet.Buffer.Length, " bytes");
+                }
+            }));
+
+            tasks.Add (Task.Run (async () => {
+                byte[] buffer = new byte[8 * 1024];
+
+                while (running) {
+                    int bytesRead = await tcp.GetStream ().ReadAsync (buffer, 0, (int)buffer.Length);
+                    udp.Send (buffer, bytesRead);
+                }
+            }));
+
+            udp.SendKeepAlivePackets (() => running);
+
+            Log.Debug ("ficken2");
+
+            await Task.WhenAll (tasks);
+
+            Log.Debug ("ficken3");
         }
 
         public void ReadConfig (out string peer, out int myoffset, out int peeroffset)

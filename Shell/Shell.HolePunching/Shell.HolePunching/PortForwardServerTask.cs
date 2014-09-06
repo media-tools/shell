@@ -46,7 +46,7 @@ namespace Shell.HolePunching
                 if (GetTarget (connection: conn, targetPort: out targetPort)) {
                     TcpClient tcpSock = ConnectTcp (port: targetPort);
                     if (tcpSock != null) {
-                        Task.Run (async () => await ForwardPort (udp: conn, tcp: tcpSock));
+                        Task.Run (async () => await HolePunchingUtil.RedirectEverything (udp: conn, tcp: tcpSock));
                     } else {
                         Log.Error ("Unable to connect to tcp target.");
                     }
@@ -73,10 +73,12 @@ namespace Shell.HolePunching
                         if (int.TryParse (target, out _targetPort)) {
                             running = false;
                             success = true;
+                            connection.Send("TARGET OK");
                         } else {
                             Log.Error ("Invalid target port: ", target);
                             running = false;
                             success = false;
+                            connection.SendError("Invalid Target: ", target);
                         }
                         timeout = HolePunchingUtil.KEEP_ALIVE_TIMEOUT;
 
@@ -112,40 +114,6 @@ namespace Shell.HolePunching
                 tcpSock = null;
             }
             return tcpSock;
-        }
-
-        async Task ForwardPort (UdpConnection udp, TcpClient tcp)
-        {
-            Log.Debug ("ficken1");
-            bool running = true;
-
-            List<Task> tasks = new List<Task> ();
-
-            tasks.Add(Task.Run (async () => {
-                while (running) {
-                    Packet packet = await udp.ReceiveAsync ();
-
-                    await tcp.GetStream ().WriteAsync (buffer: packet.Buffer, offset: 0, count: packet.Buffer.Length);
-                    Log.Debug ("Forward (udp -> tcp): ", packet.Buffer.Length, " bytes");
-                }
-            }));
-
-            tasks.Add(Task.Run (async () => {
-                byte[] buffer = new byte[8 * 1024];
-
-                while (running) {
-                    int bytesRead = await tcp.GetStream ().ReadAsync (buffer, 0, (int)buffer.Length);
-                    udp.Send (buffer, bytesRead);
-                }
-            }));
-
-            udp.SendKeepAlivePackets (() => running);
-
-            Log.Debug ("ficken2");
-
-            await Task.WhenAll (tasks);
-
-            Log.Debug ("ficken3");
         }
     }
 }

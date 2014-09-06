@@ -17,49 +17,18 @@ namespace Shell.HolePunching
         public static int WINDOW = 10;
         public static int TIMEOUT = 10;
 
-        public ushort LocalPort { get; private set; }
+        public UdpConnection Connection { get; private set; }
 
-        public ushort RemotePort { get; private set; }
-
-        public string RemoteHost { get; private set; }
-
-        public IPEndPoint RemoteEndPoint { get; private set; }
-
-        private Random rnd = new Random ();
-
-        public NatTraverse (ushort localPort, string remoteHost, ushort remotePort)
+        public NatTraverse (UdpConnection connection)
         {
-            LocalPort = localPort;
-            RemoteHost = remoteHost;
-            RemotePort = remotePort;
+            Connection = connection;
         }
 
-        private UdpClient SockGen ()
+        public bool Punch ()
         {
-            Log.Message ("Creating socket localhost:", LocalPort, " <-> ", RemoteHost, ":", RemotePort, "...");
-            UdpClient sock = new UdpClient ();
-            sock.ExclusiveAddressUse = false;
-            sock.Client.SetSocketOption (SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-            IPEndPoint localpt = new IPEndPoint (IPAddress.Any, LocalPort);
-            sock.Client.Bind (localpt);
-            IPAddress peerAddr;
-            try {
-                peerAddr = IPAddress.Parse (RemoteHost);
-            } catch (FormatException) {
-                peerAddr = Dns.GetHostAddresses (RemoteHost) [0];
-            }
-            RemoteEndPoint = new IPEndPoint (peerAddr, RemotePort);
-            return sock;
-        }
-
-
-        public bool Punch (out UdpClient sock)
-        {
-            sock = SockGen ();
             bool success = false;
             while (!success) {
-                TryToConnect (sock: sock);
-                //success = HandShake (sock: sock);
+                TryToConnect ();
                 success = true;
             }
 
@@ -71,28 +40,24 @@ namespace Shell.HolePunching
             return success;
         }
 
-        void TryToConnect (UdpClient sock)
+        void TryToConnect ()
         {
             bool sendingGarbage = true;
             bool waitingForAck = false;
 
-            byte[] garbage = Encoding.ASCII.GetBytes (GARBAGE_MAGIC);
-            byte[] ack = Encoding.ASCII.GetBytes (ACK_MAGIC);
-
             Task.Run (async () => {
                 while (sendingGarbage || waitingForAck) {
-                    //IPEndPoint object will allow us to read datagrams sent from any source.
-                    UdpReceiveResult receivedResults = await sock.ReceiveAsync ();
-                    string receivedString = Encoding.ASCII.GetString (receivedResults.Buffer);
+                    Packet packet = await Connection.ReceiveAsync ();
+                    string receivedString = Encoding.ASCII.GetString (packet.Buffer);
                     if (receivedString.Trim ().StartsWith (GARBAGE_MAGIC)) {
                         Log.Message ("Received garbage...");
                         sendingGarbage = false;
                         waitingForAck = true;
                         Log.Message ("Sending ack...");
-                        sock.Send (ack, ack.Length, RemoteEndPoint);
+                        Connection.Send (ACK_MAGIC);
                     } else if (receivedString.Trim ().StartsWith (ACK_MAGIC)) {
                         Log.Message ("Received ack...");
-                        sock.Send (ack, ack.Length, RemoteEndPoint);
+                        Connection.Send (ACK_MAGIC);
                         sendingGarbage = false;
                         waitingForAck = false;
                     } else {
@@ -101,17 +66,17 @@ namespace Shell.HolePunching
                 }
             });
 
-            HolePunchingLibrary.SendKeepAlivePackets (udp: sock, udpRemote: RemoteEndPoint, checkIfRunning: () => sendingGarbage);
+            Connection.SendKeepAlivePackets (whileTrue: () => sendingGarbage);
 
             Log.Message ("Sending garbage... ");
             while (sendingGarbage) {
-                sock.SendAsync (garbage, garbage.Length, RemoteEndPoint);
+                Connection.Send (GARBAGE_MAGIC);
                 Thread.Sleep (500);
             }
 
             Log.Message ("Waiting for ack... ");
             while (waitingForAck) {
-                sock.Send (ack, ack.Length, RemoteEndPoint);
+                Connection.Send (ACK_MAGIC);
                 Thread.Sleep (500);
             }
 
@@ -120,6 +85,7 @@ namespace Shell.HolePunching
             Thread.Sleep (2000);
         }
 
+        /*
         bool HandShake (UdpClient sock)
         {
             Log.Message ("Handshake...");
@@ -182,7 +148,7 @@ namespace Shell.HolePunching
             }
 
             return success;
-        }
+        }*/
     }
 }
 

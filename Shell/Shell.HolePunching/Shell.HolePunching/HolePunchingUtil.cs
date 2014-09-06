@@ -10,13 +10,15 @@ using System.Linq;
 
 namespace Shell.HolePunching
 {
-    public class HolePunchingLibrary : Library
+    public class HolePunchingUtil : Library
     {
         public static int KEEP_ALIVE_TIMEOUT = 10000;
         private static byte[] KEEP_ALIVE_BYTES = Encoding.ASCII.GetBytes ("KEEP-ALIVE");
         private readonly string SECTION = "Peer";
 
-        public HolePunchingLibrary ()
+        public static readonly Random Random = new Random ();
+
+        public HolePunchingUtil ()
         {
             ConfigName = "HolePunching";
         }

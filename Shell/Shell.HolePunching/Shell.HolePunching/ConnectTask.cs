@@ -28,14 +28,19 @@ namespace Shell.HolePunching
             string peer;
             int myoffset;
             int peeroffset;
-            new HolePunchingLibrary().ReadConfig (peer: out peer, myoffset: out myoffset, peeroffset: out peeroffset);
+            new HolePunchingUtil().ReadConfig (peer: out peer, myoffset: out myoffset, peeroffset: out peeroffset);
 
+            UdpConnection conn = Networking.OpenLocalPort (offset: myoffset).OpenConnection (remoteHost: peer, remoteOffset: peeroffset);
+            conn.PunchHole ();
+
+            /*
             ushort myport = NetworkUtils.CurrentPort (myoffset);
             ushort peerport = NetworkUtils.CurrentPort (peeroffset);
 
             NatTraverse nattra = new NatTraverse (localPort: myport, remoteHost: peer, remotePort: peerport);
             UdpClient sock;
             nattra.Punch (out sock);
+            */
         }
     }
 }

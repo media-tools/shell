@@ -27,15 +27,13 @@ namespace Shell.HolePunching
             string peer;
             int myoffset;
             int peeroffset;
-            new HolePunchingLibrary ().ReadConfig (peer: out peer, myoffset: out myoffset, peeroffset: out peeroffset);
+            new HolePunchingUtil ().ReadConfig (peer: out peer, myoffset: out myoffset, peeroffset: out peeroffset);
 
-            ushort myport = NetworkUtils.CurrentPort (myoffset);
-            ushort peerport = NetworkUtils.CurrentPort (peeroffset);
+            UdpConnection conn = Networking.OpenLocalPort (offset: myoffset).OpenConnection (remoteHost: peer, remoteOffset: peeroffset);
+            conn.PunchHole ();
 
-            NatTraverse nattra = new NatTraverse (localPort: myport, remoteHost: peer, remotePort: peerport);
-            UdpClient sock;
-            nattra.Punch (out sock);
-            IPEndPoint remote = nattra.RemoteEndPoint;
+            UdpClient sock = conn.Local.Socket;
+            IPEndPoint remote = conn.RemoteEndPoint;
 
             ushort targetPort;
             if (GetTarget (sock: sock, udpRemote: remote, targetPort: out targetPort)) {
@@ -55,7 +53,7 @@ namespace Shell.HolePunching
             bool running = true;
             bool success = false;
             int _targetPort = 0;
-            int timeout = HolePunchingLibrary.KEEP_ALIVE_TIMEOUT;
+            int timeout = HolePunchingUtil.KEEP_ALIVE_TIMEOUT;
 
             System.Threading.Tasks.Task.Run (async () => {
                 while (running) {
@@ -72,7 +70,7 @@ namespace Shell.HolePunching
                             running = false;
                             success = false;
                         }
-                        timeout = HolePunchingLibrary.KEEP_ALIVE_TIMEOUT;
+                        timeout = HolePunchingUtil.KEEP_ALIVE_TIMEOUT;
 
                     } else {
                         Log.Debug ("Received shit while waiting for target: ", receivedString);
@@ -80,7 +78,7 @@ namespace Shell.HolePunching
                 }
             });
 
-            HolePunchingLibrary.SendKeepAlivePackets (udp: sock, udpRemote: udpRemote, checkIfRunning: () => running);
+            HolePunchingUtil.SendKeepAlivePackets (udp: sock, udpRemote: udpRemote, checkIfRunning: () => running);
 
             while (running) {
                 Thread.Sleep (100);
@@ -115,7 +113,7 @@ namespace Shell.HolePunching
             System.Threading.Tasks.Task.Run (async () => {
                 while (running) {
                     UdpReceiveResult receivedResults = await udp.ReceiveAsync ();
-                    if (HolePunchingLibrary.IsKeepAlivePacket (receivedResults.Buffer)) {
+                    if (HolePunchingUtil.IsKeepAlivePacket (receivedResults.Buffer)) {
                         Log.Debug ("Received Keep-Alive Packet");
                     } else {
                         await tcp.GetStream ().WriteAsync (buffer: receivedResults.Buffer, offset: 0, count: receivedResults.Buffer.Length);
@@ -133,7 +131,7 @@ namespace Shell.HolePunching
                 }
             });
 
-            HolePunchingLibrary.SendKeepAlivePackets (udp: udp, udpRemote: udpRemote, checkIfRunning: () => running);
+            HolePunchingUtil.SendKeepAlivePackets (udp: udp, udpRemote: udpRemote, checkIfRunning: () => running);
 
             while (running) {
                 Thread.Sleep (1000);

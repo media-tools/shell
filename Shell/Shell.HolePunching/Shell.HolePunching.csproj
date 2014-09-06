@@ -37,7 +37,8 @@
     <Compile Include="Shell.HolePunching\NatTraverse.cs" />
     <Compile Include="Shell.HolePunching\ConnectTask.cs" />
     <Compile Include="Shell.HolePunching\PortForwardServerTask.cs" />
-    <Compile Include="Shell.HolePunching\HolePunchingLibrary.cs" />
+    <Compile Include="Shell.HolePunching\Networking.cs" />
+    <Compile Include="Shell.HolePunching\HolePunchingUtil.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

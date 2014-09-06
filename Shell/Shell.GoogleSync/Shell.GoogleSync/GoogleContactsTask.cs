@@ -7,7 +7,7 @@ using Shell.Common.Util;
 
 namespace Shell.GoogleSync
 {
-    public class GoogleContactsTask : Task, MainTask
+    public class GoogleContactsTask : ScriptTask, MainScriptTask
     {
         public GoogleContactsTask ()
         {

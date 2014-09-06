@@ -40,8 +40,6 @@
     <Compile Include="Shell.Common\IO\Log.cs" />
     <Compile Include="Shell.Common\IO\IniFile.cs" />
     <Compile Include="Shell.Common\IO\ConfigFile.cs" />
-    <Compile Include="Shell.Common\Tasks\MainTask.cs" />
-    <Compile Include="Shell.Common\Tasks\Task.cs" />
     <Compile Include="Shell.Common\Hooks\Hook.cs" />
     <Compile Include="Shell.Common\Util\StringUtils.cs" />
     <Compile Include="Shell.Common\Util\SystemInfo.cs" />
@@ -61,6 +59,8 @@
     <Compile Include="Shell.Common\Util\DateTimeExtensions.cs" />
     <Compile Include="Shell.Common\Util\NetworkUtils.cs" />
     <Compile Include="Shell.Common\Util\ThreadingUtils.cs" />
+    <Compile Include="Shell.Common\Tasks\ScriptTask.cs" />
+    <Compile Include="Shell.Common\Tasks\MainScriptTask.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

@@ -5,7 +5,7 @@ using System.Net;
 
 namespace Shell.Proxy
 {
-    public class Socks5ServerTask : Task, MainTask
+    public class Socks5ServerTask : ScriptTask, MainScriptTask
     {
         public Socks5ServerTask ()
         {

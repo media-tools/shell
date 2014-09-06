@@ -7,7 +7,7 @@ using Shell.Common.Util;
 
 namespace Shell.Logging
 {
-    public class LogTask : Task, MainTask
+    public class LogTask : ScriptTask, MainScriptTask
     {
         public LogTask ()
         {

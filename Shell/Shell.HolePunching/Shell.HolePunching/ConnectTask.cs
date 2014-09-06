@@ -10,7 +10,7 @@ using System.Threading;
 
 namespace Shell.HolePunching
 {
-    public class ConnectTask : Task, MainTask
+    public class ConnectTask : ScriptTask, MainScriptTask
     {
         public ConnectTask ()
         {

@@ -9,12 +9,12 @@ namespace Shell.Common
 {
     public class Program
     {
-        public static Task[] Tasks { get; private set; }
+        public static ScriptTask[] Tasks { get; private set; }
 
-        public static Action<Task> HooksBeforeTask = (tsk) => {};
-        public static Action<Task> HooksAfterTask = (tsk) => {};
+        public static Action<ScriptTask> HooksBeforeTask = (tsk) => {};
+        public static Action<ScriptTask> HooksAfterTask = (tsk) => {};
 
-        public Program (IEnumerable<Task> tasks)
+        public Program (IEnumerable<ScriptTask> tasks)
         {
             Tasks = tasks.ToArray ();
         }
@@ -25,7 +25,7 @@ namespace Shell.Common
             Commons.IS_EXPERIMENTAL = args.Where (arg => arg.StartsWith ("--ex")).Any ();
             args = (from arg in args where !arg.StartsWith ("--ex") select arg).ToArray ();
 
-            Task matchingTask = null;
+            ScriptTask matchingTask = null;
             if (args.Length > 0 && findMatchingTask (args [0], out matchingTask)) {
                 Log.MessageLog ("Start (date='", Commons.DATETIME, "', args='", StringUtils.JoinArgs (args: args, alt: "(null)"), "')");
 
@@ -68,7 +68,7 @@ namespace Shell.Common
             string indent = "  ";
             if (Tasks.Any ()) {
                 int maxLength = Tasks.Max (task => task.LengthOfUsageLine (indent: indent)) + 2;
-                foreach (Task task in Tasks) {
+                foreach (ScriptTask task in Tasks) {
                     task.PrintUsage (indent: indent, maxLength: maxLength);
                 }
             } else {
@@ -77,9 +77,9 @@ namespace Shell.Common
             Console.WriteLine ("");
         }
 
-        private bool findMatchingTask (string arg, out Task matchingTask)
+        private bool findMatchingTask (string arg, out ScriptTask matchingTask)
         {
-            foreach (Task task in Tasks) {
+            foreach (ScriptTask task in Tasks) {
                 if (task.MatchesOption (arg)) {
                     matchingTask = task;
                     return true;

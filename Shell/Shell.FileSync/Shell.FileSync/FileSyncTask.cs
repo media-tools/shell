@@ -7,7 +7,7 @@ using Shell.Common.IO;
 
 namespace Shell.FileSync
 {
-    public class FileSyncTask : Task, MainTask
+    public class FileSyncTask : ScriptTask, MainScriptTask
     {
         public FileSyncTask ()
         {

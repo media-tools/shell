@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace Shell.Git
 {
-    public class UserReposTask : Task, MainTask
+    public class UserReposTask : ScriptTask, MainScriptTask
     {
         private ConfigFile config;
 

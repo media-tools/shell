@@ -4,7 +4,7 @@ using Shell.Common.Tasks;
 
 namespace Shell.Git
 {
-    public class ConfigGitTask : Task, MainTask
+    public class ConfigGitTask : ScriptTask, MainScriptTask
     {
         public ConfigGitTask ()
         {

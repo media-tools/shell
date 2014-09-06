@@ -9,9 +9,9 @@ namespace Shell.Common.Hooks
         {
         }
 
-        public abstract void HookBeforeTask (Task task);
+        public abstract void HookBeforeTask (ScriptTask task);
 
-        public abstract void HookAfterTask (Task task);
+        public abstract void HookAfterTask (ScriptTask task);
     }
 }
 

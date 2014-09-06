@@ -13,7 +13,7 @@ namespace Shell.Common.IO
         public string RootDirectory = "";
         private static HashSet<string> InstalledPackages = new HashSet<string> ();
 
-        public FileSystem (Task task, FileSystemType type)
+        public FileSystem (ScriptTask task, FileSystemType type)
             : this (type: type)
         {
             RootDirectory += SystemInfo.PathSeparator + task.ConfigName;

@@ -8,7 +8,7 @@ using Shell.Common.Tasks;
 
 namespace Shell.FileSync
 {
-    public class FileIndexTask : Task, MainTask
+    public class FileIndexTask : ScriptTask, MainScriptTask
     {
         public FileIndexTask ()
         {

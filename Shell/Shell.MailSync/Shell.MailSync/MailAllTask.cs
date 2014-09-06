@@ -4,7 +4,7 @@ using Shell.Common.Tasks;
 
 namespace Shell.MailSync
 {
-    public class MailAllTask : Task, MainTask
+    public class MailAllTask : ScriptTask, MainScriptTask
     {
         public MailAllTask ()
         {

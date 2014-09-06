@@ -8,18 +8,18 @@ using Shell.Common.Util;
 using System.Diagnostics;
 using System.Threading;
 using System.Text;
-using SysTasks = System.Threading.Tasks;
+using System.Threading.Tasks;
 using System.Collections.Generic;
 
 namespace Shell.HolePunching
 {
-    public class PortForwardClientTask : Task, MainTask
+    public class PortForwardClientTask : ScriptTask, MainScriptTask
     {
         public PortForwardClientTask ()
         {
             Name = "HolePunching";
-            Description = "Forward a port (server)";
-            Options = new string[] { "hole-punching-port-forward-server", "hp-pf-server" };
+            Description = "Forward a port (client)";
+            Options = new string[] { "hole-punching-port-forward-client", "hp-pf-client" };
             ConfigName = "HolePunching";
             ParameterSyntax = "";
         }
@@ -46,7 +46,7 @@ namespace Shell.HolePunching
                 if (GetTarget (connection: conn, targetPort: out targetPort)) {
                     TcpClient tcpSock = ConnectTcp (port: targetPort);
                     if (tcpSock != null) {
-                        SysTasks.Task.Run (async () => await ForwardPort (udp: conn, tcp: tcpSock));
+                        Task.Run (async () => await ForwardPort (udp: conn, tcp: tcpSock));
                     } else {
                         Log.Error ("Unable to connect to tcp target.");
                     }
@@ -114,14 +114,14 @@ namespace Shell.HolePunching
             return tcpSock;
         }
 
-        async SysTasks.Task ForwardPort (UdpConnection udp, TcpClient tcp)
+        async Task ForwardPort (UdpConnection udp, TcpClient tcp)
         {
             Log.Debug ("ficken1");
             bool running = true;
 
-            List<SysTasks.Task> tasks = new List<SysTasks.Task> ();
+            List<Task> tasks = new List<Task> ();
 
-            tasks.Add(SysTasks.Task.Run (async () => {
+            tasks.Add(Task.Run (async () => {
                 while (running) {
                     Packet packet = await udp.ReceiveAsync ();
 
@@ -130,7 +130,7 @@ namespace Shell.HolePunching
                 }
             }));
 
-            tasks.Add(SysTasks.Task.Run (async () => {
+            tasks.Add(Task.Run (async () => {
                 byte[] buffer = new byte[8 * 1024];
 
                 while (running) {
@@ -143,7 +143,7 @@ namespace Shell.HolePunching
 
             Log.Debug ("ficken2");
 
-            await SysTasks.Task.WhenAll (tasks);
+            await Task.WhenAll (tasks);
 
             Log.Debug ("ficken3");
         }

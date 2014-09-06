@@ -7,14 +7,14 @@ namespace Shell.Git
 {
     public class GitHook : Hook
     {
-        public override void HookBeforeTask (Task task)
+        public override void HookBeforeTask (ScriptTask task)
         {
             if (!(task is ConfigGitTask || task is ConfigCommitTask)) {
                 GitLibrary.Commit ();
             }
         }
 
-        public override void HookAfterTask (Task task)
+        public override void HookAfterTask (ScriptTask task)
         {
         }
     }

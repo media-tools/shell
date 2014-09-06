@@ -4,7 +4,7 @@ using Shell.Common.IO;
 
 namespace Shell.Common.Tasks
 {
-    public abstract class Task
+    public abstract class ScriptTask
     {
         public string Name { protected set; get; }
 
@@ -23,7 +23,7 @@ namespace Shell.Common.Tasks
 
         protected FileSystems fs;
 
-        public Task ()
+        public ScriptTask ()
         {
             ParameterSyntax = "";
         }
@@ -115,10 +115,10 @@ namespace Shell.Common.Tasks
 
         public override bool Equals (object obj)
         {
-            return Equals (obj as Task);
+            return Equals (obj as ScriptTask);
         }
 
-        public bool Equals (Task obj)
+        public bool Equals (ScriptTask obj)
         {
             return obj != null && GetHashCode () == obj.GetHashCode ();
         }

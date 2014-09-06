@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace Shell.GoogleSync
 {
-    public class GoogleUserTask : Task, MainTask
+    public class GoogleUserTask : ScriptTask, MainScriptTask
     {
         public GoogleUserTask ()
         {

@@ -7,7 +7,7 @@ using Shell.Common.Util;
 
 namespace Shell.Git
 {
-    public class InstallTask : Task, MainTask
+    public class InstallTask : ScriptTask, MainScriptTask
     {
         public InstallTask ()
         {

@@ -4,7 +4,7 @@ using Shell.Common.Tasks;
 
 namespace Shell.Series
 {
-    public class SeriesTask : Task, MainTask
+    public class SeriesTask : ScriptTask, MainScriptTask
     {
         public SeriesTask ()
         {

@@ -13,7 +13,7 @@ namespace Shell
 {
     public class MainClass
     {
-        private static IEnumerable<Task> mainTasks;
+        private static IEnumerable<ScriptTask> mainTasks;
 
         public static void Main (string[] args)
         {
@@ -26,8 +26,8 @@ namespace Shell
 
             IEnumerable<Assembly> asses = ReflectiveEnumerator.LoadAssemblies ();
             mainTasks = from ass in asses
-                                 from type in ReflectiveEnumerator.FindClassImplementingInterface<MainTask> (ass)
-                                 select type as Task;
+                                 from type in ReflectiveEnumerator.FindClassImplementingInterface<MainScriptTask> (ass)
+                                 select type as ScriptTask;
             foreach (Hook hook in from ass in asses from type in ReflectiveEnumerator.FindSubclasses<Hook>(ass) select type as Hook) {
                 Program.HooksBeforeTask += task => hook.HookBeforeTask (task);
                 Program.HooksAfterTask += task => hook.HookAfterTask (task);

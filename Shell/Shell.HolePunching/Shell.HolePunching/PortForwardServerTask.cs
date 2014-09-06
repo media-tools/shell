@@ -93,6 +93,7 @@ namespace Shell.HolePunching
                 return true;
             } catch (Exception ex) {
                 Log.Error (ex);
+                tcpSock = null;
                 return false;
             }
         }
@@ -104,7 +105,7 @@ namespace Shell.HolePunching
             System.Threading.Tasks.Task.Run (async () => {
                 while (running) {
                     UdpReceiveResult receivedResults = await udp.ReceiveAsync ();
-                    tcp.GetStream ().WriteAsync (buffer: receivedResults.Buffer, offset: 0, count: receivedResults.Buffer.Length);
+                    await tcp.GetStream ().WriteAsync (buffer: receivedResults.Buffer, offset: 0, count: receivedResults.Buffer.Length);
                     Log.Debug ("Forward (udp -> tcp): ", receivedResults.Buffer.Length, " bytes");
                 }
             });

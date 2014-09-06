@@ -12,7 +12,7 @@ namespace Shell.HolePunching
     public class NatTraverse
     {
         private static readonly string GARBAGE_MAGIC = "nat-traverse-garbage";
-        private static readonly int PACKET_SIZE = 8 * 1024;
+        private static readonly string ACK_MAGIC = "nat-traverse-ackacka";
 
         public static int WINDOW = 10;
         public static int TIMEOUT = 10;
@@ -23,7 +23,7 @@ namespace Shell.HolePunching
 
         public string RemoteHost { get; private set; }
 
-        private IPEndPoint RemoteEndPoint;
+        public IPEndPoint RemoteEndPoint { get; private set; }
 
         private Random rnd = new Random ();
 
@@ -53,13 +53,14 @@ namespace Shell.HolePunching
         }
 
 
-        public bool Punch ()
+        public bool Punch (out UdpClient sock)
         {
-            UdpClient sock = SockGen ();
+            sock = SockGen ();
             bool success = false;
             while (!success) {
                 TryToConnect (sock: sock);
-                success = HandShake (sock: sock);
+                //success = HandShake (sock: sock);
+                success = true;
             }
 
             if (success) {
@@ -72,36 +73,49 @@ namespace Shell.HolePunching
 
         void TryToConnect (UdpClient sock)
         {
-            bool running = true;
+            bool sendingGarbage = true;
+            bool waitingForAck = false;
+
+            byte[] garbage = Encoding.ASCII.GetBytes (GARBAGE_MAGIC);
+            byte[] ack = Encoding.ASCII.GetBytes (ACK_MAGIC);
 
             Task.Run (async () => {
-                while (running) {
+                while (sendingGarbage || waitingForAck) {
                     //IPEndPoint object will allow us to read datagrams sent from any source.
                     UdpReceiveResult receivedResults = await sock.ReceiveAsync ();
                     string receivedString = Encoding.ASCII.GetString (receivedResults.Buffer);
                     if (receivedString.Trim ().StartsWith (GARBAGE_MAGIC)) {
                         Log.Message ("Received garbage...");
-                        running = false;
+                        sendingGarbage = false;
+                        waitingForAck = true;
+                        Log.Message ("Sending ack...");
+                        sock.Send (ack, ack.Length, RemoteEndPoint);
+                    } else if (receivedString.Trim ().StartsWith (ACK_MAGIC)) {
+                        Log.Message ("Received ack...");
+                        sock.Send (ack, ack.Length, RemoteEndPoint);
+                        sendingGarbage = false;
+                        waitingForAck = false;
                     } else {
                         Log.Debug ("Received: ", receivedString);
                     }
                 }
             });
 
-            Log.Message ("Trying to connect... ");
-
-            byte[] garbage = Encoding.ASCII.GetBytes (GARBAGE_MAGIC);
-            while (running) {
-                Console.Error.Write (".");
-                Console.Error.Flush ();
-                try {
-                    sock.SendAsync (garbage, garbage.Length, RemoteEndPoint);
-                } catch (Exception ex) {
-                    Log.Debug (ex.Message);
-                }
-                Thread.Sleep (1000);
+            Log.Message ("Sending garbage... ");
+            while (sendingGarbage) {
+                sock.SendAsync (garbage, garbage.Length, RemoteEndPoint);
+                Thread.Sleep (500);
             }
-            Console.WriteLine ();
+
+            Log.Message ("Waiting for ack... ");
+            while (waitingForAck) {
+                sock.Send (ack, ack.Length, RemoteEndPoint);
+                Thread.Sleep (500);
+            }
+
+            Log.Message ("Received valid ack.");
+
+            Thread.Sleep (2000);
         }
 
         bool HandShake (UdpClient sock)
@@ -123,7 +137,7 @@ namespace Shell.HolePunching
                 startNumber = rnd.Next (1, 9999999);
                 Log.Debug ("Number (start): " + startNumber);
                 byte[] startNumberBytes = Encoding.ASCII.GetBytes (startNumber + "");
-                sock.SendAsync (startNumberBytes, startNumberBytes.Length, RemoteEndPoint);
+                sock.Send (startNumberBytes, startNumberBytes.Length, RemoteEndPoint);
             }
 
             Task.Run (async () => {

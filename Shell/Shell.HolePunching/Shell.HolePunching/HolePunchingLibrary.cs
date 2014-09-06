@@ -1,8 +1,4 @@
 ﻿using System;
-using Shell.Common.Tasks;
-using System.Net;
-using System.Net.Sockets;
-using Shell.Common;
 using Shell.Common.IO;
 using Shell.Common.Util;
 using System.Diagnostics;
@@ -10,34 +6,16 @@ using System.Threading;
 
 namespace Shell.HolePunching
 {
-    public class ClientTask : Task, MainTask
+    public class HolePunchingLibrary : Library
     {
-        public ClientTask ()
+        public HolePunchingLibrary ()
         {
-            Name = "HolePunching";
-            Description = "Run the hole punching test";
-            Options = new string[] { "hole-punching-test", "hp-test" };
             ConfigName = "HolePunching";
-            ParameterSyntax = "";
         }
 
         private readonly string SECTION = "Peer";
 
-        protected override void InternalRun (string[] args)
-        {
-            string peer;
-            int myoffset;
-            int peeroffset;
-            ReadConfig (peer: out peer, myoffset: out myoffset, peeroffset: out peeroffset);
-
-            ushort myport = NetworkUtils.CurrentPort (myoffset);
-            ushort peerport = NetworkUtils.CurrentPort (peeroffset);
-
-            NatTraverse nattra = new NatTraverse (localPort: myport, remoteHost: peer, remotePort: peerport);
-            nattra.Punch ();
-        }
-
-        private void ReadConfig (out string peer, out int myoffset, out int peeroffset)
+        public void ReadConfig (out string peer, out int myoffset, out int peeroffset)
         {
             ConfigFile config = fs.Config.OpenConfigFile ("peer.ini");
 

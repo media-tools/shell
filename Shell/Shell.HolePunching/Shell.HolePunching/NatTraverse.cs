@@ -15,7 +15,7 @@ namespace Shell.HolePunching
         private static readonly int PACKET_SIZE = 8 * 1024;
 
         public static int WINDOW = 10;
-        public static int TIMEOUT = 30;
+        public static int TIMEOUT = 10;
 
         public ushort LocalPort { get; private set; }
 
@@ -107,77 +107,64 @@ namespace Shell.HolePunching
         bool HandShake (UdpClient sock)
         {
             Log.Message ("Handshake...");
-            int sum = SendNumbers (sock: sock);
-            return VerifySum (sock: sock, sumSent: sum);
-
+            return SendNumbers (sock: sock);
         }
 
-        int SendNumbers (UdpClient sock)
+        bool SendNumbers (UdpClient sock)
         {
-            int iterationsNeeded = 0;
+            bool success = true;
+            int iterationsNeeded = 10;
+            bool master = LocalPort > RemotePort;
             bool running = true;
+
+            int startNumber;
+            if (master) {
+                Log.Message ("Master.");
+                startNumber = rnd.Next (1, 9999999);
+                Log.Debug ("Number (start): " + startNumber);
+                byte[] startNumberBytes = Encoding.ASCII.GetBytes (startNumber + "");
+                sock.SendAsync (startNumberBytes, startNumberBytes.Length, RemoteEndPoint);
+            }
+
             Task.Run (async () => {
-                int receivedSum = 0;
-                int receivedNumbers = 0;
+                int lastNumber = -1;
                 while (running) {
                     UdpReceiveResult receivedResults = await sock.ReceiveAsync ();
                     string receivedString = Encoding.ASCII.GetString (receivedResults.Buffer);
                     int num;
                     if (int.TryParse (receivedString.Trim (), out num)) {
-                        receivedSum += num;
-                        receivedNumbers++;
-                        Log.Message ("Received number #", receivedNumbers, ":", num);
-                        if (receivedNumbers == 3) {
+                        Log.Debug ("Received number:", num);
+                        if (lastNumber == -1) {
+                            startNumber = num;
+                        } else if (lastNumber != -1 && num - 2 != lastNumber) {
+                            Log.Error ("Received wrong number: ", num);
+                            success = false;
+                            running = false;
+                        } else if (lastNumber - startNumber > iterationsNeeded) {
+                            Log.Message ("Enough.");
                             running = false;
                         }
+
+                        Log.Debug ("Send number:", num + 1);
+                        byte[] nextNumberBytes = Encoding.ASCII.GetBytes ((num + 1) + "");
+                        await sock.SendAsync (nextNumberBytes, nextNumberBytes.Length, RemoteEndPoint);
+                        lastNumber = num;
                     } else {
                         Log.Debug ("Received instead of number: ", receivedString);
                     }
                 }
-
-                byte[] sumBytes = Encoding.ASCII.GetBytes (receivedSum + "");
-                await sock.SendAsync (sumBytes, sumBytes.Length, RemoteEndPoint);
             });
 
-            int sum = 0;
-            for (int i = 0; i < 3; ++i) {
-                int num = rnd.Next (1, 9999999);
-                sum += num;
-                Log.Message ("Send number #", (i + 1), ":", num);
-                byte[] numBytes = Encoding.ASCII.GetBytes (num + "");
-                sock.SendAsync (numBytes, numBytes.Length, RemoteEndPoint);
-            }
-
+            int time = 0;
             while (running) {
                 Thread.Sleep (100);
-            }
-
-            return sum;
-        }
-
-        bool VerifySum (UdpClient sock, int sumSent)
-        {
-            bool success = false;
-            bool running = true;
-            Task.Run (async () => {
-                UdpReceiveResult receivedResults = await sock.ReceiveAsync ();
-                string receivedString = Encoding.ASCII.GetString (receivedResults.Buffer);
-                int returnedSum = 0;
-                if (int.TryParse (receivedString.Trim (), out returnedSum)) {
-                    Log.Message ("Received sum:", returnedSum);
-                    if (returnedSum == sumSent) {
-                        success = true;
-                    } else {
-                        success = false;
-                    }
+                time += 100;
+                if (time > TIMEOUT * 1000) {
+                    success = false;
                     running = false;
-                } else {
-                    Log.Debug ("Received instead of sum: ", receivedString);
                 }
-            });
-            while (running) {
-                Thread.Sleep (100);
             }
+
             return success;
         }
     }

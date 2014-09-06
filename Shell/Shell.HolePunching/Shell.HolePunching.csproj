@@ -39,6 +39,7 @@
     <Compile Include="Shell.HolePunching\PortForwardServerTask.cs" />
     <Compile Include="Shell.HolePunching\Networking.cs" />
     <Compile Include="Shell.HolePunching\HolePunchingUtil.cs" />
+    <Compile Include="Shell.HolePunching\PortForwardClientTask.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

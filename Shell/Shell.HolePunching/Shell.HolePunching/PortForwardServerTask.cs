@@ -61,7 +61,7 @@ namespace Shell.HolePunching
             bool running = true;
             bool success = false;
             int _targetPort = 0;
-            int timeout = HolePunchingUtil.KEEP_ALIVE_TIMEOUT;
+            int timeout = HolePunchingUtil.KEEP_ALIVE_TIMEOUT_MS;
 
             CancellationTokenSource source = new CancellationTokenSource ();
 
@@ -84,7 +84,7 @@ namespace Shell.HolePunching
                             connection.SendError ("Invalid Target: ", target);
                             source.Cancel ();
                         }
-                        timeout = HolePunchingUtil.KEEP_ALIVE_TIMEOUT;
+                        timeout = HolePunchingUtil.KEEP_ALIVE_TIMEOUT_MS;
 
                     } else {
                         Log.Debug ("Received shit while waiting for target: ", receivedString);

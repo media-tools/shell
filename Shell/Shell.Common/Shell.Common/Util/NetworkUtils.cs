@@ -13,11 +13,11 @@ namespace Shell.Common.Util
             ushort diff = 40000;
             ushort step = 37777;
             long unix = (long)(DateTime.UtcNow.StartOfDay ().ToUnixTimestamp () * step / (24 * 60 * 60));
-            Log.Debug ("unix factor: ", unix);
+            // Log.Debug ("unix factor: ", unix);
             ushort basePort = (ushort)(min + (ushort)(unix % diff));
-            Log.Debug ("base port: ", basePort);
+            // Log.Debug ("base port: ", basePort);
             ushort offsetPort = (ushort)(basePort + offset);
-            Log.Debug ("port with offset ", offset, ": ", offsetPort);
+            // Log.Debug ("port with offset ", offset, ": ", offsetPort);
             return offsetPort;
         }
 

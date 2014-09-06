@@ -87,7 +87,7 @@ namespace Shell.HolePunching
             bool running = true;
             bool success = false;
             int _targetPort = 0;
-            int timeout = HolePunchingUtil.KEEP_ALIVE_TIMEOUT;
+            int timeout = HolePunchingUtil.KEEP_ALIVE_TIMEOUT_MS;
 
             CancellationTokenSource source = new CancellationTokenSource ();
 
@@ -101,13 +101,13 @@ namespace Shell.HolePunching
                         Log.Message ("Received ack for target!");
                         running = false;
                         success = true;
-                        timeout = HolePunchingUtil.KEEP_ALIVE_TIMEOUT;
+                        timeout = HolePunchingUtil.KEEP_ALIVE_TIMEOUT_MS;
                         source.Cancel ();
                     } else if (packet.IsErrorPacket) {
                         Log.Error ("Received error packet: ", packet.ErrorString);
                         running = false;
                         success = false;
-                        timeout = HolePunchingUtil.KEEP_ALIVE_TIMEOUT;
+                        timeout = HolePunchingUtil.KEEP_ALIVE_TIMEOUT_MS;
                         source.Cancel ();
                     } else {
                         Log.Debug ("Received shit while waiting for target: ", receivedString);

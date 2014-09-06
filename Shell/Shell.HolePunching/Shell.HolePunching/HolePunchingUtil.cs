@@ -15,8 +15,7 @@ namespace Shell.HolePunching
 {
     public class HolePunchingUtil : Library
     {
-        public static int KEEP_ALIVE_TIMEOUT = 10000;
-        private static byte[] KEEP_ALIVE_BYTES = Encoding.ASCII.GetBytes ("KEEP-ALIVE");
+        public static int KEEP_ALIVE_TIMEOUT_MS = 10000;
         private readonly string SECTION = "Peer";
 
         public static readonly Random Random = new Random ();
@@ -26,34 +25,14 @@ namespace Shell.HolePunching
             ConfigName = "HolePunching";
         }
 
-        public static bool IsKeepAlivePacket (byte[] bytes)
-        {
-            return bytes.SequenceEqual (KEEP_ALIVE_BYTES);
-        }
-
-        static int fock = 1;
-
-        public static void SendKeepAlivePackets (UdpClient udp, IPEndPoint udpRemote, Func<bool> checkIfRunning, CancellationToken token)
-        {
-            int k = fock++;
-            Log.Debug ("SendKeepAlivePackets(", k, "): started");
-            System.Threading.Tasks.Task.Run (async () => {
-                while (checkIfRunning ()) {
-                    await udp.SendAsync (KEEP_ALIVE_BYTES, KEEP_ALIVE_BYTES.Length, udpRemote);
-                    Log.Debug ("SendKeepAlivePackets(", k, "): send");
-
-                    Thread.Sleep (2000);
-                }
-            }, token);
-        }
-
         public static async Task RedirectEverything (UdpConnection udp, TcpClient tcp)
         {
             Log.Debug ("RedirectEverything: start...");
             bool running = true;
-
             List<Task> tasks = new List<Task> ();
             CancellationTokenSource source = new CancellationTokenSource ();
+            Action cancel = () => source.Cancel ();
+            udp.OnDisconnect += cancel;
 
             tasks.Add (Task.Run (async () => {
                 while (running) {
@@ -81,7 +60,8 @@ namespace Shell.HolePunching
                     if (!tcp.IsStillConnected ()) {
                         Log.Error ("TCP has disconnected: ", tcp);
                         running = false;
-                        source.Cancel ();
+                        udp.Disconnect ();
+                        source.CancelAfter (1000);
                     }
                     await Task.Delay (100);
                 }
@@ -94,6 +74,7 @@ namespace Shell.HolePunching
             await Task.WhenAll (tasks);
 
             Log.Debug ("RedirectEverything: stopped.");
+            udp.OnDisconnect -= cancel;
         }
 
         public void ReadConfig (out string peer, out int myoffset, out int peeroffset)

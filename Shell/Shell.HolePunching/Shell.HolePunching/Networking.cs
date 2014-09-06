@@ -50,6 +50,7 @@ namespace Shell.HolePunching
             Queues [ConnectionID.Unknown] = new Queue<Packet> ();
 
             Task.Run (async () => await ProcessIO ());
+            Task.Run (async () => await CleanUp ());
         }
 
         public UdpConnection OpenConnection (string remoteHost, int remoteOffset)
@@ -87,6 +88,9 @@ namespace Shell.HolePunching
             Queues [cid] = new Queue<Packet> ();
         }
 
+
+        Dictionary<ConnectionID, long> lastResponse = new Dictionary<ConnectionID, long> ();
+
         private async Task ProcessIO ()
         {
             while (true) {
@@ -95,16 +99,52 @@ namespace Shell.HolePunching
                 IPEndPoint remote = receivedResults.RemoteEndPoint;
                 ConnectionID cid = new ConnectionID { ID = BitConverter.ToInt32 (buffer, 0) };
                 Packet packet = new Packet { CID = cid, Buffer = buffer.Skip (4).ToArray () };
-                if (HolePunchingUtil.IsKeepAlivePacket (receivedResults.Buffer)) {
-                    Log.Debug ("ProcessIO: Keep-Alive");
-                } else if (KnownConnections.ContainsKey (cid)) {
-                    Log.Debug ("receive (known: ", cid, "): ", Encoding.ASCII.GetString (packet.Buffer));
-                    Queues [cid].Enqueue (packet);
+                if (KnownConnections.ContainsKey (cid)) {
+                    if (packet.IsKeepAlivePacket) {
+                        Log.Debug ("receive (known, keep-alive: ", cid, ")");
+                    } else {
+                        Log.Debug ("receive (known: ", cid, "): ", Encoding.ASCII.GetString (packet.Buffer));
+                        Queues [cid].Enqueue (packet);
+                    }
                 } else {
-                    Log.Debug ("receive (unknown: ", cid, "): ", Encoding.ASCII.GetString (packet.Buffer));
-                    Queues [ConnectionID.Unknown].Enqueue (packet);
+                    if (packet.IsKeepAlivePacket) {
+                        Log.Debug ("receive (unknown, keep-alive: ", cid, ")");
+                    } else {
+                        Log.Debug ("receive (unknown: ", cid, "): ", Encoding.ASCII.GetString (packet.Buffer));
+                        Queues [ConnectionID.Unknown].Enqueue (packet);
+                    }
                 }
+
+                long now = (long)DateTime.UtcNow.ToUnixTimestamp ();
+                lastResponse [cid] = now;
             }
+        }
+
+        private async Task CleanUp ()
+        {
+            while (true) {
+                long now = (long)DateTime.UtcNow.ToUnixTimestamp ();
+
+                foreach (ConnectionID otherCid in lastResponse.Keys) {
+                    if (!otherCid.IsUnknown) {
+                        // Log.Debug ("last response from", otherCid, " is ", (now - lastResponse [otherCid]), " seconds ago, limit: ", HolePunchingUtil.KEEP_ALIVE_TIMEOUT_MS / 1000);
+                        if (lastResponse [otherCid] != -1 && (now - lastResponse [otherCid]) > HolePunchingUtil.KEEP_ALIVE_TIMEOUT_MS / 1000) {
+                            if (KnownConnections.ContainsKey (otherCid)) {
+                                KnownConnections [otherCid].Disconnect ();
+                                lastResponse [otherCid] = -1;
+                            }
+                        }
+                    }
+                }
+
+                await Task.Delay (1000);
+            }
+        }
+
+        public void UnregisterConnection (ConnectionID cid)
+        {
+            KnownConnections.Remove (cid);
+            Queues.Remove (cid);
         }
 
         public bool HasPacketFor (ConnectionID cid)
@@ -135,6 +175,11 @@ namespace Shell.HolePunching
         public IPEndPoint RemoteEndPoint { get; private set; }
 
         private ConnectionID _cid;
+
+        public Action OnDisconnect = () => {
+        };
+
+        public bool IsConnected { get; private set; }
 
         public ConnectionID CID {
             get {
@@ -179,6 +224,7 @@ namespace Shell.HolePunching
         {
             NatTraverse nattra = new NatTraverse (connection: this);
             nattra.Punch ();
+            IsConnected = true;
         }
 
         public void Send (byte[] bytes)
@@ -224,7 +270,23 @@ namespace Shell.HolePunching
 
         public void SendKeepAlivePackets (Func<bool> whileTrue, CancellationToken token)
         {
-            HolePunchingUtil.SendKeepAlivePackets (udp: Local.Socket, udpRemote: RemoteEndPoint, checkIfRunning: whileTrue, token: token);
+            Log.Debug ("SendKeepAlivePackets(", CID, "): started");
+            System.Threading.Tasks.Task.Run (async () => {
+                while (IsConnected && whileTrue ()) {
+                    Send (Packet.KEEP_ALIVE_STRING);
+                    Log.Debug ("SendKeepAlivePackets(", CID, "): send");
+
+                    await Task.Delay (2000);
+                }
+            }, token);
+        }
+
+        public void Disconnect ()
+        {
+            Log.Message ("Disconnect(", CID, ")");
+            Local.UnregisterConnection (CID);
+            OnDisconnect ();
+            IsConnected = false;
         }
     }
 
@@ -245,6 +307,10 @@ namespace Shell.HolePunching
         public bool IsErrorPacket { get { return BufferString.StartsWith ("ERROR:"); } }
 
         public string ErrorString { get { return IsErrorPacket ? BufferString.Substring (6) : ""; } }
+
+        public static string KEEP_ALIVE_STRING = "KEEP-ALIVE";
+
+        public bool IsKeepAlivePacket { get { return BufferString.StartsWith (KEEP_ALIVE_STRING); } }
     }
 
     public struct ConnectionID

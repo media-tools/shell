@@ -5,13 +5,13 @@ using Shell.Common.IO;
 using System.Text;
 using System.Threading;
 using Shell.Common;
+using System.Threading.Tasks;
 
 namespace Shell.HolePunching
 {
     public class NatTraverse
     {
         private static readonly string GARBAGE_MAGIC = "nat-traverse-garbage";
-        private static readonly string ACK_MAGIC = "nat-traverse-ackacka";
         private static readonly int PACKET_SIZE = 8 * 1024;
 
         public static int WINDOW = 10;
@@ -24,6 +24,8 @@ namespace Shell.HolePunching
         public string RemoteHost { get; private set; }
 
         private IPEndPoint RemoteEndPoint;
+
+        private Random rnd = new Random ();
 
         public NatTraverse (ushort localPort, string remoteHost, ushort remotePort)
         {
@@ -42,75 +44,139 @@ namespace Shell.HolePunching
             sock.Client.Bind (localpt);
             IPAddress peerAddr;
             try {
-                peerAddr = IPAddress.Parse(RemoteHost);
-            }catch (FormatException) {
-                peerAddr = Dns.GetHostAddresses(RemoteHost)[0];
+                peerAddr = IPAddress.Parse (RemoteHost);
+            } catch (FormatException) {
+                peerAddr = Dns.GetHostAddresses (RemoteHost) [0];
             }
             RemoteEndPoint = new IPEndPoint (peerAddr, RemotePort);
             return sock;
         }
 
-        private void WaitFor (UdpClient sock, string match)
-        {
-            IPEndPoint remote = new IPEndPoint (IPAddress.Any, 0);
-
-            while (true) {
-                try {
-                    Console.Error.Write (".");
-                    Console.Error.Flush ();
-                    byte[] data = sock.Receive (ref remote);
-                    if (Encoding.ASCII.GetString (data).Trim ().StartsWith (match)) {
-                        break;
-                    }
-                } catch (Exception ex) {
-                    Log.Error (ex);
-                    break;
-                }
-                //my $got;
-                //defined(sysread $sock, $got, length $match) or
-                //die "Couldn't read from socket: $!\n";
-                //last if defined $got and $got eq $match;
-            }
-            Console.Error.WriteLine ();
-            Console.Error.Flush ();
-        }
 
         public bool Punch ()
         {
             UdpClient sock = SockGen ();
-            Log.Message ("Sending " + WINDOW + " initial packets... ");
+            bool success = false;
+            while (!success) {
+                TryToConnect (sock: sock);
+                success = HandShake (sock: sock);
+            }
+
+            if (success) {
+                Log.Message ("Connection established.");
+            } else {
+                Log.Message ("Failed to connect.");
+            }
+            return success;
+        }
+
+        void TryToConnect (UdpClient sock)
+        {
+            bool running = true;
+
+            Task.Run (async () => {
+                while (running) {
+                    //IPEndPoint object will allow us to read datagrams sent from any source.
+                    UdpReceiveResult receivedResults = await sock.ReceiveAsync ();
+                    string receivedString = Encoding.ASCII.GetString (receivedResults.Buffer);
+                    if (receivedString.Trim ().StartsWith (GARBAGE_MAGIC)) {
+                        Log.Message ("Received garbage...");
+                        running = false;
+                    } else {
+                        Log.Debug ("Received: ", receivedString);
+                    }
+                }
+            });
+
+            Log.Message ("Trying to connect... ");
 
             byte[] garbage = Encoding.ASCII.GetBytes (GARBAGE_MAGIC);
-            for (int i = 0; i < WINDOW; i++) {
+            while (running) {
                 Console.Error.Write (".");
                 Console.Error.Flush ();
                 try {
-                    sock.Send (garbage, garbage.Length, RemoteEndPoint);
+                    sock.SendAsync (garbage, garbage.Length, RemoteEndPoint);
                 } catch (Exception ex) {
                     Log.Debug (ex.Message);
                 }
                 Thread.Sleep (1000);
             }
             Console.WriteLine ();
+        }
 
-            Console.Error.Write ("Sending ACK...");
-            Console.Error.Flush ();
-            byte[] ack = Encoding.ASCII.GetBytes (ACK_MAGIC);
-            sock.Send (garbage, garbage.Length, RemoteEndPoint);
-            sock.Send (ack, ack.Length, RemoteEndPoint);
-            Console.Error.Write ("done.");
-            Console.Error.WriteLine ();
+        bool HandShake (UdpClient sock)
+        {
+            Log.Message ("Handshake...");
+            int sum = SendNumbers (sock: sock);
+            return VerifySum (sock: sock, sumSent: sum);
 
-            Log.Message ("Waiting for ACK (timeout: ", TIMEOUT, ")...");
-            Action waitForAck = () => {
-                WaitFor (sock, ACK_MAGIC);
-            };
-            bool success = ThreadingUtils.CallWithTimeout (waitForAck, TIMEOUT*1000);
+        }
 
-            if (success) {
-                Log.Message ("Connection established.");
-            } else {
-                Log.Message ("Failed to connect.");
+        int SendNumbers (UdpClient sock)
+        {
+            int iterationsNeeded = 0;
+            bool running = true;
+            Task.Run (async () => {
+                int receivedSum = 0;
+                int receivedNumbers = 0;
+                while (running) {
+                    UdpReceiveResult receivedResults = await sock.ReceiveAsync ();
+                    string receivedString = Encoding.ASCII.GetString (receivedResults.Buffer);
+                    int num;
+                    if (int.TryParse (receivedString.Trim (), out num)) {
+                        receivedSum += num;
+                        receivedNumbers++;
+                        Log.Message ("Received number #", receivedNumbers, ":", num);
+                        if (receivedNumbers == 3) {
+                            running = false;
+                        }
+                    } else {
+                        Log.Debug ("Received instead of number: ", receivedString);
+                    }
+                }
+
+                byte[] sumBytes = Encoding.ASCII.GetBytes (receivedSum + "");
+                await sock.SendAsync (sumBytes, sumBytes.Length, RemoteEndPoint);
+            });
+
+            int sum = 0;
+            for (int i = 0; i < 3; ++i) {
+                int num = rnd.Next (1, 9999999);
+                sum += num;
+                Log.Message ("Send number #", (i + 1), ":", num);
+                byte[] numBytes = Encoding.ASCII.GetBytes (num + "");
+                sock.SendAsync (numBytes, numBytes.Length, RemoteEndPoint);
+            }
+
+            while (running) {
+                Thread.Sleep (100);
+            }
+
+            return sum;
+        }
+
+        bool VerifySum (UdpClient sock, int sumSent)
+        {
+            bool success = false;
+            bool running = true;
+            Task.Run (async () => {
+                UdpReceiveResult receivedResults = await sock.ReceiveAsync ();
+                string receivedString = Encoding.ASCII.GetString (receivedResults.Buffer);
+                int returnedSum = 0;
+                if (int.TryParse (receivedString.Trim (), out returnedSum)) {
+                    Log.Message ("Received sum:", returnedSum);
+                    if (returnedSum == sumSent) {
+                        success = true;
+                    } else {
+                        success = false;
+                    }
+                    running = false;
+                } else {
+                    Log.Debug ("Received instead of sum: ", receivedString);
+                }
+            });
+            while (running) {
+                Thread.Sleep (100);
             }
             return success;
         }

@@ -3,17 +3,38 @@ using Shell.Common.IO;
 using Shell.Common.Util;
 using System.Diagnostics;
 using System.Threading;
+using System.Net.Sockets;
+using System.Net;
+using System.Text;
+using System.Linq;
 
 namespace Shell.HolePunching
 {
     public class HolePunchingLibrary : Library
     {
+        public static int KEEP_ALIVE_TIMEOUT = 10000;
+        private static byte[] KEEP_ALIVE_BYTES = Encoding.ASCII.GetBytes ("KEEP-ALIVE");
+        private readonly string SECTION = "Peer";
+
         public HolePunchingLibrary ()
         {
             ConfigName = "HolePunching";
         }
 
-        private readonly string SECTION = "Peer";
+        public static bool IsKeepAlivePacket (byte[] bytes)
+        {
+            return bytes.SequenceEqual (KEEP_ALIVE_BYTES);
+        }
+
+        public static void SendKeepAlivePackets (UdpClient udp, IPEndPoint udpRemote, Func<bool> checkIfRunning)
+        {
+            System.Threading.Tasks.Task.Run (async () => {
+                while (checkIfRunning ()) {
+                    await udp.SendAsync (KEEP_ALIVE_BYTES, KEEP_ALIVE_BYTES.Length, udpRemote);
+                    Thread.Sleep (2000);
+                }
+            });
+        }
 
         public void ReadConfig (out string peer, out int myoffset, out int peeroffset)
         {

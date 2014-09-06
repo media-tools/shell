@@ -101,6 +101,8 @@ namespace Shell.HolePunching
                 }
             });
 
+            HolePunchingLibrary.SendKeepAlivePackets (udp: sock, udpRemote: RemoteEndPoint, checkIfRunning: () => sendingGarbage);
+
             Log.Message ("Sending garbage... ");
             while (sendingGarbage) {
                 sock.SendAsync (garbage, garbage.Length, RemoteEndPoint);

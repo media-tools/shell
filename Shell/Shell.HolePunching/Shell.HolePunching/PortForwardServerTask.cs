@@ -38,9 +38,9 @@ namespace Shell.HolePunching
             IPEndPoint remote = nattra.RemoteEndPoint;
 
             ushort targetPort;
-            if (GetTarget (sock: sock, targetPort: out targetPort)) {
-                TcpClient tcpSock;
-                if (ConnectTcp (port: targetPort, sock: out tcpSock)) {
+            if (GetTarget (sock: sock, udpRemote: remote, targetPort: out targetPort)) {
+                TcpClient tcpSock = ConnectTcp (port: targetPort);
+                if (tcpSock != null) {
                     ForwardPort (udp: sock, udpRemote: remote, tcp: tcpSock);
                 } else {
                     Log.Error ("Unable to connect to tcp target.");
@@ -50,11 +50,12 @@ namespace Shell.HolePunching
             }
         }
 
-        bool GetTarget (UdpClient sock, out ushort targetPort)
+        bool GetTarget (UdpClient sock, IPEndPoint udpRemote, out ushort targetPort)
         {
             bool running = true;
             bool success = false;
             int _targetPort = 0;
+            int timeout = HolePunchingLibrary.KEEP_ALIVE_TIMEOUT;
 
             System.Threading.Tasks.Task.Run (async () => {
                 while (running) {
@@ -71,31 +72,40 @@ namespace Shell.HolePunching
                             running = false;
                             success = false;
                         }
+                        timeout = HolePunchingLibrary.KEEP_ALIVE_TIMEOUT;
+
                     } else {
                         Log.Debug ("Received shit while waiting for target: ", receivedString);
                     }
                 }
             });
 
+            HolePunchingLibrary.SendKeepAlivePackets (udp: sock, udpRemote: udpRemote, checkIfRunning: () => running);
+
             while (running) {
                 Thread.Sleep (100);
+                timeout -= 100;
+                if (timeout <= 0) {
+                    Log.Error ("Timeout!");
+                    running = false;
+                }
             }
             targetPort = (ushort)_targetPort;
 
             return success;
         }
 
-        bool ConnectTcp (ushort port, out TcpClient tcpSock)
+        TcpClient ConnectTcp (ushort port)
         {
+            TcpClient tcpSock;
             try {
                 tcpSock = new TcpClient ();
                 tcpSock.Connect ("127.0.0.1", port);
-                return true;
             } catch (Exception ex) {
                 Log.Error (ex);
                 tcpSock = null;
-                return false;
             }
+            return tcpSock;
         }
 
         void ForwardPort (UdpClient udp, IPEndPoint udpRemote, TcpClient tcp)
@@ -105,8 +115,12 @@ namespace Shell.HolePunching
             System.Threading.Tasks.Task.Run (async () => {
                 while (running) {
                     UdpReceiveResult receivedResults = await udp.ReceiveAsync ();
-                    await tcp.GetStream ().WriteAsync (buffer: receivedResults.Buffer, offset: 0, count: receivedResults.Buffer.Length);
-                    Log.Debug ("Forward (udp -> tcp): ", receivedResults.Buffer.Length, " bytes");
+                    if (HolePunchingLibrary.IsKeepAlivePacket (receivedResults.Buffer)) {
+                        Log.Debug ("Received Keep-Alive Packet");
+                    } else {
+                        await tcp.GetStream ().WriteAsync (buffer: receivedResults.Buffer, offset: 0, count: receivedResults.Buffer.Length);
+                        Log.Debug ("Forward (udp -> tcp): ", receivedResults.Buffer.Length, " bytes");
+                    }
                 }
             });
 
@@ -115,10 +129,11 @@ namespace Shell.HolePunching
 
                 while (running) {
                     int bytesRead = await tcp.GetStream ().ReadAsync (buffer, 0, (int)buffer.Length);
-                    await udp.SendAsync(buffer, bytesRead, udpRemote);
+                    await udp.SendAsync (buffer, bytesRead, udpRemote);
                 }
             });
 
+            HolePunchingLibrary.SendKeepAlivePackets (udp: udp, udpRemote: udpRemote, checkIfRunning: () => running);
 
             while (running) {
                 Thread.Sleep (1000);

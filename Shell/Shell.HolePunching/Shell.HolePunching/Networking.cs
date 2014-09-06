@@ -185,6 +185,11 @@ namespace Shell.HolePunching
             Local.Send (bytes: bytes, cid: CID, remote: RemoteEndPoint);
         }
 
+        public void Send (byte[] bytes, int length)
+        {
+            Send (bytes.Take (length).ToArray ());
+        }
+
         public void Send (string str)
         {
             byte[] bytes = Encoding.ASCII.GetBytes (str);
@@ -221,6 +226,15 @@ namespace Shell.HolePunching
     {
         public ConnectionID CID;
         public byte[] Buffer;
+
+        private string _bufferString;
+
+        public string BufferString { get { return _bufferString = _bufferString ?? Encoding.ASCII.GetString (Buffer); } }
+
+        public override string ToString ()
+        {
+            return string.Format ("[Packet(cid={0},buffer={1})]", CID, BufferString);
+        }
     }
 
     public struct ConnectionID

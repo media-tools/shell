@@ -21,8 +21,6 @@ namespace Shell.HolePunching
             ParameterSyntax = "";
         }
 
-        private readonly string SECTION = "Peer";
-
         protected override void InternalRun (string[] args)
         {
             string peer;

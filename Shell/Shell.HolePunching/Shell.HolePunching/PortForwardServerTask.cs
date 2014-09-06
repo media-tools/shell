@@ -8,6 +8,8 @@ using Shell.Common.Util;
 using System.Diagnostics;
 using System.Threading;
 using System.Text;
+using SysTasks = System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace Shell.HolePunching
 {
@@ -29,26 +31,32 @@ namespace Shell.HolePunching
             int peeroffset;
             new HolePunchingUtil ().ReadConfig (peer: out peer, myoffset: out myoffset, peeroffset: out peeroffset);
 
-            UdpConnection conn = Networking.OpenLocalPort (offset: myoffset).OpenConnection (remoteHost: peer, remoteOffset: peeroffset);
-            conn.PunchHole ();
+            LocalPort local = Networking.OpenLocalPort (offset: myoffset);
 
-            UdpClient sock = conn.Local.Socket;
-            IPEndPoint remote = conn.RemoteEndPoint;
+            Listen (local, peer, peeroffset);
+        }
 
-            ushort targetPort;
-            if (GetTarget (sock: sock, udpRemote: remote, targetPort: out targetPort)) {
-                TcpClient tcpSock = ConnectTcp (port: targetPort);
-                if (tcpSock != null) {
-                    ForwardPort (udp: sock, udpRemote: remote, tcp: tcpSock);
+        void Listen (LocalPort local, string peer, int peeroffset)
+        {
+            while (true) {
+                UdpConnection conn = local.OpenConnection (remoteHost: peer, remoteOffset: peeroffset);
+                conn.PunchHole ();
+
+                ushort targetPort;
+                if (GetTarget (connection: conn, targetPort: out targetPort)) {
+                    TcpClient tcpSock = ConnectTcp (port: targetPort);
+                    if (tcpSock != null) {
+                        SysTasks.Task.Run (async () => await ForwardPort (udp: conn, tcp: tcpSock));
+                    } else {
+                        Log.Error ("Unable to connect to tcp target.");
+                    }
                 } else {
-                    Log.Error ("Unable to connect to tcp target.");
+                    Log.Error ("Unable to get target port.");
                 }
-            } else {
-                Log.Error ("Unable to get target port.");
             }
         }
 
-        bool GetTarget (UdpClient sock, IPEndPoint udpRemote, out ushort targetPort)
+        bool GetTarget (UdpConnection connection, out ushort targetPort)
         {
             bool running = true;
             bool success = false;
@@ -57,8 +65,8 @@ namespace Shell.HolePunching
 
             System.Threading.Tasks.Task.Run (async () => {
                 while (running) {
-                    UdpReceiveResult receivedResults = await sock.ReceiveAsync ();
-                    string receivedString = Encoding.ASCII.GetString (receivedResults.Buffer).Trim ();
+                    Packet packet = await connection.ReceiveAsync ();
+                    string receivedString = packet.BufferString;
                     if (receivedString.StartsWith ("TARGET:")) {
                         string target = receivedString.Substring (7);
                         Log.Message ("Received target: ", target);
@@ -78,7 +86,7 @@ namespace Shell.HolePunching
                 }
             });
 
-            HolePunchingUtil.SendKeepAlivePackets (udp: sock, udpRemote: udpRemote, checkIfRunning: () => running);
+            connection.SendKeepAlivePackets (() => running);
 
             while (running) {
                 Thread.Sleep (100);
@@ -106,36 +114,38 @@ namespace Shell.HolePunching
             return tcpSock;
         }
 
-        void ForwardPort (UdpClient udp, IPEndPoint udpRemote, TcpClient tcp)
+        async SysTasks.Task ForwardPort (UdpConnection udp, TcpClient tcp)
         {
+            Log.Debug ("ficken1");
             bool running = true;
 
-            System.Threading.Tasks.Task.Run (async () => {
-                while (running) {
-                    UdpReceiveResult receivedResults = await udp.ReceiveAsync ();
-                    if (HolePunchingUtil.IsKeepAlivePacket (receivedResults.Buffer)) {
-                        Log.Debug ("Received Keep-Alive Packet");
-                    } else {
-                        await tcp.GetStream ().WriteAsync (buffer: receivedResults.Buffer, offset: 0, count: receivedResults.Buffer.Length);
-                        Log.Debug ("Forward (udp -> tcp): ", receivedResults.Buffer.Length, " bytes");
-                    }
-                }
-            });
+            List<SysTasks.Task> tasks = new List<SysTasks.Task> ();
 
-            System.Threading.Tasks.Task.Run (async () => {
+            tasks.Add(SysTasks.Task.Run (async () => {
+                while (running) {
+                    Packet packet = await udp.ReceiveAsync ();
+
+                    await tcp.GetStream ().WriteAsync (buffer: packet.Buffer, offset: 0, count: packet.Buffer.Length);
+                    Log.Debug ("Forward (udp -> tcp): ", packet.Buffer.Length, " bytes");
+                }
+            }));
+
+            tasks.Add(SysTasks.Task.Run (async () => {
                 byte[] buffer = new byte[8 * 1024];
 
                 while (running) {
                     int bytesRead = await tcp.GetStream ().ReadAsync (buffer, 0, (int)buffer.Length);
-                    await udp.SendAsync (buffer, bytesRead, udpRemote);
+                    udp.Send (buffer, bytesRead);
                 }
-            });
+            }));
 
-            HolePunchingUtil.SendKeepAlivePackets (udp: udp, udpRemote: udpRemote, checkIfRunning: () => running);
+            udp.SendKeepAlivePackets (() => running);
 
-            while (running) {
-                Thread.Sleep (1000);
-            }
+            Log.Debug ("ficken2");
+
+            await SysTasks.Task.WhenAll (tasks);
+
+            Log.Debug ("ficken3");
         }
     }
 }

@@ -63,6 +63,8 @@ namespace Shell.HolePunching
             int _targetPort = 0;
             int timeout = HolePunchingUtil.KEEP_ALIVE_TIMEOUT;
 
+            CancellationTokenSource source = new CancellationTokenSource ();
+
             System.Threading.Tasks.Task.Run (async () => {
                 while (running) {
                     Packet packet = await connection.ReceiveAsync ();
@@ -73,12 +75,14 @@ namespace Shell.HolePunching
                         if (int.TryParse (target, out _targetPort)) {
                             running = false;
                             success = true;
-                            connection.Send("TARGET OK");
+                            connection.Send ("TARGET OK");
+                            source.Cancel ();
                         } else {
                             Log.Error ("Invalid target port: ", target);
                             running = false;
                             success = false;
-                            connection.SendError("Invalid Target: ", target);
+                            connection.SendError ("Invalid Target: ", target);
+                            source.Cancel ();
                         }
                         timeout = HolePunchingUtil.KEEP_ALIVE_TIMEOUT;
 
@@ -86,9 +90,9 @@ namespace Shell.HolePunching
                         Log.Debug ("Received shit while waiting for target: ", receivedString);
                     }
                 }
-            });
+            }, source.Token);
 
-            connection.SendKeepAlivePackets (() => running);
+            connection.SendKeepAlivePackets (() => running, source.Token);
 
             while (running) {
                 Thread.Sleep (100);
@@ -96,6 +100,7 @@ namespace Shell.HolePunching
                 if (timeout <= 0) {
                     Log.Error ("Timeout!");
                     running = false;
+                    source.Cancel ();
                 }
             }
             targetPort = (ushort)_targetPort;

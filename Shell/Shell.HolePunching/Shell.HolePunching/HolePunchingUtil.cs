@@ -9,6 +9,7 @@ using System.Text;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using Shell.Common;
 
 namespace Shell.HolePunching
 {
@@ -30,22 +31,29 @@ namespace Shell.HolePunching
             return bytes.SequenceEqual (KEEP_ALIVE_BYTES);
         }
 
-        public static void SendKeepAlivePackets (UdpClient udp, IPEndPoint udpRemote, Func<bool> checkIfRunning)
+        static int fock = 1;
+
+        public static void SendKeepAlivePackets (UdpClient udp, IPEndPoint udpRemote, Func<bool> checkIfRunning, CancellationToken token)
         {
+            int k = fock++;
+            Log.Debug ("SendKeepAlivePackets(", k, "): started");
             System.Threading.Tasks.Task.Run (async () => {
                 while (checkIfRunning ()) {
                     await udp.SendAsync (KEEP_ALIVE_BYTES, KEEP_ALIVE_BYTES.Length, udpRemote);
+                    Log.Debug ("SendKeepAlivePackets(", k, "): send");
+
                     Thread.Sleep (2000);
                 }
-            });
+            }, token);
         }
 
         public static async Task RedirectEverything (UdpConnection udp, TcpClient tcp)
         {
-            Log.Debug ("ficken1");
+            Log.Debug ("RedirectEverything: start...");
             bool running = true;
 
             List<Task> tasks = new List<Task> ();
+            CancellationTokenSource source = new CancellationTokenSource ();
 
             tasks.Add (Task.Run (async () => {
                 while (running) {
@@ -54,24 +62,38 @@ namespace Shell.HolePunching
                     await tcp.GetStream ().WriteAsync (buffer: packet.Buffer, offset: 0, count: packet.Buffer.Length);
                     Log.Debug ("Forward (udp -> tcp): ", packet.Buffer.Length, " bytes");
                 }
-            }));
+            }, source.Token));
 
             tasks.Add (Task.Run (async () => {
-                byte[] buffer = new byte[8 * 1024];
+                byte[] buffer = new byte[1024];
 
                 while (running) {
                     int bytesRead = await tcp.GetStream ().ReadAsync (buffer, 0, (int)buffer.Length);
-                    udp.Send (buffer, bytesRead);
+                    if (bytesRead > 0) {
+                        udp.Send (buffer, bytesRead);
+                        Log.Debug ("Forward (tcp -> udp): ", bytesRead, " bytes");
+                    }
                 }
-            }));
+            }, source.Token));
 
-            udp.SendKeepAlivePackets (() => running);
+            tasks.Add (Task.Run (async () => {
+                while (running) {
+                    if (!tcp.IsStillConnected ()) {
+                        Log.Error ("TCP has disconnected: ", tcp);
+                        running = false;
+                        source.Cancel ();
+                    }
+                    await Task.Delay (100);
+                }
+            }, source.Token));
 
-            Log.Debug ("ficken2");
+            udp.SendKeepAlivePackets (() => running, source.Token);
+
+            Log.Debug ("RedirectEverything: running...");
 
             await Task.WhenAll (tasks);
 
-            Log.Debug ("ficken3");
+            Log.Debug ("RedirectEverything: stopped.");
         }
 
         public void ReadConfig (out string peer, out int myoffset, out int peeroffset)

@@ -1,7 +1,7 @@
 ﻿using System;
-using Shell.Common.Tasks;
-using Shell.Common;
 using System.Net;
+using Shell.Common.Tasks;
+using Shell.Common.Util;
 
 namespace Shell.Proxy
 {

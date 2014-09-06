@@ -34,7 +34,7 @@ namespace Shell.HolePunching
             LocalPort local = Networking.OpenLocalPort (offset: myoffset);
 
             List<ForwardedTcpPort> ports = new List<ForwardedTcpPort> ();
-            ports.Add (new ForwardedTcpPort { Source = 10001, Target = 2200 });
+            ports.Add (new ForwardedTcpPort { Source = 10001, Target = 80 });
 
             Listen (forwardedPorts: ports, local: local, remoteHost: peer, remoteOffset: peeroffset);
         }
@@ -53,7 +53,7 @@ namespace Shell.HolePunching
         async Task Listen (ForwardedTcpPort forwardedPort, LocalPort local, string remoteHost, int remoteOffset)
         {
             Log.Message ("Starting TCP Server: ", forwardedPort);
-            TcpListener tcpServer = new TcpListener (IPAddress.Any, 9000);
+            TcpListener tcpServer = new TcpListener (IPAddress.Any, forwardedPort.Source);
             tcpServer.ExclusiveAddressUse = false;
             try {
                 tcpServer.Start ();
@@ -72,15 +72,13 @@ namespace Shell.HolePunching
 
         void ProcessClient (TcpClient tcp, ForwardedTcpPort forwardedPort, LocalPort local, string remoteHost, int remoteOffset)
         {
-            while (true) {
-                UdpConnection conn = local.OpenConnection (remoteHost: remoteHost, remoteOffset: remoteOffset);
-                conn.PunchHole ();
+            UdpConnection conn = local.OpenConnection (remoteHost: remoteHost, remoteOffset: remoteOffset);
+            conn.PunchHole ();
 
-                if (SendTarget (connection: conn, targetPort: forwardedPort.Target)) {
-                    Task.Run (async () => await HolePunchingUtil.RedirectEverything (udp: conn, tcp: tcp));
-                } else {
-                    Log.Error ("Unable to send target port.");
-                }
+            if (SendTarget (connection: conn, targetPort: forwardedPort.Target)) {
+                Task.Run (async () => await HolePunchingUtil.RedirectEverything (udp: conn, tcp: tcp));
+            } else {
+                Log.Error ("Unable to send target port.");
             }
         }
 
@@ -90,6 +88,8 @@ namespace Shell.HolePunching
             bool success = false;
             int _targetPort = 0;
             int timeout = HolePunchingUtil.KEEP_ALIVE_TIMEOUT;
+
+            CancellationTokenSource source = new CancellationTokenSource ();
 
             connection.Send ("TARGET:" + targetPort + "");
 
@@ -102,18 +102,20 @@ namespace Shell.HolePunching
                         running = false;
                         success = true;
                         timeout = HolePunchingUtil.KEEP_ALIVE_TIMEOUT;
+                        source.Cancel ();
                     } else if (packet.IsErrorPacket) {
                         Log.Error ("Received error packet: ", packet.ErrorString);
                         running = false;
                         success = false;
                         timeout = HolePunchingUtil.KEEP_ALIVE_TIMEOUT;
+                        source.Cancel ();
                     } else {
                         Log.Debug ("Received shit while waiting for target: ", receivedString);
                     }
                 }
-            });
+            }, source.Token);
 
-            connection.SendKeepAlivePackets (() => running);
+            connection.SendKeepAlivePackets (() => running, source.Token);
 
             while (running) {
                 Thread.Sleep (100);
@@ -121,6 +123,7 @@ namespace Shell.HolePunching
                 if (timeout <= 0) {
                     Log.Error ("Timeout!");
                     running = false;
+                    source.Cancel ();
                 }
             }
             targetPort = (ushort)_targetPort;

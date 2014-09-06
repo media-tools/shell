@@ -44,6 +44,7 @@ namespace Shell.HolePunching
         {
             bool sendingGarbage = true;
             bool waitingForAck = false;
+            CancellationTokenSource source = new CancellationTokenSource();
 
             Task.Run (async () => {
                 while (sendingGarbage || waitingForAck) {
@@ -64,25 +65,24 @@ namespace Shell.HolePunching
                         Log.Debug ("Received: ", receivedString);
                     }
                 }
-            });
-
-            Connection.SendKeepAlivePackets (whileTrue: () => sendingGarbage);
+            }, source.Token);
 
             Log.Message ("Sending garbage... ");
             while (sendingGarbage) {
                 Connection.Send (GARBAGE_MAGIC);
-                Thread.Sleep (500);
+                Thread.Sleep (2000);
             }
 
             Log.Message ("Waiting for ack... ");
             while (waitingForAck) {
-                Connection.Send (ACK_MAGIC);
-                Thread.Sleep (500);
+                Thread.Sleep (100);
             }
+
+            source.Cancel ();
 
             Log.Message ("Received valid ack.");
 
-            Thread.Sleep (2000);
+            Thread.Sleep (250);
         }
 
         /*

@@ -1,8 +1,9 @@
 ﻿using System;
 using Shell.Common;
 using Shell.Common.IO;
+using System.Net.Sockets;
 
-namespace Shell.Common
+namespace Shell.Common.Util
 {
     public static class NetworkUtils
     {
@@ -20,6 +21,17 @@ namespace Shell.Common
             return offsetPort;
         }
 
+        public static bool IsStillConnected (this TcpClient tcp)
+        {
+            if (tcp.Client.Poll (0, SelectMode.SelectRead)) {
+                byte[] buff = new byte[1];
+                if (tcp.Client.Receive (buff, SocketFlags.Peek) == 0) {
+                    // Client disconnected
+                    return false;
+                }
+            }
+            return true;
+        }
     }
 }
 

@@ -9,6 +9,7 @@ using System.Text;
 using System.Collections;
 using System.Linq;
 using Shell.Common.Util;
+using System.Threading;
 
 namespace Shell.HolePunching
 {
@@ -221,9 +222,9 @@ namespace Shell.HolePunching
             return packet;
         }
 
-        public void SendKeepAlivePackets (Func<bool> whileTrue)
+        public void SendKeepAlivePackets (Func<bool> whileTrue, CancellationToken token)
         {
-            HolePunchingUtil.SendKeepAlivePackets (udp: Local.Socket, udpRemote: RemoteEndPoint, checkIfRunning: whileTrue);
+            HolePunchingUtil.SendKeepAlivePackets (udp: Local.Socket, udpRemote: RemoteEndPoint, checkIfRunning: whileTrue, token: token);
         }
     }
 

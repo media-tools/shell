@@ -121,6 +121,16 @@ int main (int argc, char *argv[])
     }
 #endif
 
+            if ( dup2(sock, 0) < 0 )
+                perror("Dup stdin");
+            if ( dup2(sock, 1) < 0 )
+                perror("Dup stdout");
+
+
+  while (true) {
+   this_thread::sleep_for( chrono::milliseconds( 200 ) );
+  }
+
     std::thread t1(from_stdin, sock);
     std::thread t2(from_stdin, sock);
 

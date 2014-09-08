@@ -9,6 +9,8 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>Shell</RootNamespace>
     <AssemblyName>Shell</AssemblyName>
+    <ReleaseVersion>0.2</ReleaseVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>

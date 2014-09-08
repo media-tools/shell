@@ -8,7 +8,9 @@
     <ProjectGuid>{F2C117FF-E1E9-4512-BECB-CBEBBA7FAB05}</ProjectGuid>
     <OutputType>Library</OutputType>
     <RootNamespace>Shell.Pictures</RootNamespace>
-    <AssemblyName>Shell.Pictures</AssemblyName>
+    <AssemblyName>Shell.Tasks.Pictures</AssemblyName>
+    <ReleaseVersion>0.2</ReleaseVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>

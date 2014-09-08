@@ -8,7 +8,9 @@
     <ProjectGuid>{E1FCC8DF-A8D5-4671-BE92-BC34276ECA5F}</ProjectGuid>
     <OutputType>Library</OutputType>
     <RootNamespace>Shell.Git</RootNamespace>
-    <AssemblyName>Shell.Git</AssemblyName>
+    <AssemblyName>Shell.Tasks.Git</AssemblyName>
+    <ReleaseVersion>0.2</ReleaseVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>

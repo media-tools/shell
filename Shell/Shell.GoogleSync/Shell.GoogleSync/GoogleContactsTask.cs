@@ -12,7 +12,7 @@ namespace Shell.GoogleSync
         public GoogleContactsTask ()
         {
             Name = "GoogleContacts";
-            Description = "fuck";
+            Description = "Synchronize google contacts";
             Options = new string[] { "google-contacts", "g-contacts" };
             ConfigName = "Google";
             ParameterSyntax = "list | config | sync | clean";

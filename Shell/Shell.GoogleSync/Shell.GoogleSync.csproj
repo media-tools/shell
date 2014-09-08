@@ -8,7 +8,7 @@
     <ProjectGuid>{B5516B19-633A-4601-8698-61AC2CBD6865}</ProjectGuid>
     <OutputType>Library</OutputType>
     <RootNamespace>Shell.GoogleSync</RootNamespace>
-    <AssemblyName>Shell.GoogleSync</AssemblyName>
+    <AssemblyName>Shell.Tasks.GoogleSync</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>

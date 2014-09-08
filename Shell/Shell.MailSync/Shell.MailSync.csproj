@@ -8,7 +8,7 @@
     <ProjectGuid>{F03A89B1-EEC4-4121-A6DB-61F729BED16B}</ProjectGuid>
     <OutputType>Library</OutputType>
     <RootNamespace>Shell.MailSync</RootNamespace>
-    <AssemblyName>Shell.MailSync</AssemblyName>
+    <AssemblyName>Shell.Tasks.MailSync</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>

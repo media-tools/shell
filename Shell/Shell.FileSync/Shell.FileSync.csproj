@@ -8,7 +8,7 @@
     <ProjectGuid>{34F8AD42-90C2-4CC1-B7A2-047AD1874BAD}</ProjectGuid>
     <OutputType>Library</OutputType>
     <RootNamespace>Shell.FileSync</RootNamespace>
-    <AssemblyName>Shell.FileSync</AssemblyName>
+    <AssemblyName>Shell.Tasks.FileSync</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>

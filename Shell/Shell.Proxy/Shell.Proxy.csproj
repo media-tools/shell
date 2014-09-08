@@ -8,7 +8,7 @@
     <ProjectGuid>{478068DD-C4BB-4363-A331-F9AB00BDFEA5}</ProjectGuid>
     <OutputType>Library</OutputType>
     <RootNamespace>Shell.Proxy</RootNamespace>
-    <AssemblyName>Shell.Proxy</AssemblyName>
+    <AssemblyName>Shell.Tasks.Proxy</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>

@@ -8,7 +8,7 @@
     <ProjectGuid>{F1A8B1CE-B30B-4DC8-BB12-D4EB53E53763}</ProjectGuid>
     <OutputType>Library</OutputType>
     <RootNamespace>Shell.Series</RootNamespace>
-    <AssemblyName>Shell.Series</AssemblyName>
+    <AssemblyName>Shell.Tasks.Series</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Shell.Common.Tasks;
 using Shell.Common.Util;
+using Newtonsoft.Json;
 
 namespace Shell.Common.IO
 {
@@ -89,6 +90,18 @@ namespace Shell.Common.IO
             return new ConfigFile (filename: RootDirectory + SystemInfo.PathSeparator + name);
         }
 
+        private static JsonSerializerSettings jsonSerializerSettings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto };
+
+        public void Serialize <A> (string path, IEnumerable<A> enumerable)
+        {
+            File.WriteAllText (RootDirectory + SystemInfo.PathSeparator + path, JsonConvert.SerializeObject (enumerable, Formatting.Indented, jsonSerializerSettings));
+        }
+
+        public void Deserialize <A> (string path, out List<A> list)
+        {
+            list = JsonConvert.DeserializeObject<List<A>> (File.ReadAllText (RootDirectory + SystemInfo.PathSeparator + path), jsonSerializerSettings);
+        }
+
         public void ExecuteScript (string path, Action<string> receiveOutput = null, bool verbose = true, bool debug = true, bool sudo = false, bool ignoreEmptyLines = false)
         {
             // Use ProcessStartInfo class
@@ -109,15 +122,13 @@ namespace Shell.Common.IO
             }
 
             try {
-                using (Process process = new Process()) {
+                using (Process process = new Process ()) {
                     process.EnableRaisingEvents = true;
                     process.StartInfo = startInfo;
-                    Action<object, DataReceivedEventArgs> actionWrite = (sender, e) =>
-                    {
+                    Action<object, DataReceivedEventArgs> actionWrite = (sender, e) => {
                         if (ignoreEmptyLines && string.IsNullOrWhiteSpace (e.Data)) {
                             // the line is empty, ignore it
-                        }
-                        else {
+                        } else {
                             if (verbose && (debug || !e.Data.StartsWith ("+ "))) {
                                 Log.DebugConsole ("    ", e.Data);
                             }
@@ -145,7 +156,9 @@ namespace Shell.Common.IO
 
         public void RequirePackages (params string[] packages)
         {
-            packages = (from pkg in packages where !InstalledPackages.Contains (pkg) select pkg).ToArray ();
+            packages = (from pkg in packages
+                                 where !InstalledPackages.Contains (pkg)
+                                 select pkg).ToArray ();
 
             if (packages.Length > 0) {
                 string script = "export TOINSTALL=\"\";\n";

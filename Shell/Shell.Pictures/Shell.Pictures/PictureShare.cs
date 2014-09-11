@@ -112,17 +112,17 @@ namespace Shell.Pictures
                 if (info.FullName.StartsWith (RootDirectory)) {
                     MediaFile file = null;
                     if (PictureFile.IsValidFile (fileInfo: info)) {
-                        file = new PictureFile (fileInfo: info, root: RootDirectory);
+                        file = new PictureFile (fullPath: info.FullName, root: RootDirectory);
                     } else if (VideoFile.IsValidFile (fileInfo: info)) {
-                        file = new VideoFile (fileInfo: info, root: RootDirectory);
+                        file = new VideoFile (fullPath: info.FullName, root: RootDirectory);
                     } else if (AudioFile.IsValidFile (fileInfo: info)) {
-                        file = new AudioFile (fileInfo: info, root: RootDirectory);
+                        file = new AudioFile (fullPath: info.FullName, root: RootDirectory);
                     } else {
                         Log.Debug ("Unknown file: ", info.FullName);
                     }
                     if (file != null) {
                         if (!albums.ContainsKey (file.AlbumPath)) {
-                            albums [file.AlbumPath] = new Album (file.AlbumPath);
+                            albums [file.AlbumPath] = new Album (albumPath: file.AlbumPath);
                         }
                         albums [file.AlbumPath].Add (file);
                     }
@@ -131,8 +131,11 @@ namespace Shell.Pictures
                     return;
                 }
             }
-            filesystems.Config.WriteAllLines (path: "index-" + Name + ".txt", contents: from file in pictureFiles
-                                                                                                 select file.FullName);
+            filesystems.Config.Serialize<Album> (path: "index-"+Name+".json", enumerable: albums.Values);
+            List<Album> deserialized;
+            filesystems.Config.Deserialize<Album>(path: "index-"+Name+".json", list: out deserialized);
+            filesystems.Config.Serialize<Album> (path: "index-"+Name+".json2", enumerable: deserialized);
+            
         }
 
         public void Sort ()

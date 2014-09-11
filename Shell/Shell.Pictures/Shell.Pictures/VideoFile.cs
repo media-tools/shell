@@ -9,10 +9,9 @@ namespace Shell.Pictures
     {
         public static HashSet<string> FILE_ENDINGS = new string[]{ ".mp4", ".avi", ".flv" }.ToHashSet ();
 
-        public VideoFile (FileInfo fileInfo, string root)
-            : base (fileInfo, root)
+        public VideoFile (string fullPath, string root)
+            : base (fullPath, root)
         {
-
         }
 
         public static bool IsValidFile (FileInfo fileInfo)

@@ -10,8 +10,6 @@ namespace Shell.FileSync
 {
     public class ShareManager
     {
-        public static string TREE_LIST_CONFIG = "control.ini";
-
         public string RootDirectory { get; private set; }
 
         public Dictionary<string, Share> Shares { get; private set; }

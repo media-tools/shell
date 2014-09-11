@@ -35,9 +35,28 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Shell.Pictures\PictureShare.cs" />
+    <Compile Include="Shell.Pictures\PictureShareManager.cs" />
+    <Compile Include="Shell.Pictures\Album.cs" />
+    <Compile Include="Shell.Pictures\PictureIndexTask.cs" />
+    <Compile Include="Shell.Pictures\PictureFindSharesTask.cs" />
+    <Compile Include="Shell.Pictures\MediaFile.cs" />
+    <Compile Include="Shell.Pictures\PictureFile.cs" />
+    <Compile Include="Shell.Pictures\VideoFile.cs" />
+    <Compile Include="Shell.Pictures\AudioFile.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
     <Folder Include="Shell.Pictures\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Shell.Common\Shell.Common.csproj">
+      <Project>{CBB5DE48-A305-4F9C-88F3-F0F071AC3298}</Project>
+      <Name>Shell.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Shell.FileSync\Shell.FileSync.csproj">
+      <Project>{34F8AD42-90C2-4CC1-B7A2-047AD1874BAD}</Project>
+      <Name>Shell.FileSync</Name>
+    </ProjectReference>
   </ItemGroup>
 </Project>

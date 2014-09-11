@@ -85,6 +85,10 @@
       <Project>{478068DD-C4BB-4363-A331-F9AB00BDFEA5}</Project>
       <Name>Shell.Proxy</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Shell.Pictures\Shell.Pictures.csproj">
+      <Project>{F2C117FF-E1E9-4512-BECB-CBEBBA7FAB05}</Project>
+      <Name>Shell.Pictures</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Shell\" />

@@ -7,7 +7,6 @@ using Newtonsoft.Json.Linq;
 
 namespace Shell.Pictures
 {
-    [JsonConverter (typeof(PictureFileConverter))]
     public class PictureFile : MediaFile
     {
         public static HashSet<string> FILE_ENDINGS = new string[]{ ".png", ".jpg", ".gif", ".jpeg" }.ToHashSet ();
@@ -21,19 +20,13 @@ namespace Shell.Pictures
         {
             return MediaFile.IsValidFile (fileInfo: fileInfo, fileEndings: FILE_ENDINGS);
         }
-    }
 
-    public class PictureFileConverter : MediaFileConverter
-    {
-        protected override void WriteAttributes (JsonWriter writer, MediaFile file, JsonSerializer serializer)
+        public override void WriteAttributes (JsonWriter writer, MediaFile file, JsonSerializer serializer)
         {
-            writer.WritePropertyName ("Type");
-            writer.WriteValue ("PictureFile");
         }
 
-        protected override object Create (string fullPath, string root, JObject jsonObject)
+        public override void ReadAttributes (JObject jsonObject)
         {
-            return new PictureFile (fullPath: fullPath, root: root);
         }
     }
 }

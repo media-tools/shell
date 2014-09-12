@@ -9,6 +9,7 @@ using System.Linq;
 
 namespace Shell.Pictures
 {
+    [JsonConverter (typeof(MediaFileConverter))]
     public abstract class MediaFile
     {
         public string FullPath { get; private set; }
@@ -43,9 +44,19 @@ namespace Shell.Pictures
         {
             return string.Format ("[MediaFile: Name={0}, Extension={1}, AlbumPath={2}]", Name, Extension, AlbumPath);
         }
+
+        public virtual void WriteAttributes (JsonWriter writer, MediaFile file, JsonSerializer serializer)
+        {
+            throw new NotImplementedException ();
+        }
+
+        public virtual void ReadAttributes (JObject jsonObject)
+        {
+            throw new NotImplementedException ();
+        }
     }
 
-    public abstract class MediaFileConverter : JsonConverter
+    public sealed class MediaFileConverter : JsonConverter
     {
         public override void WriteJson (JsonWriter writer, object value, JsonSerializer serializer)
         {
@@ -55,11 +66,11 @@ namespace Shell.Pictures
             writer.WriteValue (file.FullPath);
             writer.WritePropertyName ("Root");
             writer.WriteValue (file.Root);
-            WriteAttributes (writer, file, serializer);
+            writer.WritePropertyName ("Type");
+            writer.WriteValue (value.GetType ().ToString ());
+            file.WriteAttributes (writer, file, serializer);
             writer.WriteEndObject ();
         }
-
-        protected abstract void WriteAttributes (JsonWriter writer, MediaFile file, JsonSerializer serializer);
 
         public override object ReadJson (JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
@@ -67,10 +78,21 @@ namespace Shell.Pictures
             string fullPath = (string)jsonObject.Property ("FullPath");
             string root = (string)jsonObject.Property ("Root");
 
-            return Create (fullPath: fullPath, root: root, jsonObject: jsonObject);
-        }
+            string type = (string)jsonObject.Property ("Type");
+            MediaFile file;
+            if (type == typeof(PictureFile).ToString ()) {
+                file = new PictureFile (fullPath: fullPath, root: root);
+            } else if (type == typeof(AudioFile).ToString ()) {
+                file = new AudioFile (fullPath: fullPath, root: root);
+            } else if (type == typeof(VideoFile).ToString ()) {
+                file = new VideoFile (fullPath: fullPath, root: root);
+            } else {
+                throw new NotImplementedException ("Unknown type: " + objectType);
+            }
+            file.ReadAttributes (jsonObject: jsonObject);
 
-        protected abstract object Create (string fullPath, string root, JObject jsonObject);
+            return file;
+        }
 
         public override bool CanConvert (Type objectType)
         {

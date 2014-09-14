@@ -96,11 +96,9 @@ namespace Shell.Common.IO
             return File.Open (path: RootDirectory + SystemInfo.PathSeparator + name, mode: mode, access: access);
         }
 
-        private static SHA256Managed crypt = new SHA256Managed ();
-
-        public byte[] HashOfFile (string name)
+        public HexString HashOfFile (string name)
         {
-            return crypt.ComputeHash (Open (name: name, mode: FileMode.Open, access: FileAccess.Read));
+            return FileSystemUtilities.HashOfFile (path: RootDirectory + SystemInfo.PathSeparator + name);
         }
 
         private static JsonSerializerSettings jsonSerializerSettings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto };

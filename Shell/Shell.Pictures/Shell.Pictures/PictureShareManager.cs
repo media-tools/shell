@@ -31,7 +31,7 @@ namespace Shell.Pictures
             string[] files = filesystems.Config.ReadAllLines (path: "trees.txt");
             foreach (string file in files) {
                 try {
-                    PictureShare share = new PictureShare (file);
+                    PictureShare share = PictureShare.CreateInstance (file);
                     if (share.IsEnabled) {
                         PictureDirectories [file] = share;
                     } else {
@@ -72,6 +72,28 @@ namespace Shell.Pictures
             if (PictureDirectories.Count != 0) {
                 foreach (PictureShare share in from share in PictureDirectories.Values orderby share.RootDirectory select share) {
                     share.Index (filesystems);
+                }
+            } else {
+                Log.Message ("No shares are available for indexing.");
+            }
+        }
+
+        public void Serialize (FileSystems filesystems)
+        {
+            if (PictureDirectories.Count != 0) {
+                foreach (PictureShare share in from share in PictureDirectories.Values orderby share.RootDirectory select share) {
+                    share.Serialize (filesystems);
+                }
+            } else {
+                Log.Message ("No shares are available for indexing.");
+            }
+        }
+
+        public void Deserialize (FileSystems filesystems)
+        {
+            if (PictureDirectories.Count != 0) {
+                foreach (PictureShare share in from share in PictureDirectories.Values orderby share.RootDirectory select share) {
+                    share.Deserialize (filesystems);
                 }
             } else {
                 Log.Message ("No shares are available for indexing.");

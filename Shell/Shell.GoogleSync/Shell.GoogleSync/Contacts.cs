@@ -159,6 +159,7 @@ namespace Shell.GoogleSync
             slave.Name = master.Name.Format ();
             slave.ContactEntry.Birthday = master.ContactEntry.Birthday;
             slave.Organizations.Clear ();
+            //slave.Phonenumbers.Clear ();
 
             Log.Debug ("Birthday:", slave.ContactEntry.Birthday);
 

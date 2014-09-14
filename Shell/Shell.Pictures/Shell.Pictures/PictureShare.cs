@@ -7,11 +7,15 @@ using Shell.Common.IO;
 using Shell.Common.Tasks;
 using Shell.Common.Util;
 using System.Security.Cryptography;
+using Shell.Pictures.Files;
+using Shell.Pictures.Content;
 
 namespace Shell.Pictures
 {
     public class PictureShare
     {
+        private static Dictionary<string, PictureShare> Instances = new Dictionary<string, PictureShare> ();
+
         public static string PICTURE_CONFIG_FILENAME = "control.ini";
         private static string CONFIG_SECTION = "Pictures";
 
@@ -21,9 +25,20 @@ namespace Shell.Pictures
 
         public HashSet<Album> Albums { get; private set; }
 
+        public HashSet<Media> Media { get; private set; }
+
         private ConfigFile config;
 
-        public PictureShare (string path)
+        public static PictureShare CreateInstance (string configPath)
+        {
+            if (Instances.ContainsKey (configPath)) {
+                return Instances [configPath];
+            } else {
+                return Instances [configPath] = new PictureShare (path: configPath);
+            }
+        }
+
+        private PictureShare (string path)
         {
             if (Path.GetFileName (path) == PICTURE_CONFIG_FILENAME) {
                 RootDirectory = Path.GetDirectoryName (path);
@@ -41,6 +56,7 @@ namespace Shell.Pictures
             }
 
             Albums = new HashSet<Album> ();
+            Media = new HashSet<Media> ();
         }
 
         public string Name {
@@ -73,7 +89,28 @@ namespace Shell.Pictures
             if (album != null) {
                 Albums.Add (album);
             } else {
-                throw new ArgumentNullException (string.Format ("Invalid albums: {0}", album));
+                throw new ArgumentNullException (string.Format ("Album is null: {0}", album));
+            }
+        }
+
+        public void Add (Media media)
+        {
+            if (media != null) {
+                Media.Add (media);
+            } else {
+                throw new ArgumentNullException (string.Format ("Media is null: {0}", media));
+            }
+        }
+
+        public bool GetMediaByHash (HexString hash, out Media media)
+        {
+            IEnumerable<Media> cached = Media.Where (m => m.Hash == hash);
+            if (cached.Count () == 1) {
+                media = cached.First ();
+                return true;
+            } else {
+                media = null;
+                return false;
             }
         }
 
@@ -111,21 +148,14 @@ namespace Shell.Pictures
             Dictionary<string, Album> albums = new Dictionary<string, Album> (); 
             foreach (FileInfo info in pictureFiles) {
                 if (info.FullName.StartsWith (RootDirectory)) {
-                    MediaFile file = null;
-                    if (PictureFile.IsValidFile (fileInfo: info)) {
-                        file = new PictureFile (fullPath: info.FullName, root: RootDirectory);
-                    } else if (VideoFile.IsValidFile (fileInfo: info)) {
-                        file = new VideoFile (fullPath: info.FullName, root: RootDirectory);
-                    } else if (AudioFile.IsValidFile (fileInfo: info)) {
-                        file = new AudioFile (fullPath: info.FullName, root: RootDirectory);
-                    } else {
-                        Log.Debug ("Unknown file: ", info.FullName);
-                    }
-                    if (file != null) {
+                    if (MediaFile.IsValidFile (fullPath: info.FullName)) {
+                        MediaFile file = new MediaFile (fullPath: info.FullName, share: this);
                         if (!albums.ContainsKey (file.AlbumPath)) {
                             albums [file.AlbumPath] = new Album (albumPath: file.AlbumPath);
                         }
                         albums [file.AlbumPath].Add (file);
+                    } else {
+                        Log.Debug ("Unknown file: ", info.FullName);
                     }
                 } else {
                     Log.Error ("Invalid Path: info.FullName=", info.FullName, " is not in RootDirectory=", RootDirectory);
@@ -133,21 +163,36 @@ namespace Shell.Pictures
                 }
             }
 
-            // save the index
-            string indexFilename = "index-" + Name + ".json";
-            byte[] hash1 = filesystems.Config.HashOfFile (name: indexFilename);
-            filesystems.Config.Serialize<Album> (path: indexFilename, enumerable: albums.Values);
+            Albums = albums.Values.ToHashSet ();
+        }
+
+        private string FILENAME_ALBUMS { get { return "index_albums_" + Name + ".json"; } }
+
+        private string FILENAME_MEDIA { get { return "index_media_" + Name + ".json"; } }
+
+        public void Serialize (FileSystems filesystems)
+        {
+            // save the albums
+            HexString hash1 = filesystems.Config.HashOfFile (name: FILENAME_ALBUMS);
+            filesystems.Config.Serialize<Album> (path: FILENAME_ALBUMS, enumerable: Albums);
 
             // deserialize and serialize
             List<Album> deserialized;
-            filesystems.Config.Deserialize<Album> (path: indexFilename, list: out deserialized);
-            filesystems.Config.Serialize<Album> (path: indexFilename, enumerable: deserialized);
-            byte[] hash2 = filesystems.Config.HashOfFile (name: indexFilename);
+            filesystems.Config.Deserialize<Album> (path: FILENAME_ALBUMS, list: out deserialized);
+            filesystems.Config.Serialize<Album> (path: FILENAME_ALBUMS, enumerable: deserialized);
+            HexString hash2 = filesystems.Config.HashOfFile (name: FILENAME_ALBUMS);
 
             // check if it's the same
-            if (!hash1.SequenceEqual (hash2)) {
+            if (hash1 != hash2) {
                 Log.Error ("Bug in MediaFileConverter! serialized deserialized index is not the same!");
             }
+        }
+
+        public void Deserialize (FileSystems filesystems)
+        {
+            List<Album> deserialized;
+            filesystems.Config.Deserialize<Album> (path: FILENAME_ALBUMS, list: out deserialized);
+            Albums = deserialized.ToHashSet ();
         }
 
         public void Sort ()

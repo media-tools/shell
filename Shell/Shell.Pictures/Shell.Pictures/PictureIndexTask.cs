@@ -23,6 +23,7 @@ namespace Shell.Pictures
             shares.Initialize (filesystems: fs, cached: true);
             shares.Print ();
             shares.Index (filesystems: fs);
+            shares.Serialize (filesystems: fs);
         }
     }
 }

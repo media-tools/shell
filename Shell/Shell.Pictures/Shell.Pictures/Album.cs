@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Shell.Pictures.Files;
 
 namespace Shell.Pictures
 {

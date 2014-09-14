@@ -42,15 +42,19 @@
     <Compile Include="Shell.Pictures\PictureShareManager.cs" />
     <Compile Include="Shell.Pictures\Album.cs" />
     <Compile Include="Shell.Pictures\PictureIndexTask.cs" />
-    <Compile Include="Shell.Pictures\PictureFindSharesTask.cs" />
-    <Compile Include="Shell.Pictures\MediaFile.cs" />
-    <Compile Include="Shell.Pictures\PictureFile.cs" />
-    <Compile Include="Shell.Pictures\VideoFile.cs" />
-    <Compile Include="Shell.Pictures\AudioFile.cs" />
+    <Compile Include="Shell.Pictures\Files\MediaFile.cs" />
+    <Compile Include="Shell.Pictures\Content\Picture.cs" />
+    <Compile Include="Shell.Pictures\Content\Audio.cs" />
+    <Compile Include="Shell.Pictures\Content\Video.cs" />
+    <Compile Include="Shell.Pictures\Content\Media.cs" />
+    <Compile Include="Shell.Pictures\PictureShareUtilities.cs" />
+    <Compile Include="Shell.Pictures\FindPictureSharesTask.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
     <Folder Include="Shell.Pictures\" />
+    <Folder Include="Shell.Pictures\Files\" />
+    <Folder Include="Shell.Pictures\Content\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Shell.Common\Shell.Common.csproj">

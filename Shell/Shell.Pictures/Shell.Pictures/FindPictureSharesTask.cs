@@ -3,11 +3,11 @@ using Shell.Common.Tasks;
 
 namespace Shell.Pictures
 {
-    public class PictureFindSharesTask : ScriptTask, MainScriptTask
+    public class FindPictureSharesTask : ScriptTask, MainScriptTask
     {
-        public PictureFindSharesTask ()
+        public FindPictureSharesTask ()
         {
-            Name = "PictureFindShares";
+            Name = "FindMediaShares";
             ConfigName = "Pictures";
             Description = "Create an index of all picture directories";
             Options = new string[] { "picture-find-shares", "p-fs" };

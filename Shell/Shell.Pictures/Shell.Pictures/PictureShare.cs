@@ -12,7 +12,7 @@ using Shell.Pictures.Content;
 
 namespace Shell.Pictures
 {
-    public class PictureShare
+    public class PictureShare : ValueObject<MediaFile>
     {
         private static Dictionary<string, PictureShare> Instances = new Dictionary<string, PictureShare> ();
 
@@ -119,19 +119,19 @@ namespace Shell.Pictures
             return string.Format ("PictureShare(Name=\"{0}\",RootDirectory=\"{1}\")", Name, RootDirectory);
         }
 
-        public override int GetHashCode ()
+        protected override IEnumerable<object> Reflect()
         {
-            return Name.GetHashCode ();
+            return new object[] { Name };
         }
 
-        public override bool Equals (object obj)
+        public static bool operator == (PictureShare c1, PictureShare c2)
         {
-            return Equals (obj as PictureShare);
+            return c1 != null && c1.Equals (c2);
         }
 
-        public bool Equals (PictureShare obj)
+        public static bool operator != (PictureShare c1, PictureShare c2)
         {
-            return obj != null && GetHashCode () == obj.GetHashCode ();
+            return !(c1 == c2);
         }
 
         private static string RandomString ()

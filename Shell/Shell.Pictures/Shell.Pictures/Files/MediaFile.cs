@@ -12,7 +12,7 @@ using Shell.Common.Util;
 namespace Shell.Pictures.Files
 {
     [JsonConverter (typeof(MediaFileConverter))]
-    public class MediaFile : ValueObject<Media>
+    public class MediaFile : ValueObject<MediaFile>
     {
         public string FullPath { get; private set; }
 

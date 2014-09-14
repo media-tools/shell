@@ -6,6 +6,7 @@ using Shell.Common;
 using Shell.Common.IO;
 using Shell.Common.Tasks;
 using Shell.Common.Util;
+using System.Security.Cryptography;
 
 namespace Shell.Pictures
 {
@@ -131,11 +132,22 @@ namespace Shell.Pictures
                     return;
                 }
             }
-            filesystems.Config.Serialize<Album> (path: "index-"+Name+".json", enumerable: albums.Values);
+
+            // save the index
+            string indexFilename = "index-" + Name + ".json";
+            byte[] hash1 = filesystems.Config.HashOfFile (name: indexFilename);
+            filesystems.Config.Serialize<Album> (path: indexFilename, enumerable: albums.Values);
+
+            // deserialize and serialize
             List<Album> deserialized;
-            filesystems.Config.Deserialize<Album>(path: "index-"+Name+".json", list: out deserialized);
-            filesystems.Config.Serialize<Album> (path: "index-"+Name+".json2", enumerable: deserialized);
-            
+            filesystems.Config.Deserialize<Album> (path: indexFilename, list: out deserialized);
+            filesystems.Config.Serialize<Album> (path: indexFilename, enumerable: deserialized);
+            byte[] hash2 = filesystems.Config.HashOfFile (name: indexFilename);
+
+            // check if it's the same
+            if (!hash1.SequenceEqual (hash2)) {
+                Log.Error ("Bug in MediaFileConverter! serialized deserialized index is not the same!");
+            }
         }
 
         public void Sort ()

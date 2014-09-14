@@ -6,6 +6,7 @@ using System.Linq;
 using Shell.Common.Tasks;
 using Shell.Common.Util;
 using Newtonsoft.Json;
+using System.Security.Cryptography;
 
 namespace Shell.Common.IO
 {
@@ -88,6 +89,18 @@ namespace Shell.Common.IO
         public ConfigFile OpenConfigFile (string name)
         {
             return new ConfigFile (filename: RootDirectory + SystemInfo.PathSeparator + name);
+        }
+
+        public FileStream Open (string name, FileMode mode, FileAccess access)
+        {
+            return File.Open (path: RootDirectory + SystemInfo.PathSeparator + name, mode: mode, access: access);
+        }
+
+        private static SHA256Managed crypt = new SHA256Managed ();
+
+        public byte[] HashOfFile (string name)
+        {
+            return crypt.ComputeHash (Open (name: name, mode: FileMode.Open, access: FileAccess.Read));
         }
 
         private static JsonSerializerSettings jsonSerializerSettings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto };

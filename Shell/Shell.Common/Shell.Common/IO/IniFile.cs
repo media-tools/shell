@@ -106,5 +106,7 @@ namespace Shell.Common.IO
         {
             return text.Replace ("\\n", "\n");
         }
+
+        public IEnumerable<string> Sections { get { return Data.Keys; } }
     }
 }

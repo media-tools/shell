@@ -3,6 +3,8 @@ using System.IO;
 using System.Diagnostics;
 using System.Linq;
 using Shell.Common.IO;
+using System.Collections.Generic;
+using System.Threading;
 
 namespace Shell.Common.Util
 {
@@ -55,10 +57,53 @@ namespace Shell.Common.Util
             }
         }
 
+        public static int PendingOperations = 0;
+        public static int CriticalOperations = 0;
+        public static bool CanStartCriticalOperation = true;
+        public static bool CanStartPendingOperation = true;
+        public static List<Action> ExitHooks = new List<Action> ();
+
         public static void OnCancel ()
         {
             Log.MessageConsole ();
             Log.MessageLog ("Cancelled!");
+            int i = 1;
+            if (ExitHooks.Count > 0) {
+                foreach (Action hook in ExitHooks) {
+                    Log.MessageLog ("Running exit hook #", i, " of ", ExitHooks.Count, "...");
+                    try {
+                        hook ();
+                    } catch (Exception ex) {
+                        Log.MessageLog ("Fuck you! Exception in exit hook: ", ex);
+                    }
+                    Log.MessageLog ("Done running exit hook #", i, ".");
+                    i++;
+                }
+            } else {
+                Log.MessageLog ("There are no exit hooks.");
+            }
+            Log.MessageLog ("Exit.");
+        }
+
+        public static void CancelThreadWorker ()
+        {
+            CanStartPendingOperation = false;
+            int timeout = 5000;
+            while (PendingOperations > 0 && timeout > 0) {
+                Thread.Sleep (100);
+                timeout -= 100;
+                Log.MessageLog ("Waiting for pending operations to finish (", timeout, " ms)...");
+            }
+            CanStartCriticalOperation = false;
+            timeout = 30000;
+            while (CriticalOperations > 0 && timeout > 0) {
+                Thread.Sleep (100);
+                timeout -= 100;
+                Log.MessageLog ("Waiting for critical operations to finish (", timeout, " ms)...");
+            }
+            OnCancel ();
+            Console.CursorVisible = true;
+            Environment.Exit (0);
         }
     }
 

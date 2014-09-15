@@ -11,7 +11,6 @@ using Shell.Common.Util;
 
 namespace Shell.Pictures.Files
 {
-    [JsonConverter (typeof(MediaFileConverter))]
     public class MediaFile : ValueObject<MediaFile>
     {
         public string FullPath { get; private set; }
@@ -24,42 +23,49 @@ namespace Shell.Pictures.Files
 
         public string AlbumPath { get; private set; }
 
-        public Media Media { get; private set; }
+        public Medium Medium { get; private set; }
 
         public PictureShare Share { get; private set; }
 
         public MediaFile (string fullPath, PictureShare share)
-            : this (fullPath: fullPath, hash: FileSystemUtilities.HashOfFile (path: fullPath), share: share)
-        {
-        }
-
-        public MediaFile (string fullPath, HexString hash, PictureShare share)
         {
             Debug.Assert (fullPath.StartsWith (share.RootDirectory), "file path is not in root directory (FullName=" + fullPath + ",root=" + share.RootDirectory + ")");
             Share = share;
             FullPath = fullPath;
             Name = Path.GetFileName (fullPath);
             Extension = Path.GetExtension (fullPath);
-            RelativePath = FullPath.Substring (Share.RootDirectory.Length).TrimStart ('/', '\\');
-            AlbumPath = Path.GetDirectoryName (RelativePath).Trim ('/', '\\');
+            RelativePath = PictureShareUtilities.GetRelativePath (fullPath: fullPath, share: share);
+            AlbumPath = PictureShareUtilities.GetAlbumPath (fullPath: fullPath, share: share);
+        }
 
-            Media media;
-            if (share.GetMediaByHash (hash: hash, media: out media)) {
-                Log.Debug ("cached: media");
-            } else if (Picture.IsValidFile (fullPath: fullPath)) {
-                media = new Picture (fullPath: fullPath);
-                share.Add (media: media);
-            } else if (Video.IsValidFile (fullPath: fullPath)) {
-                media = new Video (fullPath: fullPath);
-                share.Add (media: media);
-            } else if (Audio.IsValidFile (fullPath: fullPath)) {
-                media = new Audio (fullPath: fullPath);
-                share.Add (media: media);
-            } else {
-                throw new ArgumentException ("[MediaFile] Unknown file: " + fullPath);
+        public MediaFile (string fullPath, HexString hash, PictureShare share)
+            : this (fullPath: fullPath, share: share)
+        {
+            Medium medium;
+            if (share.GetMediumByHash (hash: hash, medium: out medium)) {
+                Log.Debug ("cached: medium by hash");
+                medium.AddFile (mediaFile: this);
+                Medium = medium;
             }
-            media.AddFile (mediaFile: this);
-            Media = media;
+        }
+
+        public void Index (bool cached = true, Album album = null)
+        {
+            Medium medium;
+            if (Picture.IsValidFile (fullPath: FullPath)) {
+                medium = new Picture (fullPath: FullPath);
+                Share.Add (media: medium);
+            } else if (Video.IsValidFile (fullPath: FullPath)) {
+                medium = new Video (fullPath: FullPath);
+                Share.Add (media: medium);
+            } else if (Audio.IsValidFile (fullPath: FullPath)) {
+                medium = new Audio (fullPath: FullPath);
+                Share.Add (media: medium);
+            } else {
+                throw new ArgumentException ("[MediaFile] Unknown file: " + FullPath);
+            }
+            medium.AddFile (mediaFile: this);
+            Medium = medium;
         }
 
         public static bool IsValidFile (string fullPath)
@@ -72,7 +78,7 @@ namespace Shell.Pictures.Files
             return string.Format ("[MediaFile: Name={0}, Extension={1}, AlbumPath={2}]", Name, Extension, AlbumPath);
         }
 
-        protected override IEnumerable<object> Reflect()
+        protected override IEnumerable<object> Reflect ()
         {
             return new object[] { RelativePath };
         }
@@ -95,39 +101,6 @@ namespace Shell.Pictures.Files
         public static bool operator != (MediaFile a, MediaFile b)
         {
             return ValueObject<MediaFile>.Inequality (a, b);
-        }
-    }
-
-    public sealed class MediaFileConverter : JsonConverter
-    {
-        public override void WriteJson (JsonWriter writer, object value, JsonSerializer serializer)
-        {
-            MediaFile file = (MediaFile)value;
-            writer.WriteStartObject ();
-            writer.WritePropertyName ("FullPath");
-            writer.WriteValue (file.FullPath);
-            writer.WritePropertyName ("ShareConfigPath");
-            writer.WriteValue (file.Share.ConfigPath);
-            writer.WritePropertyName ("Hash");
-            writer.WriteValue (file.Media.Hash);
-            writer.WriteEndObject ();
-        }
-
-        public override object ReadJson (JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
-        {
-            JObject jsonObject = JObject.Load (reader);
-            string fullPath = (string)jsonObject.Property ("FullPath");
-            string shareConfigPath = (string)jsonObject.Property ("ShareConfigPath");
-            HexString hash = new HexString { Hash = (string)jsonObject.Property ("Hash") };
-            PictureShare share = PictureShare.CreateInstance (configPath: shareConfigPath);
-            MediaFile file = new MediaFile (fullPath: fullPath, hash: hash, share: share);
-
-            return file;
-        }
-
-        public override bool CanConvert (Type objectType)
-        {
-            return typeof(MediaFile).IsAssignableFrom (objectType);
         }
     }
 }

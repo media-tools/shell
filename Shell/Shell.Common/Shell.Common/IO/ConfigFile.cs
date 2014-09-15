@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Collections.Generic;
 
 namespace Shell.Common.IO
 {
@@ -32,6 +33,18 @@ namespace Shell.Common.IO
             using (StreamWriter w = File.AppendText (Filename)) {
             }
             ini = new IniFile (Filename);
+        }
+
+        public IEnumerable<string> Sections { get { return ini.Sections; } }
+
+        public IEnumerable<string> KeysInSection (string section)
+        {
+            return ini.KeysInSection (section: section);
+        }
+
+        public Dictionary<string, string> SectionToDictionary (string section)
+        {
+            return ini.SectionToDictionary (section: section);
         }
 
         public void Reload ()

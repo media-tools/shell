@@ -46,9 +46,9 @@
     <Compile Include="Shell.Pictures\Content\Picture.cs" />
     <Compile Include="Shell.Pictures\Content\Audio.cs" />
     <Compile Include="Shell.Pictures\Content\Video.cs" />
-    <Compile Include="Shell.Pictures\Content\Media.cs" />
     <Compile Include="Shell.Pictures\PictureShareUtilities.cs" />
     <Compile Include="Shell.Pictures\FindPictureSharesTask.cs" />
+    <Compile Include="Shell.Pictures\Content\Medium.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

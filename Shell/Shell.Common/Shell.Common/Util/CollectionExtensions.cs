@@ -87,6 +87,24 @@ namespace Shell.Common.Util
             }
             return rv;
         }
+
+        public static B TryCreateEntry <A, B> (this Dictionary<A, B> dictionary, A key, Func<B> defaultValue)
+        {
+            return TryCreateEntry (dictionary: dictionary, key: key, defaultValue: defaultValue, onValueCreated: null);
+        }
+
+        public static B TryCreateEntry <A, B> (this Dictionary<A, B> dictionary, A key, Func<B> defaultValue, Action<B> onValueCreated)
+        {
+            B value;
+            if (!dictionary.TryGetValue (key, out value)) {
+                value = defaultValue ();
+                dictionary [key] = value;
+                if (onValueCreated != null) {
+                    onValueCreated (value);
+                }
+            }
+            return value;
+        }
     }
 }
 

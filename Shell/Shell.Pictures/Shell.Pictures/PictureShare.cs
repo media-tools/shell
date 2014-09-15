@@ -25,21 +25,26 @@ namespace Shell.Pictures
 
         public HashSet<Album> Albums { get; private set; }
 
-        public HashSet<Media> Media { get; private set; }
+        public HashSet<Medium> Media { get; private set; }
 
         private ConfigFile config;
+        private ConfigFile serializedAlbums;
+        private ConfigFile serializedMedia;
 
-        public static PictureShare CreateInstance (string configPath)
+        private FileSystems fs;
+
+        public static PictureShare CreateInstance (string configPath, FileSystems filesystems)
         {
             if (Instances.ContainsKey (configPath)) {
                 return Instances [configPath];
             } else {
-                return Instances [configPath] = new PictureShare (path: configPath);
+                return Instances [configPath] = new PictureShare (path: configPath, filesystems: filesystems);
             }
         }
 
-        private PictureShare (string path)
+        private PictureShare (string path, FileSystems filesystems)
         {
+            fs = filesystems;
             if (Path.GetFileName (path) == PICTURE_CONFIG_FILENAME) {
                 RootDirectory = Path.GetDirectoryName (path);
                 ConfigPath = path;
@@ -56,7 +61,9 @@ namespace Shell.Pictures
             }
 
             Albums = new HashSet<Album> ();
-            Media = new HashSet<Media> ();
+            Media = new HashSet<Medium> ();
+            serializedAlbums = fs.Config.OpenConfigFile ("index_albums_" + Name + ".ini");
+            serializedMedia = fs.Config.OpenConfigFile ("index_media_" + Name + ".ini");
         }
 
         public string Name {
@@ -93,7 +100,7 @@ namespace Shell.Pictures
             }
         }
 
-        public void Add (Media media)
+        public void Add (Medium media)
         {
             if (media != null) {
                 Media.Add (media);
@@ -102,14 +109,14 @@ namespace Shell.Pictures
             }
         }
 
-        public bool GetMediaByHash (HexString hash, out Media media)
+        public bool GetMediumByHash (HexString hash, out Medium medium)
         {
-            IEnumerable<Media> cached = Media.Where (m => m.Hash == hash);
+            IEnumerable<Medium> cached = Media.Where (m => m.Hash == hash);
             if (cached.Count () == 1) {
-                media = cached.First ();
+                medium = cached.First ();
                 return true;
             } else {
-                media = null;
+                medium = null;
                 return false;
             }
         }
@@ -119,7 +126,7 @@ namespace Shell.Pictures
             return string.Format ("PictureShare(Name=\"{0}\",RootDirectory=\"{1}\")", Name, RootDirectory);
         }
 
-        protected override IEnumerable<object> Reflect()
+        protected override IEnumerable<object> Reflect ()
         {
             return new object[] { Name };
         }
@@ -152,58 +159,97 @@ namespace Shell.Pictures
             return result;
         }
 
-        public void Index (FileSystems filesystems)
+        public void Index ()
         {
             IEnumerable<FileInfo> pictureFiles = Shell.FileSync.FileSystemLibrary.GetFileList (rootDirectory: RootDirectory, fileFilter: file => true, dirFilter: dir => true);
             Dictionary<string, Album> albums = new Dictionary<string, Album> (); 
-            foreach (FileInfo info in pictureFiles) {
-                if (info.FullName.StartsWith (RootDirectory)) {
-                    if (MediaFile.IsValidFile (fullPath: info.FullName)) {
-                        Log.Debug ("Media file: ", info.FullName);
-                        MediaFile file = new MediaFile (fullPath: info.FullName, share: this);
-                        if (!albums.ContainsKey (file.AlbumPath)) {
-                            albums [file.AlbumPath] = new Album (albumPath: file.AlbumPath);
-                        }
-                        albums [file.AlbumPath].Add (file);
-                    } else {
-                        Log.Debug ("Unknown file: ", info.FullName);
-                    }
-                } else {
-                    Log.Error ("Invalid Path: info.FullName=", info.FullName, " is not in RootDirectory=", RootDirectory);
+            foreach (string fullPath in from info in pictureFiles select info.FullName) {
+
+                if (!fullPath.StartsWith (RootDirectory)) {
+                    Log.Error ("[BUG] Invalid Path: fullPath=", fullPath, " is not in RootDirectory=", RootDirectory, "; stopped indexing.");
                     return;
+                }
+
+                string albumPath = PictureShareUtilities.GetAlbumPath (fullPath: fullPath, share: this);
+                Album album = albums.TryCreateEntry (key: albumPath, defaultValue: () => new Album (albumPath: albumPath), onValueCreated: a => Albums.Add (a));
+
+                if (album.Contains (search: file => file.FullPath == fullPath)) {
+                    Log.Debug ("Media file (cached): ", fullPath);
+                } else if (MediaFile.IsValidFile (fullPath: fullPath)) {
+                    Log.Debug ("Media file: ", fullPath);
+                    MediaFile file = new MediaFile (fullPath: fullPath, share: this);
+                    file.Index (album: album);
+                    album.Add (file);
+
+                    Serialize ();
+                } else {
+                    Log.Debug ("Unknown file: ", fullPath);
                 }
             }
 
             Albums = albums.Values.ToHashSet ();
         }
 
-        private string FILENAME_ALBUMS { get { return "index_albums_" + Name + ".json"; } }
-
-        private string FILENAME_MEDIA { get { return "index_media_" + Name + ".json"; } }
-
-        public void Serialize (FileSystems filesystems)
+        public void Serialize ()
         {
-            // save the albums
-            HexString hash1 = filesystems.Config.HashOfFile (name: FILENAME_ALBUMS);
-            filesystems.Config.Serialize<Album> (path: FILENAME_ALBUMS, enumerable: Albums);
-
-            // deserialize and serialize
-            List<Album> deserialized;
-            filesystems.Config.Deserialize<Album> (path: FILENAME_ALBUMS, list: out deserialized);
-            filesystems.Config.Serialize<Album> (path: FILENAME_ALBUMS, enumerable: deserialized);
-            HexString hash2 = filesystems.Config.HashOfFile (name: FILENAME_ALBUMS);
-
-            // check if it's the same
-            if (hash1 != hash2) {
-                Log.Error ("Bug in MediaFileConverter! serialized deserialized index is not the same!");
+            if (!Commons.CanStartPendingOperation) {
+                Log.Error ("Can't serialize because we are exiting.");
+                return;
             }
+
+            Commons.PendingOperations++;
+            foreach (Album album in Albums) {
+                foreach (MediaFile file in album.Files) {
+                    serializedAlbums [section: album.AlbumPath, option: file.Name, defaultValue: ""] = file.Medium.Hash.Hash;
+                }
+            }
+            foreach (Medium medium in Media) {
+                serializedMedia [section: medium.Hash.Hash, option: "type", defaultValue: ""] = medium.Type;
+                Dictionary<string, string> dict = medium.Serialize ();
+                foreach (KeyValuePair<string, string> entry in dict) {
+                    serializedMedia [section: medium.Hash.Hash, option: entry.Key, defaultValue: ""] = entry.Value;
+                }
+            }
+            Commons.PendingOperations--;
         }
 
-        public void Deserialize (FileSystems filesystems)
+        public void Deserialize ()
         {
-            List<Album> deserialized;
-            filesystems.Config.Deserialize<Album> (path: FILENAME_ALBUMS, list: out deserialized);
-            Albums = deserialized.ToHashSet ();
+            Media.Clear ();
+            Albums.Clear ();
+
+            foreach (string _hash in serializedMedia.Sections) {
+                HexString hash = new HexString { Hash = _hash };
+                string type = serializedMedia [section: _hash, option: "type", defaultValue: ""];
+                Medium medium;
+                if (type == Picture.TYPE) {
+                    medium = new Picture (hash: hash);
+                } else if (type == Audio.TYPE) {
+                    medium = new Audio (hash: hash);
+                } else if (type == Video.TYPE) {
+                    medium = new Video (hash: hash);
+                } else {
+                    Log.Error ("Unknown type: " + type + " (hash: " + hash + ")");
+                    continue;
+                }
+                Dictionary<string, string> dict = serializedMedia.SectionToDictionary (section: _hash);
+                dict.Remove (key: "type");
+                medium.Deserialize (dict);
+                Media.Add (medium);
+            }
+
+            foreach (string albumPath in serializedAlbums.Sections) {
+                Album album = new Album (albumPath: albumPath);
+                Dictionary<string, string> files = serializedAlbums.SectionToDictionary (section: albumPath);
+                foreach (KeyValuePair<string, string> entry in files) {
+                    string filename = entry.Key;
+                    string fullPath = Path.Combine (RootDirectory, albumPath, filename);
+                    HexString hash = new HexString { Hash = entry.Value };
+                    MediaFile file = new MediaFile (fullPath: fullPath, hash: hash, share: this);
+                    album.Add (mediaFile: file);
+                }
+                Albums.Add (album);
+            }
         }
 
         public void Sort ()

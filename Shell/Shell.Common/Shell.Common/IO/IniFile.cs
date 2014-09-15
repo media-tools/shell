@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using Shell.Common.Util;
+using System.Threading;
 
 namespace Shell.Common.IO
 {
@@ -25,8 +27,7 @@ namespace Shell.Common.IO
                             if (!Data.ContainsKey (section)) {
                                 Data [section] = new Dictionary<string,string> ();
                             }
-                        }
-                        else if (line.Contains ("=")) {
+                        } else if (line.Contains ("=")) {
                             string[] parts = line.Split ('=');
                             if (section != null) {
                                 Data [section] [Decode (parts [0].Trim ())] = Decode (parts [1].Trim ());
@@ -52,16 +53,30 @@ namespace Shell.Common.IO
             }
         }
 
+        private static Object saveLock = new Object ();
+
         public void Save ()
         {
-            using (StreamWriter writer = new StreamWriter (Filename)) {
-                foreach (string section in Data.Keys.OrderBy (x => x)) {
-                    writer.WriteLine ("[" + section + "]");
-                    foreach (string key  in Data [section].Keys.OrderBy (x => x)) {
-                        writer.WriteLine (Encode (key) + "=" + Encode (Data [section] [key]));
+            if (!Commons.CanStartCriticalOperation) {
+                Log.MessageLog ("Can't save because we are exiting.");
+                return;
+            }
+
+            Commons.CriticalOperations++;
+            lock (saveLock) {
+                string tempFilename = Filename + ".tmp";
+                using (StreamWriter writer = new StreamWriter (tempFilename)) {
+                    foreach (string section in Data.Keys.OrderBy (x => x)) {
+                        writer.WriteLine ("[" + section + "]");
+                        foreach (string key  in Data [section].Keys.OrderBy (x => x)) {
+                            writer.WriteLine (Encode (key) + "=" + Encode (Data [section] [key]));
+                        }
                     }
                 }
+                File.Copy (sourceFileName: tempFilename, destFileName: Filename, overwrite: true);
+                File.Delete (path: tempFilename);
             }
+            Commons.CriticalOperations--;
         }
 
         private static string StripComments (string line)
@@ -75,8 +90,7 @@ namespace Shell.Common.IO
             return string.Empty;
         }
 
-        public string this [string section, string key, string defaultValue = null]
-        {
+        public string this [string section, string key, string defaultValue = null] {
             get {
                 if (!Data.ContainsKey (section)) {
                     Data [section] = new Dictionary<string,string> ();
@@ -92,7 +106,7 @@ namespace Shell.Common.IO
                 if (!Data.ContainsKey (section)) {
                     Data [section] = new Dictionary<string,string> ();
                 }
-                Data [section] [key] = value??"";
+                Data [section] [key] = value ?? "";
                 Save ();
             }
         }
@@ -108,5 +122,23 @@ namespace Shell.Common.IO
         }
 
         public IEnumerable<string> Sections { get { return Data.Keys; } }
+
+        public IEnumerable<string> KeysInSection (string section)
+        {
+            if (Data.ContainsKey (section)) {
+                return Data [section].Keys;
+            } else {
+                return Enumerable.Empty<string> ();
+            }
+        }
+
+        public Dictionary<string, string> SectionToDictionary (string section)
+        {
+            if (Data.ContainsKey (section)) {
+                return Data [section].ToDictionary (entry => entry.Key, entry => entry.Value);
+            } else {
+                return new Dictionary<string, string> ();
+            }
+        }
     }
 }

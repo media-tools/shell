@@ -8,7 +8,7 @@ using Shell.Pictures.Files;
 
 namespace Shell.Pictures.Content
 {
-    public class Picture : Media
+    public class Picture : Medium
     {
         public static HashSet<string> FILE_ENDINGS = new string[]{ ".png", ".jpg", ".gif", ".jpeg" }.ToHashSet ();
 
@@ -31,11 +31,12 @@ namespace Shell.Pictures.Content
             return PictureShareUtilities.IsValidFile (fullPath: fullPath, fileEndings: FILE_ENDINGS);
         }
 
-        public override void WriteAttributes (JsonWriter writer, JsonSerializer serializer)
+        public override Dictionary<string, string> Serialize ()
         {
+            return new Dictionary<string, string> ();
         }
 
-        public override void ReadAttributes (JObject jsonObject)
+        public override void Deserialize (Dictionary<string, string> dict)
         {
         }
     }

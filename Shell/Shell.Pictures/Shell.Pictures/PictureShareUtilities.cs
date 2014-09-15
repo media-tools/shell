@@ -10,6 +10,18 @@ namespace Shell.Pictures
         {
             return fileEndings.Contains (Path.GetExtension (fullPath).ToLower ());
         }
+
+
+        public static string GetRelativePath (string fullPath, PictureShare share)
+        {
+            return fullPath.Substring (share.RootDirectory.Length).TrimStart ('/', '\\');
+        }
+
+        public static string GetAlbumPath (string fullPath, PictureShare share)
+        {
+            string relativePath = GetRelativePath(fullPath: fullPath, share: share);
+            return Path.GetDirectoryName (relativePath).Trim ('/', '\\');
+        }
     }
 }
 

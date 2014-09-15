@@ -15,8 +15,8 @@ namespace Shell.Pictures
 
         protected override void InternalRun (string[] args)
         {
-            PictureShareManager shares = new PictureShareManager (rootDirectory: "/");
-            shares.Initialize (filesystems: fs, cached: false);
+            PictureShareManager shares = new PictureShareManager (rootDirectory: "/", filesystems: fs);
+            shares.Initialize (cached: false);
             shares.Print ();
         }
     }

@@ -8,30 +8,33 @@ using Shell.Common.Tasks;
 
 namespace Shell.Pictures
 {
-    public class PictureShareManager
+    public sealed class PictureShareManager
     {
         public string RootDirectory { get; private set; }
 
         public Dictionary<string, PictureShare> PictureDirectories { get; private set; }
 
-        public PictureShareManager (string rootDirectory)
+        private FileSystems fs;
+
+        public PictureShareManager (string rootDirectory, FileSystems filesystems)
         {
             RootDirectory = rootDirectory;
             PictureDirectories = new Dictionary<string, PictureShare> ();
+            fs = filesystems;
         }
 
-        public void Initialize (FileSystems filesystems, bool cached)
+        public void Initialize (bool cached)
         {
-            if (!cached || !filesystems.Config.FileExists (path: "trees.txt")) {
+            if (!cached || !fs.Config.FileExists (path: "trees.txt")) {
                 Func<FileInfo, bool> onlyPictureConfig = fileInfo => fileInfo.Name == PictureShare.PICTURE_CONFIG_FILENAME;
                 IEnumerable<FileInfo> configFiles = Shell.FileSync.FileSystemLibrary.GetFileList (rootDirectory: "/", fileFilter: onlyPictureConfig, dirFilter: dir => true);
-                filesystems.Config.WriteAllLines (path: "trees.txt", contents: from file in configFiles where file.Name == PictureShare.PICTURE_CONFIG_FILENAME select file.FullName);
+                fs.Config.WriteAllLines (path: "trees.txt", contents: from file in configFiles where file.Name == PictureShare.PICTURE_CONFIG_FILENAME select file.FullName);
             }
             PictureDirectories.Clear ();
-            string[] files = filesystems.Config.ReadAllLines (path: "trees.txt");
+            string[] files = fs.Config.ReadAllLines (path: "trees.txt");
             foreach (string file in files) {
                 try {
-                    PictureShare share = PictureShare.CreateInstance (file);
+                    PictureShare share = PictureShare.CreateInstance (file, filesystems: fs);
                     if (share.IsEnabled) {
                         PictureDirectories [file] = share;
                     } else {
@@ -67,33 +70,33 @@ namespace Shell.Pictures
             }
         }
 
-        public void Index (FileSystems filesystems)
+        public void Index ()
         {
             if (PictureDirectories.Count != 0) {
                 foreach (PictureShare share in from share in PictureDirectories.Values orderby share.RootDirectory select share) {
-                    share.Index (filesystems);
+                    share.Index ();
                 }
             } else {
                 Log.Message ("No shares are available for indexing.");
             }
         }
 
-        public void Serialize (FileSystems filesystems)
+        public void Serialize ()
         {
             if (PictureDirectories.Count != 0) {
                 foreach (PictureShare share in from share in PictureDirectories.Values orderby share.RootDirectory select share) {
-                    share.Serialize (filesystems);
+                    share.Serialize ();
                 }
             } else {
                 Log.Message ("No shares are available for indexing.");
             }
         }
 
-        public void Deserialize (FileSystems filesystems)
+        public void Deserialize ()
         {
             if (PictureDirectories.Count != 0) {
                 foreach (PictureShare share in from share in PictureDirectories.Values orderby share.RootDirectory select share) {
-                    share.Deserialize (filesystems);
+                    share.Deserialize ();
                 }
             } else {
                 Log.Message ("No shares are available for indexing.");

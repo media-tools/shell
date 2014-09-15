@@ -8,6 +8,7 @@ using Shell.Common.Util;
 using Shell.Common.IO;
 using Shell.Common.Hooks;
 using Shell.Common;
+using System.Threading;
 
 namespace Shell
 {
@@ -18,8 +19,8 @@ namespace Shell
         public static void Main (string[] args)
         {
             Console.CancelKeyPress += delegate(object sender, ConsoleCancelEventArgs e) {
-                Commons.OnCancel ();
-                e.Cancel = false;
+                e.Cancel = true;
+                new Thread (Commons.CancelThreadWorker).Start ();
             };
 
             Log.Init (program: "shell", version: Commons.VERSION_STR);

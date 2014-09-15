@@ -9,7 +9,7 @@ namespace Shell.Common.Util
     {
         protected abstract IEnumerable<object> Reflect ();
 
-        public override bool Equals (Object obj)
+        public override bool Equals (object obj)
         {
             if (ReferenceEquals (null, obj))
                 return false;
@@ -36,6 +36,27 @@ namespace Shell.Common.Util
         public override string ToString ()
         {
             return "{ " + Reflect ().Aggregate ((l, r) => l + ", " + r) + " }";
+        }
+
+        public static bool Equality (T a, T b)
+        {
+            // If both are null, or both are same instance, return true.
+            if (ReferenceEquals (a, b)) {
+                return true;
+            }
+
+            // If one is null, but not both, return false.
+            if (((object)a == null) || ((object)b == null)) {
+                return false;
+            }
+
+            // Return true if the fields match:
+            return a.Reflect ().SequenceEqual (b.Reflect ());
+        }
+
+        public static bool Inequality (T a, T b)
+        {
+            return !(Equality (a, b));
         }
     }
 }

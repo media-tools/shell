@@ -79,12 +79,12 @@ namespace Shell.Pictures.Files
 
         public static bool operator == (MediaFile c1, MediaFile c2)
         {
-            return c1 != null && c1.Equals (c2);
+            return ValueObject<MediaFile>.Equality (c1, c2);
         }
 
         public static bool operator != (MediaFile c1, MediaFile c2)
         {
-            return !(c1 == c2);
+            return ValueObject<MediaFile>.Inequality (c1, c2);
         }
     }
 

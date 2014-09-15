@@ -48,12 +48,12 @@ namespace Shell.Pictures.Content
 
         public static bool operator == (Media c1, Media c2)
         {
-            return c1 != null && c1.Equals (c2);
+            return ValueObject<Media>.Equality (c1, c2);
         }
 
         public static bool operator != (Media c1, Media c2)
         {
-            return !(c1 == c2);
+            return ValueObject<Media>.Inequality (c1, c2);
         }
     }
 

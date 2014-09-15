@@ -11,20 +11,30 @@ namespace Shell.Common.Util
 
         public override bool Equals (object obj)
         {
-            if (ReferenceEquals (null, obj))
-                return false;
-            if (obj.GetType () != GetType ())
-                return false;
-            return Equals (obj as T);
+            return ValueObject<T>.Equals (myself: (T)this, obj: obj);
         }
 
         public bool Equals (T other)
         {
+            return ValueObject<T>.Equals (myself: (T)this, other: other);
+        }
+
+        public static bool Equals (T myself, object obj)
+        {
+            if (ReferenceEquals (null, obj))
+                return false;
+            if (obj.GetType () != myself.GetType ())
+                return false;
+            return Equals (myself: myself, other: obj as T);
+        }
+
+        public static bool Equals (T myself, T other)
+        {
             if (ReferenceEquals (null, other))
                 return false;
-            if (ReferenceEquals (this, other))
+            if (ReferenceEquals (myself, other))
                 return true;
-            return Reflect ().SequenceEqual (other.Reflect ());
+            return myself.Reflect ().SequenceEqual (other.Reflect ());
         }
 
         public override int GetHashCode ()

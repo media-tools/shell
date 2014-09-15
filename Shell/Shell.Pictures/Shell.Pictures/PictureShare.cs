@@ -12,7 +12,7 @@ using Shell.Pictures.Content;
 
 namespace Shell.Pictures
 {
-    public class PictureShare : ValueObject<MediaFile>
+    public class PictureShare : ValueObject<PictureShare>
     {
         private static Dictionary<string, PictureShare> Instances = new Dictionary<string, PictureShare> ();
 
@@ -124,14 +124,24 @@ namespace Shell.Pictures
             return new object[] { Name };
         }
 
-        public static bool operator == (PictureShare c1, PictureShare c2)
+        public override bool Equals (object obj)
         {
-            return c1 != null && c1.Equals (c2);
+            return ValueObject<PictureShare>.Equals (myself: this, obj: obj);
         }
 
-        public static bool operator != (PictureShare c1, PictureShare c2)
+        public override int GetHashCode ()
         {
-            return !(c1 == c2);
+            return base.GetHashCode ();
+        }
+
+        public static bool operator == (PictureShare a, PictureShare b)
+        {
+            return ValueObject<PictureShare>.Equality (a, b);
+        }
+
+        public static bool operator != (PictureShare a, PictureShare b)
+        {
+            return ValueObject<PictureShare>.Inequality (a, b);
         }
 
         private static string RandomString ()
@@ -149,6 +159,7 @@ namespace Shell.Pictures
             foreach (FileInfo info in pictureFiles) {
                 if (info.FullName.StartsWith (RootDirectory)) {
                     if (MediaFile.IsValidFile (fullPath: info.FullName)) {
+                        Log.Debug ("Media file: ", info.FullName);
                         MediaFile file = new MediaFile (fullPath: info.FullName, share: this);
                         if (!albums.ContainsKey (file.AlbumPath)) {
                             albums [file.AlbumPath] = new Album (albumPath: file.AlbumPath);

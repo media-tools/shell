@@ -77,14 +77,24 @@ namespace Shell.Pictures.Files
             return new object[] { RelativePath };
         }
 
-        public static bool operator == (MediaFile c1, MediaFile c2)
+        public override bool Equals (object obj)
         {
-            return ValueObject<MediaFile>.Equality (c1, c2);
+            return ValueObject<MediaFile>.Equals (myself: this, obj: obj);
         }
 
-        public static bool operator != (MediaFile c1, MediaFile c2)
+        public override int GetHashCode ()
         {
-            return ValueObject<MediaFile>.Inequality (c1, c2);
+            return base.GetHashCode ();
+        }
+
+        public static bool operator == (MediaFile a, MediaFile b)
+        {
+            return ValueObject<MediaFile>.Equality (a, b);
+        }
+
+        public static bool operator != (MediaFile a, MediaFile b)
+        {
+            return ValueObject<MediaFile>.Inequality (a, b);
         }
     }
 

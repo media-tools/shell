@@ -46,14 +46,24 @@ namespace Shell.Pictures.Content
             return new object[] { Hash };
         }
 
-        public static bool operator == (Media c1, Media c2)
+        public override bool Equals (object obj)
         {
-            return ValueObject<Media>.Equality (c1, c2);
+            return ValueObject<Media>.Equals (myself: this, obj: obj);
         }
 
-        public static bool operator != (Media c1, Media c2)
+        public override int GetHashCode ()
         {
-            return ValueObject<Media>.Inequality (c1, c2);
+            return base.GetHashCode ();
+        }
+
+        public static bool operator == (Media a, Media b)
+        {
+            return ValueObject<Media>.Equality (a, b);
+        }
+
+        public static bool operator != (Media a, Media b)
+        {
+            return ValueObject<Media>.Inequality (a, b);
         }
     }
 

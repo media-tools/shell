@@ -4,13 +4,13 @@ using Shell.Common.Tasks;
 
 namespace Shell.MailSync
 {
-	public class MailSyncTask : ScriptTask, MainScriptTask
+	public class MailStatusTask : ScriptTask, MainScriptTask
 	{
-		public MailSyncTask ()
+		public MailStatusTask ()
 		{
 			Name = "MailSync";
-			Description = "Synchronize e-mails";
-			Options = new string[] { "mail-sync" };
+			Description = "Show status of all e-mail folders";
+			Options = new string[] { "mail-status" };
 		}
 
 		protected override void InternalRun (string[] args)
@@ -18,9 +18,8 @@ namespace Shell.MailSync
 			MailLibrary lib = new MailLibrary (filesystems: fs);
 			lib.UpdateConfigs ();
 			MailSyncLibrary syncLib = new MailSyncLibrary (lib);
-			//syncLib.ListAccounts ();
-			//syncLib.ListFolders ();
-			syncLib.Sync ();
+			syncLib.ListAccounts ();
+			syncLib.ListFolders ();
 		}
 	}
 }

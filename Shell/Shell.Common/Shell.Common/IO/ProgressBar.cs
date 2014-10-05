@@ -40,29 +40,29 @@ namespace Shell.Common.IO
             progressCache ["MaxValue", Identifier, 1] = currentValue;
         }
 
-        public void Print (float current, float min, float max)
+		public void Print (float current, float min, float max, string currentDescription = "")
         {
             float progress = (current - min) / (max - min);
             int left = Console.CursorLeft;
-            Console.Write (string.Format ("{0} {1:P2}          ", Description, progress));
+			Console.Write (string.Format ("{0} {1:P2} {2}                    ", Description, progress, currentDescription));
             Console.CursorLeft = left;
             currentValue = current;
         }
 
-        public void Print (float current)
+		public void Print (float current, string currentDescription = "")
         {
             if (current >= estimatedMaxValue) {
                 estimatedMaxValue *= 1.5f;
                 progressCache ["MaxValue", Identifier, 1] = estimatedMaxValue;
             }
-            Print (current: current, min: 0, max: estimatedMaxValue);
+			Print (current: current, min: 0, max: estimatedMaxValue, currentDescription: currentDescription);
         }
 
-        public void Next ()
+		public void Next (bool printAlways = false, string currentDescription = "")
         {
             currentValue ++;
-            if (currentValue % skipStepsForPrinting == 0) {
-                Print (currentValue);
+			if (printAlways || (currentValue % skipStepsForPrinting == 0)) {
+				Print (currentValue, currentDescription);
             }
         }
     }

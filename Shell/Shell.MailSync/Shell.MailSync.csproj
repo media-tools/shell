@@ -33,6 +33,17 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="BouncyCastle">
+      <HintPath>..\packages\MimeKit.0.97.0.0\lib\net45\BouncyCastle.dll</HintPath>
+    </Reference>
+    <Reference Include="MimeKit">
+      <HintPath>..\packages\MimeKit.0.97.0.0\lib\net45\MimeKit.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Security" />
+    <Reference Include="MailKit">
+      <HintPath>..\packages\MailKit.0.98.0.0\lib\net45\MailKit.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -41,9 +52,13 @@
     <Compile Include="Shell.MailSync\Channel.cs" />
     <Compile Include="Shell.MailSync\MailDedupTask.cs" />
     <Compile Include="Shell.MailSync\MailLibrary.cs" />
-    <Compile Include="Shell.MailSync\MailSyncTask.cs" />
     <Compile Include="Shell.MailSync\MailFilterTask.cs" />
     <Compile Include="Shell.MailSync\MailAllTask.cs" />
+    <Compile Include="Shell.MailSync\OldMailSyncTask.cs" />
+    <Compile Include="Shell.MailSync\MailSyncTask.cs" />
+    <Compile Include="Shell.MailSync\MailSyncLibrary.cs" />
+    <Compile Include="Shell.MailSync\MailStatusTask.cs" />
+    <Compile Include="Shell.MailSync\MessageList.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -54,5 +69,8 @@
       <Project>{CBB5DE48-A305-4F9C-88F3-F0F071AC3298}</Project>
       <Name>Shell.Common</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

@@ -11,7 +11,11 @@ namespace Shell.MailSync
     {
         private static List<Account> accounts = new List<Account> ();
         private static List<Channel> channels = new List<Channel> ();
-        private FileSystems fs;
+		private FileSystems fs;
+
+		public IEnumerable<Account> Accounts { get { return accounts; } }
+
+		public IEnumerable<Channel> Channels { get { return channels; } }
 
         public MailLibrary (FileSystems filesystems)
         {

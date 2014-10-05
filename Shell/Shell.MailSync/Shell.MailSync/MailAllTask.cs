@@ -16,7 +16,7 @@ namespace Shell.MailSync
         protected override void InternalRun (string[] args)
         {
             new MailFilterTask ().Run (args);
-            new MailSyncTask ().Run (args);
+            new OldMailSyncTask ().Run (args);
             new MailDedupTask ().Run (args);
         }
     }

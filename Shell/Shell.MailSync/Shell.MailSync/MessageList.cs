@@ -15,27 +15,42 @@ namespace Shell.MailSync
 		{
 		}
 
-		private string key (IMessageSummary summary)
+		public static string KEY (IMessageSummary summary)
 		{
-			//return summary.Envelope.MessageId;
-			//Console.WriteLine ((summary.Envelope.Date.HasValue ? summary.Envelope.Date.Value.ToString () : "")
-			//+ summary.Envelope.Subject
-			//+ (summary.Envelope.From.Count > 0 ? summary.Envelope.From.First ().Name : ""));
-			return (summary.Envelope.Date.HasValue ? summary.Envelope.Date.Value.ToString () : "")
-			+ summary.Envelope.Subject
-			+ (summary.Envelope.From.Count > 0 ? summary.Envelope.From.First ().Name : "");
+			string msgid = summary.Envelope.MessageId ?? "";
+			if (msgid.Contains ("unknownmsgid")) {
+				msgid = "unknown";
+			}
+
+			string subject = summary.Envelope.Subject ?? "";
+			subject = subject.ToLower ().Trim ();
+
+			string sender = null;
+			if (sender == null && summary.Envelope.From.Count > 0) {
+				sender = summary.Envelope.From.First ().Name ?? "";
+			}
+			if (sender == null && summary.SortableFrom != null) {
+				sender = summary.SortableFrom;
+			}
+			if (sender != null && sender.Contains ("reply")) {
+				sender = null;
+			}
+			sender = sender ?? "";
+
+			return string.Join (";", msgid, subject, sender);
 		}
 
 		public void Add (IMessageSummary summary)
 		{
-			if (summary.Envelope != null && key (summary) != null) {
-				messages [key (summary)] = summary;
+			if (summary.Envelope != null && KEY (summary) != null) {
+				messages [KEY (summary)] = summary;
 			}
 		}
 
 		public bool Contains (IMessageSummary summary)
 		{
-			return messages.ContainsKey (key (summary));
+			return messages.ContainsKey (KEY (summary));
+			
 		}
 
 		public MessageList Intersect (MessageList other)
@@ -97,6 +112,61 @@ namespace Shell.MailSync
 				throw new ArgumentException ("Can't create folder: ", path);
 			}
 			return folder;
+		}
+
+		public static IEnumerable<IMailFolder> GetAllFolders (this ImapClient client)
+		{
+			foreach (FolderNamespace ns in client.PersonalNamespaces) {
+				IMailFolder rootFolder = client.GetFolder (ns);
+				foreach (IMailFolder f in rootFolder.GetAllSubFolders()) {
+					yield return f;
+				}
+			}
+		}
+
+		private static IEnumerable<IMailFolder> GetAllSubFolders (this IMailFolder folder)
+		
+		{
+			if (folder.FullName.Contains ("Papierkorb") || folder.FullName.Contains ("Trash") || folder.FullName.Contains ("Spam")) {
+				yield break;
+			}
+			int i = 0;
+			foreach (IMailFolder subFolder in folder.GetSubfolders ()) {
+				foreach (IMailFolder f in subFolder.GetAllSubFolders()) {
+					yield return f;
+				}
+				++i;
+			}
+			if (i == 0) {
+				yield return folder;
+			}
+		}
+
+		public static string Print (this IMessageSummary summary)
+		{
+			string msgid = summary.Envelope.MessageId ?? string.Empty;
+			if (msgid.Contains ("unknownmsgid")) {
+				msgid = "unknown";
+			}
+
+			string subject = summary.Envelope.Subject ?? string.Empty;
+			subject = subject.ToLower ().Trim ();
+
+			string sender = null;
+			if (sender == null && summary.Envelope.From.Count > 0) {
+				sender = summary.Envelope.From.First ().Name ?? string.Empty;
+			}
+			if (sender == null && summary.SortableFrom != null) {
+				sender = summary.SortableFrom;
+			}
+			if (sender != null && sender.Contains ("reply")) {
+				sender = null;
+			}
+			sender = sender ?? "";
+
+			DateTimeOffset date = summary.SortableDate;
+
+			return string.Format ("#{0:D2}: subject=[{1}] date=[{2}] msgid=[{3}]", summary.Index, subject, date, msgid);
 		}
 	}
 }

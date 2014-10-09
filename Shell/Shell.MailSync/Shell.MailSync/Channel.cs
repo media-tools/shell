@@ -16,12 +16,17 @@ namespace Shell.MailSync
 
 		public string ToPath { get; private set; }
 
-		public string FromFullName { get { return FromAccount.Accountname + ":" + FromPath; } }
+		public ChannelOperation Operation { get; private set; }
 
-		public string ToFullName { get { return ToAccount.Accountname + ":" + ToPath; } }
+		public Dictionary<string,string> Parameters { get; private set; }
 
-		public Channel (List<Account> accounts, string from, string to)
+		//public string FromFullName { get { return FromAccount.Accountname + ":" + FromPath; } }
+		//public string ToFullName { get { return ToAccount.Accountname + ":" + ToPath; } }
+
+		public Channel (List<Account> accounts, string from, string to, ChannelOperation op, Dictionary<string,string> parameters)
 		{
+			Operation = op;
+			Parameters = parameters;
 			string[] _from = from.Split (':');
 			string[] _to = to.Split (':');
 			if (_from.Length != 2) {
@@ -56,9 +61,27 @@ namespace Shell.MailSync
 			return false;
 		}
 
+		public static ChannelOperation ParseOperation (string txt)
+		{
+			if (txt.ToLower () == "copy") {
+				return ChannelOperation.COPY;
+			} else if (txt.ToLower () == "move") {
+				return ChannelOperation.MOVE;
+			} else {
+				throw new ArgumentException ("Invalid operation: " + txt);
+			}
+		}
+
 		public override string ToString ()
 		{
-			return "Channel(from=" + FromAccount.Accountname + ":" + FromPath + ",to=" + ToAccount.Accountname + ":" + ToPath + ")";
+			return "Channel(op=" + Operation + ",from=" + FromAccount.Accountname + ":" + FromPath + ",to=" + ToAccount.Accountname + ":" + ToPath +
+			string.Join ("", Parameters.Select (pair => "," + pair.Key + "=" + pair.Value)) + ")";
 		}
+	}
+
+	public enum ChannelOperation
+	{
+		COPY,
+		MOVE
 	}
 }

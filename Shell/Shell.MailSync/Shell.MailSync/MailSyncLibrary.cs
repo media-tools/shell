@@ -89,7 +89,6 @@ namespace Shell.MailSync
 		{
 			taggedLog.Message ("delete", summary.Print ());
 			folder.AddFlags (new UniqueId[] { summary.UniqueId.Value }, MessageFlags.Deleted, true);
-			folder.Expunge ();
 		}
 
 		private void CopyMessage (IMailFolder fromFolder, IMailFolder toFolder, IMessageSummary summary)
@@ -326,6 +325,9 @@ namespace Shell.MailSync
 									}
 								}
 							}
+
+							fromFolder.Expunge ();
+							toFolder.Expunge ();
 
 							Log.Indent--;
 

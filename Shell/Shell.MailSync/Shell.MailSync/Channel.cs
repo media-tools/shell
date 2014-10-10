@@ -3,10 +3,11 @@ using Shell.Common;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Shell.Common.Util;
 
 namespace Shell.MailSync
 {
-	public class Channel
+	public class Channel : ValueObject<Channel>
 	{
 		public Account FromAccount { get; private set; }
 
@@ -67,6 +68,8 @@ namespace Shell.MailSync
 				return ChannelOperation.COPY;
 			} else if (txt.ToLower () == "move") {
 				return ChannelOperation.MOVE;
+			} else if (txt.ToLower () == "delete") {
+				return ChannelOperation.DELETE;
 			} else {
 				throw new ArgumentException ("Invalid operation: " + txt);
 			}
@@ -77,11 +80,37 @@ namespace Shell.MailSync
 			return "Channel(op=" + Operation + ",from=" + FromAccount.Accountname + ":" + FromPath + ",to=" + ToAccount.Accountname + ":" + ToPath +
 			string.Join ("", Parameters.Select (pair => "," + pair.Key + "=" + pair.Value)) + ")";
 		}
+
+		protected override IEnumerable<object> Reflect()
+		{
+			return new object[] { FromPath, ToPath, FromAccount.Accountname, ToAccount.Accountname, Operation };
+		}
+
+		public override bool Equals (object obj)
+		{
+			return ValueObject<Channel>.Equals (myself: this, obj: obj);
+		}
+
+		public override int GetHashCode ()
+		{
+			return base.GetHashCode ();
+		}
+
+		public static bool operator == (Channel a, Channel b)
+		{
+			return ValueObject<Channel>.Equality (a, b);
+		}
+
+		public static bool operator != (Channel a, Channel b)
+		{
+			return ValueObject<Channel>.Inequality (a, b);
+		}
 	}
 
 	public enum ChannelOperation
 	{
 		COPY,
-		MOVE
+		MOVE,
+		DELETE
 	}
 }

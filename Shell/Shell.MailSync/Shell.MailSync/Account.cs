@@ -4,10 +4,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using MailKit.Net.Imap;
+using Shell.Common.Util;
 
 namespace Shell.MailSync
 {
-	public class Account
+	public class Account : ValueObject<Account>
 	{
 		public string Accountname { get; private set; }
 
@@ -42,6 +43,31 @@ namespace Shell.MailSync
 			client.Connect (hostName: Hostname, port: 993, useSsl: true);
 			client.AuthenticationMechanisms.Remove ("XOAUTH");
 			client.Authenticate (userName: Username, password: Password);
+		}
+
+		protected override IEnumerable<object> Reflect()
+		{
+			return new object[] { Accountname, Hostname, Username };
+		}
+
+		public override bool Equals (object obj)
+		{
+			return ValueObject<Account>.Equals (myself: this, obj: obj);
+		}
+
+		public override int GetHashCode ()
+		{
+			return base.GetHashCode ();
+		}
+
+		public static bool operator == (Account a, Account b)
+		{
+			return ValueObject<Account>.Equality (a, b);
+		}
+
+		public static bool operator != (Account a, Account b)
+		{
+			return ValueObject<Account>.Inequality (a, b);
 		}
 	}
 }

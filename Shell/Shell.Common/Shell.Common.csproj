@@ -68,6 +68,7 @@
     <Compile Include="Shell.Common\Tasks\MainScriptTask.cs" />
     <Compile Include="Shell.Common\IO\FileSystemUtilities.cs" />
     <Compile Include="Shell.Common\Util\ValueObject.cs" />
+    <Compile Include="Shell.Common\IO\TaggedLog.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

@@ -90,10 +90,13 @@ namespace Shell.MailSync
 
 	public static class MessageListExtensions
 	{
+		/**
+		 * see https://github.com/jstedfast/MailKit/issues/32#issuecomment-58703460
+		 */
 		public static MessageList GetMessages (this IMailFolder folder)
 		{
 			MessageList messages = new MessageList ();
-			foreach (var summary in folder.Fetch (0, -1, MessageSummaryItems.Full | MessageSummaryItems.UniqueId)) {
+			foreach (var summary in from msg in folder.Fetch (0, -1, MessageSummaryItems.UniqueId | MessageSummaryItems.Flags | MessageSummaryItems.InternalDate | MessageSummaryItems.MessageSize | MessageSummaryItems.Envelope) orderby msg.Index select msg) {
 				//Console.WriteLine ("[summary] {0:D2}: {1} {2} {3}", summary.Index, summary.Envelope.Subject, summary.SortableDate, key(summary));
 				messages.Add (summary);
 			}
@@ -102,6 +105,22 @@ namespace Shell.MailSync
 
 		public static IMailFolder GetFolderOrCreate (this ImapClient client, string path)
 		{
+			//if (path == SpecialFolder.Trash+"") {
+			//	return client.GetAllFolders (includeTrash: true).Where (f => f.FullName.Contains ("Papierkorb") || f.FullName.Contains ("Trash")).First ();
+			//}
+			SpecialFolder[] specialFolders = new SpecialFolder[] {
+				SpecialFolder.Trash,
+				SpecialFolder.Sent,
+				SpecialFolder.Junk,
+				SpecialFolder.Drafts,
+				SpecialFolder.Archive
+			};
+			foreach (SpecialFolder specialFolder in specialFolders) {
+				if (path == specialFolder + "") {
+					return client.GetFolder (specialFolder);
+				}
+			}
+
 			IMailFolder folder = client.GetFolder (path);
 			if (folder == null) {
 				Log.Debug ("namespaces: ", string.Join (",", client.PersonalNamespaces.Select (ns => ns.Path)));
@@ -114,25 +133,24 @@ namespace Shell.MailSync
 			return folder;
 		}
 
-		public static IEnumerable<IMailFolder> GetAllFolders (this ImapClient client)
+		public static IEnumerable<IMailFolder> GetAllFolders (this ImapClient client, bool includeTrash)
 		{
 			foreach (FolderNamespace ns in client.PersonalNamespaces) {
 				IMailFolder rootFolder = client.GetFolder (ns);
-				foreach (IMailFolder f in rootFolder.GetAllSubFolders()) {
+				foreach (IMailFolder f in rootFolder.GetAllSubFolders(includeTrash)) {
 					yield return f;
 				}
 			}
 		}
 
-		private static IEnumerable<IMailFolder> GetAllSubFolders (this IMailFolder folder)
-		
+		private static IEnumerable<IMailFolder> GetAllSubFolders (this IMailFolder folder, bool includeTrash)
 		{
 			if (folder.FullName.Contains ("Papierkorb") || folder.FullName.Contains ("Trash") || folder.FullName.Contains ("Spam")) {
 				yield break;
 			}
 			int i = 0;
 			foreach (IMailFolder subFolder in folder.GetSubfolders ()) {
-				foreach (IMailFolder f in subFolder.GetAllSubFolders()) {
+				foreach (IMailFolder f in subFolder.GetAllSubFolders(includeTrash)) {
 					yield return f;
 				}
 				++i;

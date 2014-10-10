@@ -5,6 +5,7 @@ using Shell.Common.Tasks;
 using Shell.Common.IO;
 using Shell.Common.Util;
 using System.Text.RegularExpressions;
+using System.Linq;
 
 namespace Shell.MailSync
 {
@@ -68,6 +69,17 @@ namespace Shell.MailSync
 			}
 		}
 
+		private Dictionary<string,string> ParseParameters (string parameters_str)
+		{
+			string pattern = "(?<key>[a-z-]+)(=\")(?<value>.*?)(\")";
+			MatchCollection matches = Regex.Matches (parameters_str, pattern);
+			Dictionary<string,string> parameters = new Dictionary<string, string> ();
+			foreach (Match match in matches) {
+				parameters [match.Groups ["key"].Value.ToLower ()] = match.Groups ["value"].Value;
+			}
+			return parameters;
+		}
+
 		private void readConfigChannels ()
 		{
 			if (!fs.Config.FileExists (path: CHANNELS_CONF)) {
@@ -76,32 +88,55 @@ namespace Shell.MailSync
 				+ "copy ACCOUT_NAME_1:PATH -> ACCOUT_NAME_3:PATH\n"
 				+ "move ACCOUT_NAME_2:* -> ACCOUT_NAME_1:PATH\n");
 			}
+
 			string[] lines = fs.Config.ReadAllLines (path: CHANNELS_CONF);
 			int lineNum = 1;
-			foreach (string line in lines) {
+			List<Dictionary<string,string>> globalParameters = new List<Dictionary<string, string>> ();
+
+			foreach (string line in from line in lines select line.Trim ('\t', ' ')) {
+				if (line.StartsWith ("//") || line.StartsWith ("#")) {
+					continue;
+				}
+
 				try {
-					string[] parts = line.Split (separator: new string[] { " " }, count: 2, options: StringSplitOptions.RemoveEmptyEntries);
+					string[] parts = line.Split (separator: new string[] { " ", "\t" }, count: 2, options: StringSplitOptions.RemoveEmptyEntries);
 					if (parts.Length == 2) {
-						ChannelOperation op = Channel.ParseOperation (parts [0].Trim ('\t', ' '));
-						string parameters_str = parts [1].Trim ('\t', ' ');
+						string operation_str = parts [0];
+						string parameters_str = parts [1];
 
-						string pattern = "(?<key>[a-z-]+)(=\")(?<value>.*?)(\")";
-						MatchCollection matches = Regex.Matches (parameters_str, pattern);
-						Dictionary<string,string> parameters = new Dictionary<string, string> ();
-						foreach (Match match in matches) {
-							parameters [match.Groups ["key"].Value.ToLower ()] = match.Groups ["value"].Value;
-						}
-
-						if (parameters.ContainsKey ("from") && parameters.ContainsKey ("to")) {
-							string from = parameters ["from"];
-							string to = parameters ["to"];
-							parameters.Remove ("from");
-							parameters.Remove ("to");
-							Channel chan = new Channel (accounts: accounts, from: from, to: to, op: op, parameters: parameters);
-							channels.Add (chan);
-							Log.Message ("Found channel: ", chan);
+						if (operation_str == "set" && parameters_str.EndsWith ("{")) {
+							Dictionary<string,string> parameters = ParseParameters (parameters_str);
+							globalParameters.Add (parameters);
 						} else {
-							throw new ArgumentException ("one of the following parameters is missing: 'from' or 'to' ");
+							ChannelOperation op = Channel.ParseOperation (operation_str);
+							Dictionary<string,string> parameters = ParseParameters (parameters_str);
+							parameters = globalParameters.SelectMany (d => d).Union (parameters).ToDictionary (x => x.Key, x => x.Value);
+
+							if (op == ChannelOperation.DELETE) {
+								if (parameters.ContainsKey ("from") && parameters.ContainsKey ("filter")) {
+									parameters ["to"] = parameters ["from"].Split (':') [0] + ":" + MailKit.SpecialFolder.Trash;
+								} else {
+									throw new ArgumentException ("delete needs a 'from' and a 'filter' parameter");
+								}
+							}
+
+							if (parameters.ContainsKey ("from") && parameters.ContainsKey ("to")) {
+								string from = parameters ["from"];
+								string to = parameters ["to"];
+								parameters.Remove ("from");
+								parameters.Remove ("to");
+								Channel chan = new Channel (accounts: accounts, from: from, to: to, op: op, parameters: parameters);
+								channels.Add (chan);
+								Log.Message ("Found channel: ", chan);
+							} else {
+								throw new ArgumentException ("one of the following parameters is missing: 'from' or 'to' ");
+							}
+						}
+					} else if (line.EndsWith ("}")) {
+						if (globalParameters.Count > 0) {
+							globalParameters.RemoveAt (globalParameters.Count - 1);
+						} else {
+							throw new ArgumentException ("there is no block left to close: " + line);
 						}
 					}
 				} catch (ArgumentException ex) {

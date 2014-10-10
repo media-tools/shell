@@ -91,7 +91,7 @@ namespace Shell.MailSync
 			folder.AddFlags (new UniqueId[] { summary.UniqueId.Value }, MessageFlags.Deleted, true);
 		}
 
-		private void CopyMessage (IMailFolder fromFolder, IMailFolder toFolder, IMessageSummary summary)
+		private void CopyMessage (IMailFolder fromFolder, IMailFolder toFolder, IMessageSummary summary, bool verify)
 		{
 			taggedLog.Message ("copy", summary.Print ());
 
@@ -99,27 +99,29 @@ namespace Shell.MailSync
 			Nullable<UniqueId> uid = toFolder.Append (message: message, flags: summary.Flags.HasValue ? summary.Flags.Value : MessageFlags.None, date: summary.InternalDate.Value);
 
 			// success?
-			if (uid.HasValue) { 
-				MimeKit.MimeMessage copiedMessage = toFolder.GetMessage (uid.Value);
-				IList<IMessageSummary> copiedSummarys = toFolder.Fetch (new UniqueId[] { uid.Value }.ToList (), MessageSummaryItems.Full | MessageSummaryItems.UniqueId);
-				if (copiedSummarys.Any ()) {
-					string origKey = MessageList.KEY (summary);
-					string copyKey = MessageList.KEY (copiedSummarys.First ());
-					DateTimeOffset origDate = message.Date;
-					DateTimeOffset copyDate = copiedMessage.Date;
-					string origId = summary.Envelope.MessageId;
-					string copyId = copiedSummarys.First ().Envelope.MessageId;
-					if (origKey != copyKey || origDate != copyDate || origId != copyId) {
-						Log.Debug (string.Format ("    original key: {0}", origKey));
-						Log.Debug (string.Format ("    copied   key: {0}", copyKey));
-						Log.Debug (string.Format ("    original message date: {0}", origDate));
-						Log.Debug (string.Format ("    copied   message date: {0}", copyDate));
-						Log.Debug (string.Format ("    original message id: {0}", origId));
-						Log.Debug (string.Format ("    copied   message id: {0}", copyId));
-					}
-				} else {
+			if (uid.HasValue) {
+				if (verify) {
+					MimeKit.MimeMessage copiedMessage = toFolder.GetMessage (uid.Value);
+					IList<IMessageSummary> copiedSummarys = toFolder.Fetch (new UniqueId[] { uid.Value }.ToList (), MessageSummaryItems.Full | MessageSummaryItems.UniqueId);
+					if (copiedSummarys.Any ()) {
+						string origKey = MessageList.KEY (summary);
+						string copyKey = MessageList.KEY (copiedSummarys.First ());
+						DateTimeOffset origDate = message.Date;
+						DateTimeOffset copyDate = copiedMessage.Date;
+						string origId = summary.Envelope.MessageId;
+						string copyId = copiedSummarys.First ().Envelope.MessageId;
+						if (origKey != copyKey || origDate != copyDate || origId != copyId) {
+							Log.Debug (string.Format ("    original key: {0}", origKey));
+							Log.Debug (string.Format ("    copied   key: {0}", copyKey));
+							Log.Debug (string.Format ("    original message date: {0}", origDate));
+							Log.Debug (string.Format ("    copied   message date: {0}", copyDate));
+							Log.Debug (string.Format ("    original message id: {0}", origId));
+							Log.Debug (string.Format ("    copied   message id: {0}", copyId));
+						}
+					} else {
 					
-					Log.Debug ("    no IMessageSummary's for that uid: ", uid.Value);
+						Log.Debug ("    no IMessageSummary's for that uid: ", uid.Value);
+					}
 				}
 			} else {
 				Log.Debug ("    no uid for that copy.");
@@ -175,7 +177,7 @@ namespace Shell.MailSync
 		{
 			foreach (IMessageSummary summary in messages) {
 				try {
-					CopyMessage (fromFolder: fromFolder, toFolder: toFolder, summary: summary);
+					CopyMessage (fromFolder: fromFolder, toFolder: toFolder, summary: summary, verify: true);
 				} catch (Exception ex) {
 					Log.Error (ex);
 					if (ex is System.IO.IOException) {
@@ -190,7 +192,7 @@ namespace Shell.MailSync
 		{
 			foreach (IMessageSummary summary in messages) {
 				try {
-					CopyMessage (fromFolder: fromFolder, toFolder: toFolder, summary: summary);
+					CopyMessage (fromFolder: fromFolder, toFolder: toFolder, summary: summary, verify: false);
 					DeleteMessage (folder: fromFolder, summary: summary);
 				} catch (Exception ex) {
 					Log.Error (ex);

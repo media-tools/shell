@@ -23,7 +23,7 @@ namespace Shell.Common.IO
 
 			return new object[] {
 				tagString,
-				String.Concat (Enumerable.Repeat (" ", MaxWidth - tagString.Length - Log.IndentString.Length))
+				String.Concat (Enumerable.Repeat (" ", Math.Max (0, MaxWidth - tagString.Length - Log.IndentString.Length)))
 			}.Concat (message).ToArray ();
 		}
 

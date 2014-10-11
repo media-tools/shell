@@ -59,6 +59,10 @@
     <Compile Include="Shell.MailSync\MailSyncLibrary.cs" />
     <Compile Include="Shell.MailSync\MailStatusTask.cs" />
     <Compile Include="Shell.MailSync\MessageList.cs" />
+    <Compile Include="Shell.MailSync\ImapClientWrapper.cs" />
+    <Compile Include="Shell.MailSync\ImapFolderWrapper.cs" />
+    <Compile Include="Shell.MailSync\RelayException.cs" />
+    <Compile Include="Shell.MailSync\TriedTooOftenException.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

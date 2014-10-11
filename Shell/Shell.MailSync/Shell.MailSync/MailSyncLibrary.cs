@@ -86,22 +86,18 @@ namespace Shell.MailSync
 			}
 		}
 
-		private async Task DeleteMessages (IMailFolder folder, IEnumerable<IMessageSummary> block)
+		private void DeleteMessages (ImapFolderWrapper folder, IEnumerable<IMessageSummary> block)
 		{
 			taggedLog.Message ("delete block", block.First ().Print ());
 			foreach (IMessageSummary other in block.Skip(1)) {
 				taggedLog.Message ("", other.Print ());
 			}
-			await folder.AddFlagsAsync (block.Select (summary => summary.UniqueId.Value).ToList (), MessageFlags.Deleted, true);
+			folder.AddFlags (block.Select (summary => summary.UniqueId.Value), MessageFlags.Deleted, true);
 		}
 
-		private void CopyMessage (IMailFolder fromFolder, IMailFolder toFolder, IMessageSummary summary, bool verify)
+		private void CopyMessage (ImapFolderWrapper fromFolder, ImapFolderWrapper toFolder, IMessageSummary summary, bool verify)
 		{
-			Task task = new Task (async () => {
-				await CopyMessages (fromFolder: fromFolder, toFolder: toFolder, block: new IMessageSummary[]{ summary }, verify: verify);
-			});
-			task.Start ();
-			task.Wait ();
+			CopyMessages (fromFolder: fromFolder, toFolder: toFolder, block: new IMessageSummary[]{ summary }, verify: verify);
 		}
 
 		struct CopiedMessage
@@ -112,7 +108,7 @@ namespace Shell.MailSync
 			
 		};
 
-		private async Task verifyMessage (IMailFolder toFolder, List<CopiedMessage> copiedMessages)
+		private void verifyMessage (ImapFolderWrapper toFolder, List<CopiedMessage> copiedMessages)
 		{
 			foreach (CopiedMessage copiedMessageInfo in copiedMessages) {
 				MimeKit.MimeMessage message = copiedMessageInfo.SourceMessage;
@@ -121,8 +117,8 @@ namespace Shell.MailSync
 
 				// success?
 				if (uid.HasValue) {
-					MimeKit.MimeMessage copiedMessage = await toFolder.GetMessageAsync (uid.Value);
-					IList<IMessageSummary> copiedSummarys = await toFolder.FetchAsync (new UniqueId[] { uid.Value }.ToList (), MessageSummaryItems.Full | MessageSummaryItems.UniqueId);
+					MimeKit.MimeMessage copiedMessage = toFolder.GetMessage (uid.Value);
+					IList<IMessageSummary> copiedSummarys = toFolder.Fetch (new UniqueId[] { uid.Value }, MessageSummaryItems.Full | MessageSummaryItems.UniqueId);
 					if (copiedSummarys.Any ()) {
 						string origKey = MessageList.KEY (summary);
 						string copyKey = MessageList.KEY (copiedSummarys.First ());
@@ -148,7 +144,7 @@ namespace Shell.MailSync
 			}
 		}
 
-		private async Task CopyMessages (IMailFolder fromFolder, IMailFolder toFolder, IEnumerable<IMessageSummary> block, bool verify)
+		private void CopyMessages (ImapFolderWrapper fromFolder, ImapFolderWrapper toFolder, IEnumerable<IMessageSummary> block, bool verify)
 		{
 			if (block.Count () == 0) {
 				Log.Error ("CopyMessage: block is empty");
@@ -167,8 +163,8 @@ namespace Shell.MailSync
 			List<CopiedMessage> copiedMessages = new List<CopiedMessage> ();
 
 			foreach (IMessageSummary summary in block) {
-				MimeKit.MimeMessage message = await fromFolder.GetMessageAsync (uid: summary.UniqueId.Value);
-				Nullable<UniqueId> uid = await toFolder.AppendAsync (message: message, flags: summary.Flags.HasValue ? summary.Flags.Value : MessageFlags.None, date: summary.InternalDate.Value);
+				MimeKit.MimeMessage message = fromFolder.GetMessage (uid: summary.UniqueId.Value);
+				Nullable<UniqueId> uid = toFolder.Append (message: message, flags: summary.Flags.HasValue ? summary.Flags.Value : MessageFlags.None, date: summary.InternalDate.Value);
 				if (verify) {
 					copiedMessages.Add (new CopiedMessage {
 						SourceMessage = message,
@@ -179,7 +175,7 @@ namespace Shell.MailSync
 			}
 
 			if (verify) {
-				await verifyMessage (toFolder: toFolder, copiedMessages: copiedMessages);
+				verifyMessage (toFolder: toFolder, copiedMessages: copiedMessages);
 			}
 		}
 
@@ -228,7 +224,7 @@ namespace Shell.MailSync
 			return result;
 		}
 
-		private void CopyFolder (IMailFolder fromFolder, IMailFolder toFolder, MessageList messages, Dictionary<string,string> parameters)
+		private void CopyFolder (ImapFolderWrapper fromFolder, ImapFolderWrapper toFolder, MessageList messages, Dictionary<string,string> parameters)
 		{
 			int blocksize = 10;
 			int i = 0;
@@ -236,21 +232,12 @@ namespace Shell.MailSync
 			while (i < count) {
 				IEnumerable<IMessageSummary> block = messages.Skip (i).Take (blocksize);
 				i += blocksize;
-				try {
-					Task.Run (async () => {
-						await CopyMessages (fromFolder: fromFolder, toFolder: toFolder, block: block, verify: true);
-					}).Wait ();
-				} catch (Exception ex) {
-					Log.Error (ex);
-					if (ex is System.IO.IOException || ex is InvalidOperationException) {
-						Log.Error ("Copying stopped after fatal exception!");
-						break;
-					}
-				}
+
+				CopyMessages (fromFolder: fromFolder, toFolder: toFolder, block: block, verify: true);
 			}
 		}
 
-		private void MoveFolder (IMailFolder fromFolder, IMailFolder toFolder, MessageList messages, Dictionary<string,string> parameters)
+		private void MoveFolder (ImapFolderWrapper fromFolder, ImapFolderWrapper toFolder, MessageList messages, Dictionary<string,string> parameters)
 		{
 			int blocksize = 10;
 			int i = 0;
@@ -258,47 +245,13 @@ namespace Shell.MailSync
 			while (i < count) {
 				IEnumerable<IMessageSummary> block = messages.Skip (i).Take (blocksize);
 				i += blocksize;
-				try {
 
-					Task.Run (async () => {
-						await CopyMessages (fromFolder: fromFolder, toFolder: toFolder, block: block, verify: false);
-						await DeleteMessages (folder: fromFolder, block: block);
-					}).Wait ();
-				} catch (Exception ex) {
-					Log.Error (ex);
-					if (ex is System.IO.IOException || ex is InvalidOperationException) {
-						Log.Error ("Moving stopped after fatal exception!");
-						break;
-					}
-				}
+				CopyMessages (fromFolder: fromFolder, toFolder: toFolder, block: block, verify: false);
+				DeleteMessages (folder: fromFolder, block: block);
 			}
 		}
 
-		private ImapClient GetClient (Account account, ref Dictionary<string, ImapClient> clientsCache, string token)
-		{
-			string key = account.Accountname + token;
-			ImapClient client = null;
-			if (clientsCache.ContainsKey (key)) {
-				client = clientsCache [key];
-				if (!client.IsConnected) {
-					taggedLog.Message ("imap disconnected", account.Accountname);
-					client.Dispose ();
-					client = null;
-				}
-			}
-			if (client == null) {
-				taggedLog.Message ("imap connect", account.Accountname);
-				//client = new ImapClient (new ProtocolLogger ("mailkit_" + account.Accountname + "_" + token + ".log"));
-				client = new ImapClient ();
-				account.ConnectAndAuthenticate (client: client);
-				clientsCache [key] = client;
-			} else {
-				taggedLog.Message ("imap cached", account.Accountname);
-			}
-			return client;
-		}
-
-		private MessageList GetMessages (Account account, IMailFolder folder, ref Dictionary<string, MessageList> messagesCache)
+		private MessageList GetMessages (Account account, ImapFolderWrapper folder, ref Dictionary<string, MessageList> messagesCache)
 		{
 			if (messagesCache.ContainsKey (account.Accountname + folder.FullName)) {
 				taggedLog.Message ("cached", account.Accountname, ":", folder.FullName);
@@ -309,7 +262,7 @@ namespace Shell.MailSync
 			}
 		}
 
-		private MessageList UpdateMessages (Account account, IMailFolder folder, ref Dictionary<string, MessageList> messagesCache)
+		private MessageList UpdateMessages (Account account, ImapFolderWrapper folder, ref Dictionary<string, MessageList> messagesCache)
 		{
 			taggedLog.Message ("clear cache", account.Accountname, ":", folder.FullName);
 			messagesCache.Remove (account.Accountname + folder.FullName);
@@ -318,17 +271,14 @@ namespace Shell.MailSync
 
 		public void Sync ()
 		{
-			Dictionary<string, ImapClient> clientsCache = new Dictionary<string, ImapClient> ();
-
 			foreach (Channel channel in lib.Channels) {
-				ImapClient fromClient = GetClient (account: channel.FromAccount, clientsCache: ref clientsCache, token: "1");
-				ImapClient toClient = GetClient (account: channel.ToAccount, clientsCache: ref clientsCache, token: "2");
+				ImapClientWrapper fromClient = new ImapClientWrapper (account: channel.FromAccount, token: "1");
+				ImapClientWrapper toClient = new ImapClientWrapper (account: channel.ToAccount, token: "2");
+
+				ImapFolderWrapper[] fromFolders = new ImapFolderWrapper[0];
 
 				try {
 					Log.Try ();
-
-					IMailFolder[] fromFolders;
-					
 					if (channel.FromPath == "*") {
 						taggedLog.Message ("list folders", channel.FromAccount.Accountname);
 						fromFolders = fromClient.GetAllFolders (includeTrash: false).ToArray ();
@@ -336,83 +286,83 @@ namespace Shell.MailSync
 						taggedLog.Message ("result", "all folders (except trash and spam): ", string.Join (", ", fromFolders.Select (f => f.FullName)));
 						Log.Indent--;
 					} else {
-						fromFolders = new IMailFolder[] { fromClient.GetFolderOrCreate (path: channel.FromPath) };
-					}
-
-					Dictionary<string, MessageList> messagesCache = new Dictionary<string, MessageList> ();
-
-					foreach (IMailFolder fromFolder in fromFolders) {
-						try {
-							Log.Try ();
-
-							IMailFolder toFolder = toClient.GetFolderOrCreate (path: channel.ToPath);
-
-							taggedLog.Message ("sync folder", channel.FromAccount.Accountname, ":", fromFolder.FullName,
-								" -> ", channel.ToAccount.Accountname, ":", toFolder.FullName,
-								"  (parameters: [" + string.Join (";", channel.Parameters.Select (p => p.Key + "=" + p.Value)) + "])"
-							);
-							Log.Indent++;
-
-							taggedLog.Message ("open", channel.FromAccount.Accountname, ":", fromFolder.FullName);
-							fromFolder.Open (FolderAccess.ReadWrite);
-							int fromCount = fromFolder.Count;
-							MessageList fromList = GetMessages (account: channel.FromAccount, folder: fromFolder, messagesCache: ref messagesCache);
-
-							taggedLog.Message ("open", channel.ToAccount.Accountname, ":", toFolder.FullName);
-							toFolder.Open (FolderAccess.ReadWrite);
-							int toCount = toFolder.Count;
-							MessageList toList = GetMessages (account: channel.ToAccount, folder: toFolder, messagesCache: ref messagesCache);
-
-							MessageList alreadyThere = fromList.Intersect (toList);
-							MessageList notThere = fromList.Except (toList);
-							MessageList needToCopy = ApplyFilter (unfiltered: notThere, parameters: channel.Parameters);
-
-							taggedLog.Message ("status", string.Join (", ", new string[] {
-								"source: " + fromCount, "target: " + toCount,
-								"already there: " + alreadyThere.Count, "not there: " + notThere.Count,
-								"need to copy: " + needToCopy.Count, "filtered: " + (notThere.Count - needToCopy.Count)
-							}));
-
-							if (needToCopy.Count > 0) {
-								if (channel.Operation == ChannelOperation.COPY) {
-									CopyFolder (fromFolder, toFolder, needToCopy, channel.Parameters);
-								} else if (channel.Operation == ChannelOperation.MOVE) {
-									MoveFolder (fromFolder, toFolder, needToCopy, channel.Parameters);
-								} else if (channel.Operation == ChannelOperation.DELETE) {
-									MoveFolder (fromFolder, toFolder, needToCopy, channel.Parameters);
-								}
-
-								toFolder.Open (FolderAccess.ReadWrite);
-								MessageList toListLater = UpdateMessages (account: channel.ToAccount, folder: toFolder, messagesCache: ref messagesCache);
-								MessageList alreadyThereLater = fromList.Intersect (toListLater);
-								MessageList notThereLater = fromList.Except (toListLater);
-								MessageList needToCopyLater = ApplyFilter (unfiltered: notThereLater, parameters: channel.Parameters);
-								if (needToCopyLater.Count > 0) {
-									if (channel.Operation == ChannelOperation.COPY) {
-										Log.Message ("Sync failed: copied: ", (needToCopy.Count - needToCopyLater.Count), ", failed to copy: ", needToCopyLater.Count);
-									} else if (channel.Operation == ChannelOperation.MOVE) {
-										Log.Message ("Sync failed: moved: ", (needToCopy.Count - needToCopyLater.Count), ", failed to move: ", needToCopyLater.Count);
-									} else if (channel.Operation == ChannelOperation.DELETE) {
-										Log.Message ("Sync failed: deleted: ", (needToCopy.Count - needToCopyLater.Count), ", failed to delete: ", needToCopyLater.Count);
-									}
-								}
-							}
-
-							fromFolder.Expunge ();
-							toFolder.Expunge ();
-
-							Log.Indent--;
-
-						} catch (Exception ex) {
-							Log.Error (ex);
-						} finally {
-							Log.Finally ();
-						}
+						fromFolders = new ImapFolderWrapper[] { fromClient.GetFolderOrCreate (path: channel.FromPath) };
 					}
 				} catch (Exception ex) {
 					Log.Error (ex);
 				} finally {
 					Log.Finally ();
+				}
+
+				Dictionary<string, MessageList> messagesCache = new Dictionary<string, MessageList> ();
+
+				foreach (ImapFolderWrapper fromFolder in fromFolders) {
+					try {
+						Log.Try ();
+
+						ImapFolderWrapper toFolder = toClient.GetFolderOrCreate (path: channel.ToPath);
+
+						taggedLog.Message ("sync folder", channel.FromAccount.Accountname, ":", fromFolder.FullName,
+							" -> ", channel.ToAccount.Accountname, ":", toFolder.FullName,
+							"  (parameters: [" + string.Join (";", channel.Parameters.Select (p => p.Key + "=" + p.Value)) + "])"
+						);
+						Log.Indent++;
+
+						taggedLog.Message ("open", channel.FromAccount.Accountname, ":", fromFolder.FullName);
+						fromFolder.Open ();
+						int fromCount = fromFolder.Count;
+						MessageList fromList = GetMessages (account: channel.FromAccount, folder: fromFolder, messagesCache: ref messagesCache);
+
+						taggedLog.Message ("open", channel.ToAccount.Accountname, ":", toFolder.FullName);
+						toFolder.Open ();
+						int toCount = toFolder.Count;
+						MessageList toList = GetMessages (account: channel.ToAccount, folder: toFolder, messagesCache: ref messagesCache);
+
+						MessageList alreadyThere = fromList.Intersect (toList);
+						MessageList notThere = fromList.Except (toList);
+						MessageList needToCopy = ApplyFilter (unfiltered: notThere, parameters: channel.Parameters);
+
+						taggedLog.Message ("status", string.Join (", ", new string[] {
+							"source: " + fromCount, "target: " + toCount,
+							"already there: " + alreadyThere.Count, "not there: " + notThere.Count,
+							"need to copy: " + needToCopy.Count, "filtered: " + (notThere.Count - needToCopy.Count)
+						}));
+
+						if (needToCopy.Count > 0) {
+							if (channel.Operation == ChannelOperation.COPY) {
+								CopyFolder (fromFolder, toFolder, needToCopy, channel.Parameters);
+							} else if (channel.Operation == ChannelOperation.MOVE) {
+								MoveFolder (fromFolder, toFolder, needToCopy, channel.Parameters);
+							} else if (channel.Operation == ChannelOperation.DELETE) {
+								MoveFolder (fromFolder, toFolder, needToCopy, channel.Parameters);
+							}
+
+							toFolder.Open ();
+							MessageList toListLater = UpdateMessages (account: channel.ToAccount, folder: toFolder, messagesCache: ref messagesCache);
+							MessageList alreadyThereLater = fromList.Intersect (toListLater);
+							MessageList notThereLater = fromList.Except (toListLater);
+							MessageList needToCopyLater = ApplyFilter (unfiltered: notThereLater, parameters: channel.Parameters);
+							if (needToCopyLater.Count > 0) {
+								if (channel.Operation == ChannelOperation.COPY) {
+									Log.Message ("Sync failed: copied: ", (needToCopy.Count - needToCopyLater.Count), ", failed to copy: ", needToCopyLater.Count);
+								} else if (channel.Operation == ChannelOperation.MOVE) {
+									Log.Message ("Sync failed: moved: ", (needToCopy.Count - needToCopyLater.Count), ", failed to move: ", needToCopyLater.Count);
+								} else if (channel.Operation == ChannelOperation.DELETE) {
+									Log.Message ("Sync failed: deleted: ", (needToCopy.Count - needToCopyLater.Count), ", failed to delete: ", needToCopyLater.Count);
+								}
+							}
+						}
+
+						fromFolder.Expunge ();
+						toFolder.Expunge ();
+
+						Log.Indent--;
+
+					} catch (Exception ex) {
+						Log.Error (ex);
+					} finally {
+						Log.Finally ();
+					}
 				}
 			}
 		}

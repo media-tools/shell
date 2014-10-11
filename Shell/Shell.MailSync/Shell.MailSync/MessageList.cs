@@ -164,7 +164,7 @@ namespace Shell.MailSync
 		{
 			string msgid = summary.Envelope.MessageId ?? string.Empty;
 			if (msgid.Contains ("unknownmsgid")) {
-				msgid = "unknown";
+				msgid = ""; // gmx seems to have no message id sometimes
 			}
 
 			string subject = summary.Envelope.Subject ?? string.Empty;

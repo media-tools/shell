@@ -19,9 +19,11 @@ namespace Shell.Common.IO
 
 		private object[] construstTaggedMessage (string tag, params object[] message)
 		{
+			string tagString = tag.Length > 0 ? "[" + tag + "]" : string.Empty;
+
 			return new object[] {
-				"[" + tag + "]",
-				String.Concat (Enumerable.Repeat (" ", MaxWidth - tag.Length - Log.IndentString.Length))
+				tagString,
+				String.Concat (Enumerable.Repeat (" ", MaxWidth - tagString.Length - Log.IndentString.Length))
 			}.Concat (message).ToArray ();
 		}
 

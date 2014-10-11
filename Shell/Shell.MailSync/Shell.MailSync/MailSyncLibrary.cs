@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using MailKit.Search;
 using System.Linq;
 using Shell.Common.Util;
+using System.Threading.Tasks;
 
 namespace Shell.MailSync
 {
@@ -85,24 +86,43 @@ namespace Shell.MailSync
 			}
 		}
 
-		private void DeleteMessage (IMailFolder folder, IMessageSummary summary)
+		private async Task DeleteMessages (IMailFolder folder, IEnumerable<IMessageSummary> block)
 		{
-			taggedLog.Message ("delete", summary.Print ());
-			folder.AddFlags (new UniqueId[] { summary.UniqueId.Value }, MessageFlags.Deleted, true);
+			taggedLog.Message ("delete block", block.First ().Print ());
+			foreach (IMessageSummary other in block.Skip(1)) {
+				taggedLog.Message ("", other.Print ());
+			}
+			await folder.AddFlagsAsync (block.Select (summary => summary.UniqueId.Value).ToList (), MessageFlags.Deleted, true);
 		}
 
 		private void CopyMessage (IMailFolder fromFolder, IMailFolder toFolder, IMessageSummary summary, bool verify)
 		{
-			taggedLog.Message ("copy", summary.Print ());
+			Task task = new Task (async () => {
+				await CopyMessages (fromFolder: fromFolder, toFolder: toFolder, block: new IMessageSummary[]{ summary }, verify: verify);
+			});
+			task.Start ();
+			task.Wait ();
+		}
 
-			MimeKit.MimeMessage message = fromFolder.GetMessage (uid: summary.UniqueId.Value);
-			Nullable<UniqueId> uid = toFolder.Append (message: message, flags: summary.Flags.HasValue ? summary.Flags.Value : MessageFlags.None, date: summary.InternalDate.Value);
+		struct CopiedMessage
+		{
+			public IMessageSummary SourceSummary;
+			public MimeKit.MimeMessage SourceMessage;
+			public UniqueId? TargetUid;
+			
+		};
 
-			// success?
-			if (uid.HasValue) {
-				if (verify) {
-					MimeKit.MimeMessage copiedMessage = toFolder.GetMessage (uid.Value);
-					IList<IMessageSummary> copiedSummarys = toFolder.Fetch (new UniqueId[] { uid.Value }.ToList (), MessageSummaryItems.Full | MessageSummaryItems.UniqueId);
+		private async Task verifyMessage (IMailFolder toFolder, List<CopiedMessage> copiedMessages)
+		{
+			foreach (CopiedMessage copiedMessageInfo in copiedMessages) {
+				MimeKit.MimeMessage message = copiedMessageInfo.SourceMessage;
+				IMessageSummary summary = copiedMessageInfo.SourceSummary;
+				UniqueId? uid = copiedMessageInfo.TargetUid;
+
+				// success?
+				if (uid.HasValue) {
+					MimeKit.MimeMessage copiedMessage = await toFolder.GetMessageAsync (uid.Value);
+					IList<IMessageSummary> copiedSummarys = await toFolder.FetchAsync (new UniqueId[] { uid.Value }.ToList (), MessageSummaryItems.Full | MessageSummaryItems.UniqueId);
 					if (copiedSummarys.Any ()) {
 						string origKey = MessageList.KEY (summary);
 						string copyKey = MessageList.KEY (copiedSummarys.First ());
@@ -119,12 +139,47 @@ namespace Shell.MailSync
 							Log.Debug (string.Format ("    copied   message id: {0}", copyId));
 						}
 					} else {
-					
+
 						Log.Debug ("    no IMessageSummary's for that uid: ", uid.Value);
 					}
+				} else {
+					Log.Debug ("    no uid for that copy.");
 				}
+			}
+		}
+
+		private async Task CopyMessages (IMailFolder fromFolder, IMailFolder toFolder, IEnumerable<IMessageSummary> block, bool verify)
+		{
+			if (block.Count () == 0) {
+				Log.Error ("CopyMessage: block is empty");
+				return;
+			}
+
+			if (block.Count () == 1) {
+				taggedLog.Message ("copy", block.First ().Print ());
 			} else {
-				Log.Debug ("    no uid for that copy.");
+				taggedLog.Message ("copy block", block.First ().Print ());
+				foreach (IMessageSummary other in block.Skip(1)) {
+					taggedLog.Message ("", other.Print ());
+				}
+			}
+
+			List<CopiedMessage> copiedMessages = new List<CopiedMessage> ();
+
+			foreach (IMessageSummary summary in block) {
+				MimeKit.MimeMessage message = await fromFolder.GetMessageAsync (uid: summary.UniqueId.Value);
+				Nullable<UniqueId> uid = await toFolder.AppendAsync (message: message, flags: summary.Flags.HasValue ? summary.Flags.Value : MessageFlags.None, date: summary.InternalDate.Value);
+				if (verify) {
+					copiedMessages.Add (new CopiedMessage {
+						SourceMessage = message,
+						SourceSummary = summary,
+						TargetUid = uid
+					});
+				}
+			}
+
+			if (verify) {
+				await verifyMessage (toFolder: toFolder, copiedMessages: copiedMessages);
 			}
 		}
 
@@ -175,12 +230,19 @@ namespace Shell.MailSync
 
 		private void CopyFolder (IMailFolder fromFolder, IMailFolder toFolder, MessageList messages, Dictionary<string,string> parameters)
 		{
-			foreach (IMessageSummary summary in messages) {
+			int blocksize = 10;
+			int i = 0;
+			int count = messages.Count;
+			while (i < count) {
+				IEnumerable<IMessageSummary> block = messages.Skip (i).Take (blocksize);
+				i += blocksize;
 				try {
-					CopyMessage (fromFolder: fromFolder, toFolder: toFolder, summary: summary, verify: true);
+					Task.Run (async () => {
+						await CopyMessages (fromFolder: fromFolder, toFolder: toFolder, block: block, verify: true);
+					}).Wait ();
 				} catch (Exception ex) {
 					Log.Error (ex);
-					if (ex is System.IO.IOException) {
+					if (ex is System.IO.IOException || ex is InvalidOperationException) {
 						Log.Error ("Copying stopped after fatal exception!");
 						break;
 					}
@@ -190,13 +252,21 @@ namespace Shell.MailSync
 
 		private void MoveFolder (IMailFolder fromFolder, IMailFolder toFolder, MessageList messages, Dictionary<string,string> parameters)
 		{
-			foreach (IMessageSummary summary in messages) {
+			int blocksize = 10;
+			int i = 0;
+			int count = messages.Count;
+			while (i < count) {
+				IEnumerable<IMessageSummary> block = messages.Skip (i).Take (blocksize);
+				i += blocksize;
 				try {
-					CopyMessage (fromFolder: fromFolder, toFolder: toFolder, summary: summary, verify: false);
-					DeleteMessage (folder: fromFolder, summary: summary);
+
+					Task.Run (async () => {
+						await CopyMessages (fromFolder: fromFolder, toFolder: toFolder, block: block, verify: false);
+						await DeleteMessages (folder: fromFolder, block: block);
+					}).Wait ();
 				} catch (Exception ex) {
 					Log.Error (ex);
-					if (ex is System.IO.IOException) {
+					if (ex is System.IO.IOException || ex is InvalidOperationException) {
 						Log.Error ("Moving stopped after fatal exception!");
 						break;
 					}
@@ -312,7 +382,7 @@ namespace Shell.MailSync
 									MoveFolder (fromFolder, toFolder, needToCopy, channel.Parameters);
 								}
 
-								toFolder.Open (FolderAccess.ReadOnly);
+								toFolder.Open (FolderAccess.ReadWrite);
 								MessageList toListLater = UpdateMessages (account: channel.ToAccount, folder: toFolder, messagesCache: ref messagesCache);
 								MessageList alreadyThereLater = fromList.Intersect (toListLater);
 								MessageList notThereLater = fromList.Except (toListLater);

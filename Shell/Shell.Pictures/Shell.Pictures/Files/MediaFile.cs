@@ -43,27 +43,32 @@ namespace Shell.Pictures.Files
         {
             Medium medium;
             if (share.GetMediumByHash (hash: hash, medium: out medium)) {
-                Log.Debug ("cached: medium by hash");
                 medium.AddFile (mediaFile: this);
                 Medium = medium;
+            } else {
+                Log.Debug ("not cached: medium by hash: ", fullPath);
+                Index ();
             }
         }
 
-        public void Index (bool cached = true, Album album = null)
+        public void Index ()
         {
             Medium medium;
             if (Picture.IsValidFile (fullPath: FullPath)) {
                 medium = new Picture (fullPath: FullPath);
-                Share.Add (media: medium);
+                Share.AddMedium (media: medium);
             } else if (Video.IsValidFile (fullPath: FullPath)) {
                 medium = new Video (fullPath: FullPath);
-                Share.Add (media: medium);
+                Share.AddMedium (media: medium);
             } else if (Audio.IsValidFile (fullPath: FullPath)) {
                 medium = new Audio (fullPath: FullPath);
-                Share.Add (media: medium);
+                Share.AddMedium (media: medium);
             } else {
                 throw new ArgumentException ("[MediaFile] Unknown file: " + FullPath);
             }
+
+            medium.Index (fullPath: FullPath);
+
             medium.AddFile (mediaFile: this);
             Medium = medium;
         }

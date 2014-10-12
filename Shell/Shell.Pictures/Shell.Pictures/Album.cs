@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Shell.Pictures.Files;
 using System.Linq;
+using Shell.Common.IO;
 
 namespace Shell.Pictures
 {
@@ -17,22 +18,29 @@ namespace Shell.Pictures
             Files = new List<MediaFile> ();
         }
 
-        public void Add (MediaFile mediaFile)
+        public void AddFile (MediaFile mediaFile)
         {
             Files.Add (mediaFile);
         }
 
-        public bool Contains (MediaFile mediaFile)
+        public void RemoveFile (MediaFile mediaFile)
+        {
+            Files.Remove (mediaFile);
+        }
+
+        public bool ContainsFile (MediaFile mediaFile)
         {
             return Files.Contains (mediaFile);
         }
 
-        public bool Contains (Func<MediaFile, bool> search)
+        public bool ContainsFile (Func<MediaFile, bool> search)
         {
+            //foreach (MediaFile file in Files)
+            //	Log.Debug ("in album: ", file.FullPath);
             return Files.Where (file => search (file)).Any ();
         }
 
-        public bool Get (Func<MediaFile, bool> search, out MediaFile result)
+        public bool GetFile (Func<MediaFile, bool> search, out MediaFile result)
         {
             IEnumerable<MediaFile> found = Files.Where (file => search (file));
             if (found.Any ()) {
@@ -45,4 +53,3 @@ namespace Shell.Pictures
         }
     }
 }
-

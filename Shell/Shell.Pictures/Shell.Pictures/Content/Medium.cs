@@ -30,6 +30,8 @@ namespace Shell.Pictures.Content
             Files.Add (mediaFile);
         }
 
+        public abstract void Index (string fullPath);
+
         public virtual Dictionary<string, string> Serialize ()
         {
             throw new NotImplementedException ();
@@ -40,7 +42,7 @@ namespace Shell.Pictures.Content
             throw new NotImplementedException ();
         }
 
-        protected override IEnumerable<object> Reflect()
+        protected override IEnumerable<object> Reflect ()
         {
             return new object[] { Hash };
         }

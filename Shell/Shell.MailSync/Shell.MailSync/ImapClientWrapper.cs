@@ -163,9 +163,9 @@ namespace Shell.MailSync
 
 		public ImapFolderWrapper GetFolder (string folder)
 		{
-			Log.Debug ("client: ", this);
-			Log.Debug ("folder: ", folder);
-			Log.Debug ("client.GetFolder (folder): ", client.GetFolder (folder));
+			//Log.Debug ("client: ", this);
+			//Log.Debug ("folder: ", folder);
+			//Log.Debug ("client.GetFolder (folder): ", client.GetFolder (folder));
 			return new ImapFolderWrapper (client: this, fullName: client.GetFolder (folder).FullName);
 		}
 

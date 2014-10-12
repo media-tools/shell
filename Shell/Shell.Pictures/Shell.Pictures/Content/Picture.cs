@@ -31,6 +31,10 @@ namespace Shell.Pictures.Content
             return PictureShareUtilities.IsValidFile (fullPath: fullPath, fileEndings: FILE_ENDINGS);
         }
 
+        public override void Index (string fullPath)
+        {
+        }
+
         public override Dictionary<string, string> Serialize ()
         {
             return new Dictionary<string, string> ();
@@ -41,4 +45,3 @@ namespace Shell.Pictures.Content
         }
     }
 }
-

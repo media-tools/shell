@@ -35,6 +35,13 @@ namespace Shell.Common.IO
             ini = new IniFile (Filename);
         }
 
+        public bool AutoSaveEnabled { get { return ini.AutoSaveEnabled; } set { ini.AutoSaveEnabled = value; } }
+
+        public void Save ()
+        {
+            ini.Save ();
+        }
+
         public IEnumerable<string> Sections { get { return ini.Sections; } }
 
         public IEnumerable<string> KeysInSection (string section)

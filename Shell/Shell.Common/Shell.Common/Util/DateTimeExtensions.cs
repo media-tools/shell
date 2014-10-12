@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Shell.Common
+namespace Shell.Common.Util
 {
     public static class DateTimeExtensions
     {
@@ -20,4 +20,3 @@ namespace Shell.Common
         }
     }
 }
-

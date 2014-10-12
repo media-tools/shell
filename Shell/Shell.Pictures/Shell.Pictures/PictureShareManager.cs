@@ -28,7 +28,9 @@ namespace Shell.Pictures
             if (!cached || !fs.Config.FileExists (path: "trees.txt")) {
                 Func<FileInfo, bool> onlyPictureConfig = fileInfo => fileInfo.Name == PictureShare.PICTURE_CONFIG_FILENAME;
                 IEnumerable<FileInfo> configFiles = Shell.FileSync.FileSystemLibrary.GetFileList (rootDirectory: "/", fileFilter: onlyPictureConfig, dirFilter: dir => true);
-                fs.Config.WriteAllLines (path: "trees.txt", contents: from file in configFiles where file.Name == PictureShare.PICTURE_CONFIG_FILENAME select file.FullName);
+                fs.Config.WriteAllLines (path: "trees.txt", contents: from file in configFiles
+                                                                      where file.Name == PictureShare.PICTURE_CONFIG_FILENAME
+                                                                      select file.FullName);
             }
             PictureDirectories.Clear ();
             string[] files = fs.Config.ReadAllLines (path: "trees.txt");
@@ -52,18 +54,18 @@ namespace Shell.Pictures
         {
             if (PictureDirectories.Count != 0) {
                 Log.Message ("List of picture shares:");
-                Log.Indent ++;
+                Log.Indent++;
                 int i = 1;
                 foreach (PictureShare share in from share in PictureDirectories.Values orderby share.RootDirectory select share) {
                     Log.Message (share, ":");
-                    Log.Indent ++;
+                    Log.Indent++;
                     foreach (Album album in share.Albums) {
                         Log.Message ("- ", album);
                     }
-                    Log.Indent --;
-                    i ++;
+                    Log.Indent--;
+                    i++;
                 }
-                Log.Indent --;
+                Log.Indent--;
                 Log.Message ();
             } else {
                 Log.Message ("No shares or directory trees available.");
@@ -85,7 +87,7 @@ namespace Shell.Pictures
         {
             if (PictureDirectories.Count != 0) {
                 foreach (PictureShare share in from share in PictureDirectories.Values orderby share.RootDirectory select share) {
-                    share.Serialize ();
+                    share.Serialize (verbose: true);
                 }
             } else {
                 Log.Message ("No shares are available for indexing.");
@@ -115,4 +117,3 @@ namespace Shell.Pictures
         }
     }
 }
-

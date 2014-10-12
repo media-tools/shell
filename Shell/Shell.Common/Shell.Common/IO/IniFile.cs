@@ -17,6 +17,7 @@ namespace Shell.Common.IO
         {
             Data = new Dictionary<string, Dictionary<string, string>> ();
             Filename = filename;
+            AutoSaveEnabled = true;
             if (File.Exists (filename)) {
                 using (StreamReader reader = new StreamReader (filename)) {
                     string section = null;
@@ -37,6 +38,8 @@ namespace Shell.Common.IO
                 }
             }
         }
+
+        public bool AutoSaveEnabled { get; set; }
 
         [ExcludeFromCodeCoverageAttribute]
         public void Dispose ()
@@ -97,7 +100,9 @@ namespace Shell.Common.IO
                 }
                 if (!Data [section].ContainsKey (key)) {
                     Data [section] [key] = defaultValue;
-                    Save ();
+                    if (AutoSaveEnabled) {
+                        Save ();
+                    }
                 }
                 string value = Data [section] [key];
                 return value;
@@ -107,18 +112,20 @@ namespace Shell.Common.IO
                     Data [section] = new Dictionary<string,string> ();
                 }
                 Data [section] [key] = value ?? "";
-                Save ();
+                if (AutoSaveEnabled) {
+                    Save ();
+                }
             }
         }
 
         private string Encode (string text)
         {
-            return text.Replace ("\r", "").Replace ("\n", "\\n");
+            return text.Replace ("\r", "").Replace ("\n", "\\n").Replace ("=", "\\{equality-sign}");
         }
 
         private string Decode (string text)
         {
-            return text.Replace ("\\n", "\n");
+            return text.Replace ("\\{equality-sign}", "=").Replace ("\\n", "\n");
         }
 
         public IEnumerable<string> Sections { get { return Data.Keys; } }

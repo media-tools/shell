@@ -140,20 +140,6 @@ namespace Shell.GoogleSync.Core
         {
             return string.Format ("{0} <{1}> ({2})", DisplayName, Emails, Id);
         }
-
-        /*
-
-            try {
-                RequestSettings settings = new RequestSettings (GoogleAppConfig.ApplicationName, parameters);
-                ContactsRequest cr = new ContactsRequest (settings);
-
-                Feed<Contact> f = cr.GetContacts ();
-                foreach (Contact c in f.Entries) {
-                    Console.WriteLine (c.Name.FullName);
-                }
-            } catch (Exception ex) {
-                Log.Error (ex);
-            }*/
     }
 }
 

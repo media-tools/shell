@@ -16,11 +16,16 @@ namespace Shell.Common.Util
 
         public static Assembly[] LoadAssemblies ()
         {
+            foreach (Type t in Assembly.LoadFrom ("/data/workspace/control/Shell/Shell/bin/Debug/Google.Apis.Auth.dll").GetTypes()) {
+                Console.WriteLine (t);
+            }
+            Console.WriteLine (Assembly.LoadFrom ("/data/workspace/control/Shell/Shell/bin/Debug/Google.Apis.Auth.dll").ToString ());
+
             string directory = Path.GetDirectoryName (System.Reflection.Assembly.GetEntryAssembly ().Location);
             IEnumerable<string> files = Directory.EnumerateFiles (path: directory);
             List<Assembly> assemblies = new List<Assembly> ();
             foreach (string file in files) {
-                if (file.ToLower ().EndsWith ("dll") && Path.GetFileName(file).ToLower().Contains("shell")) {
+                if (file.ToLower ().EndsWith ("dll") && Path.GetFileName (file).ToLower ().Contains ("shell")) {
                     assemblies.Add (Assembly.LoadFrom (file));
                 }
             }

@@ -32,6 +32,8 @@ namespace Shell.Pictures.Content
 
         public abstract void Index (string fullPath);
 
+        public abstract bool IsCompletelyIndexed { get; }
+
         public virtual Dictionary<string, string> Serialize ()
         {
             throw new NotImplementedException ();

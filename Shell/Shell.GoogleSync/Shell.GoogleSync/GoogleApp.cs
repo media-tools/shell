@@ -1,14 +1,15 @@
 using System;
-using Shell.Common.IO;
-using Shell.Common;
 using System.Collections.Generic;
-using Google.Apis.Auth.OAuth2;
-using Google.Apis.Plus.v1;
 using System.Threading;
-using Google.Apis.Services;
-using Google.Apis.Plus.v1.Data;
+using Google.Apis.Auth.OAuth2;
 using Google.Apis.Auth.OAuth2.Flows;
 using Google.Apis.Auth.OAuth2.Responses;
+using Google.Apis.Plus.v1;
+using Google.Apis.Plus.v1.Data;
+using Google.Apis.Services;
+using Shell.Common;
+using Shell.Common.IO;
+using Shell.Common.Tasks;
 
 namespace Shell.GoogleSync
 {

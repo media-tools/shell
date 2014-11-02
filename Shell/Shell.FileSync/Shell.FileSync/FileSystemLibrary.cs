@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Shell.Common.IO;
+using Shell.Common.Tasks;
 using Shell.Compatibility;
 
 namespace Shell.FileSync
@@ -22,12 +23,12 @@ namespace Shell.FileSync
         public static bool FilterSystemPath (string path)
         {
             return !path.StartsWith ("/proc") && !path.StartsWith ("/sys")
-                && !path.StartsWith ("/run") && !path.StartsWith ("/tmp") && !path.StartsWith ("/boot")
-                && !path.StartsWith ("/lib") && !path.StartsWith ("/sbin") && !path.StartsWith ("/bin")
-                && !path.StartsWith ("/dev") && !path.StartsWith ("/cdrom") && !path.StartsWith ("/srv") 
-                && !path.StartsWith ("/var") && !path.StartsWith ("/usr/share") && !path.StartsWith ("/usr/lib") 
-                && !path.StartsWith ("/usr/src") && !path.StartsWith ("/usr/bin") && !path.StartsWith ("/usr/sbin")
-                && !path.StartsWith ("/usr/include") && !path.Contains ("lost+found");
+            && !path.StartsWith ("/run") && !path.StartsWith ("/tmp") && !path.StartsWith ("/boot")
+            && !path.StartsWith ("/lib") && !path.StartsWith ("/sbin") && !path.StartsWith ("/bin")
+            && !path.StartsWith ("/dev") && !path.StartsWith ("/cdrom") && !path.StartsWith ("/srv")
+            && !path.StartsWith ("/var") && !path.StartsWith ("/usr/share") && !path.StartsWith ("/usr/lib")
+            && !path.StartsWith ("/usr/src") && !path.StartsWith ("/usr/bin") && !path.StartsWith ("/usr/sbin")
+            && !path.StartsWith ("/usr/include") && !path.Contains ("lost+found");
         }
 
         public static bool FilterCustomPath (string path)

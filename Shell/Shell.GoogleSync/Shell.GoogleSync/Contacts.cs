@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Shell.Common.IO;
-using Shell.Common.Util;
 using Google.Contacts;
 using Google.GData.Client;
 using Google.GData.Contacts;
 using Google.GData.Extensions;
+using Shell.Common.IO;
+using Shell.Common.Tasks;
+using Shell.Common.Util;
 
 namespace Shell.GoogleSync
 {

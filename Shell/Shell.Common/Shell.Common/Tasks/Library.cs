@@ -1,12 +1,13 @@
 using System;
-using System.IO;
-using System.Diagnostics;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using Shell.Common.IO;
 using Shell.Common.Tasks;
 using Shell.Common.Util;
 
-namespace Shell.Common.IO
+namespace Shell.Common.Tasks
 {
     public abstract class Library
     {

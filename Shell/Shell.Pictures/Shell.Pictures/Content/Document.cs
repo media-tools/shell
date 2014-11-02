@@ -8,44 +8,28 @@ using Shell.Pictures.Files;
 
 namespace Shell.Pictures.Content
 {
-    public class Video : Medium
+    public class Document : Medium
     {
-        public static HashSet<string> FILE_ENDINGS = new string[] {
-            ".mkv",
-            ".mp4",
-            ".avi",
-            ".flv",
-            ".mov",
-            ".mpg",
-            ".3gp",
-            ".m4v",
-            ".divx",
-            ".webm",
-            ".wmv"
-        }.ToHashSet ();
+        public static HashSet<string> FILE_ENDINGS = new string[]{ ".pdf", ".txt", ".rtf", ".eml" }.ToHashSet ();
 
         public static Dictionary<string,string> MIME_TYPES = new Dictionary<string,string> () {
-            { "video/mp4", ".mp4" },
-            { "video/x-flv", ".flv" },
-            { "video/x-msvideo", ".avi" },
-            { "video/x-matroska", ".mkv" },
-            { "video/webm", ".webm" },
-            { "video/mpeg", ".mpg" },
-            { "video/ogg", ".ogv" },
-            { "video/x-ms-wmv", ".wmv" },
-            { "video/3gpp", ".3gp" }
+            { "application/pdf", ".pdf" },
+            { "application/rtf", ".rtf" },
+            { "text/rtf", ".rtf" },
+            { "text/plain", ".txt" },
+            { "message/rfc822", ".eml" }
         };
 
-        public static readonly string TYPE = "video";
+        public static readonly string TYPE = "document";
 
         public override string Type { get { return TYPE; } }
 
-        public Video (HexString hash)
+        public Document (HexString hash)
             : base (hash)
         {
         }
 
-        public Video (string fullPath)
+        public Document (string fullPath)
             : base (fullPath: fullPath)
         {
         }

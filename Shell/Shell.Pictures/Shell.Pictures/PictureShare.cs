@@ -176,12 +176,32 @@ namespace Shell.Pictures
 
             // index all media files
             Log.Message ("Index media files...");
-            foreach (string fullPath in from info in pictureFiles select info.FullName) {
+            foreach (string _fullPath in from info in pictureFiles select info.FullName) {
+                string fullPath = _fullPath;
 
                 // something went horribly wrong!
                 if (!fullPath.StartsWith (RootDirectory)) {
                     Log.Error ("[BUG] Invalid Path: fullPath=", fullPath, " is not in RootDirectory=", RootDirectory, "; stopped indexing.");
                     return;
+                }
+
+                // does the file have no proper filename?
+                if (MediaFile.HasNoEnding (fullPath: fullPath)) {
+                    string fileEnding;
+                    // determine the best file ending
+                    if (MediaFile.DetermineFileEnding (fullPath: fullPath, fileEnding: out fileEnding)) {
+                        // rename the file
+                        MediaFile.AddFileEnding (fullPath: ref fullPath, fileEnding: fileEnding);
+                    }
+                }
+
+                // is it a video that is not in the mkv file format?
+                if (Video.IsValidFile (fullPath: fullPath) && Path.GetExtension (fullPath) != ".mkv") {
+                    // convert the video file
+                    string outputPath;
+                    if (VideoLibrary.Instance.ConvertVideoToMatroska (fullPath: fullPath, outputPath: out outputPath)) {
+                        fullPath = outputPath;
+                    }
                 }
 
                 // create album, if necessery
@@ -195,6 +215,19 @@ namespace Shell.Pictures
                 if (album.ContainsFile (search: searchFile)) {
                     progress.Print (current: i, min: 0, max: max, currentDescription: "cached: " + relativePath, showETA: true, updateETA: false);
                     Log.DebugLog ("Media file (cached): ", fullPath);
+
+                    // check if some attributes may be missing
+                    MediaFile cached;
+                    album.GetFile (search: searchFile, result: out cached);
+                    if (!cached.IsCompletelyIndexed) {
+                        cached.Index ();
+
+                        // put albums into global hashset
+                        Albums = albums.Values.ToHashSet ();
+                        if (i % 100 == 0 || i >= max - 5) {
+                            Serialize (verbose: false);
+                        }
+                    }
                 }
 				// if the file needs to be indexed
 				else if (MediaFile.IsValidFile (fullPath: fullPath)) {
@@ -213,7 +246,7 @@ namespace Shell.Pictures
 				// if the file is invalid or unknown
 				else {
                     progress.Print (current: i, min: 0, max: max, currentDescription: "unknown: " + relativePath, showETA: true, updateETA: false);
-                    Log.DebugLog ("Unknown file: ", fullPath);
+                    Log.Debug ("Unknown file: ", fullPath);
                 }
 
                 ++i;
@@ -283,6 +316,8 @@ namespace Shell.Pictures
                     medium = new Audio (hash: hash);
                 } else if (type == Video.TYPE) {
                     medium = new Video (hash: hash);
+                } else if (type == Document.TYPE) {
+                    medium = new Document (hash: hash);
                 } else {
                     Log.Error ("Unknown type: " + type + " (hash: " + hash + ")");
                     continue;

@@ -9,6 +9,7 @@ using Google.Apis.Plus.v1;
 using Google.Apis.Plus.v1.Data;
 using Google.Apis.Services;
 using Shell.Common.IO;
+using Shell.Common.Tasks;
 using Shell.Common.Util;
 
 namespace Shell.GoogleSync

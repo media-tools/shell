@@ -27,6 +27,8 @@ namespace Shell.Pictures.Files
 
         public PictureShare Share { get; private set; }
 
+        private static MediaFileLibrary lib = new MediaFileLibrary ();
+
         public MediaFile (string fullPath, PictureShare share)
         {
             Debug.Assert (fullPath.StartsWith (share.RootDirectory), "file path is not in root directory (FullName=" + fullPath + ",root=" + share.RootDirectory + ")");
@@ -56,15 +58,21 @@ namespace Shell.Pictures.Files
             Medium medium;
             if (Picture.IsValidFile (fullPath: FullPath)) {
                 medium = new Picture (fullPath: FullPath);
-                Share.AddMedium (media: medium);
             } else if (Video.IsValidFile (fullPath: FullPath)) {
                 medium = new Video (fullPath: FullPath);
-                Share.AddMedium (media: medium);
             } else if (Audio.IsValidFile (fullPath: FullPath)) {
                 medium = new Audio (fullPath: FullPath);
-                Share.AddMedium (media: medium);
+            } else if (Document.IsValidFile (fullPath: FullPath)) {
+                medium = new Document (fullPath: FullPath);
             } else {
                 throw new ArgumentException ("[MediaFile] Unknown file: " + FullPath);
+            }
+
+            Medium cachedMedium;
+            if (Share.GetMediumByHash (hash: medium.Hash, medium: out cachedMedium)) {
+                medium = cachedMedium;
+            } else {
+                Share.AddMedium (media: medium);
             }
 
             medium.Index (fullPath: FullPath);
@@ -73,9 +81,68 @@ namespace Shell.Pictures.Files
             Medium = medium;
         }
 
+        public bool IsCompletelyIndexed {
+            get {
+                if (Medium == null)
+                    return false;
+                return Medium.IsCompletelyIndexed;
+            }
+        }
+
         public static bool IsValidFile (string fullPath)
         {
-            return Picture.IsValidFile (fullPath: fullPath) || Audio.IsValidFile (fullPath: fullPath) || Video.IsValidFile (fullPath: fullPath);
+            return Picture.IsValidFile (fullPath: fullPath) || Audio.IsValidFile (fullPath: fullPath) || Video.IsValidFile (fullPath: fullPath) || Document.IsValidFile (fullPath: fullPath);
+        }
+
+        public static bool HasNoEnding (string fullPath)
+        {
+            bool hasNoEnding;
+            if (MediaFile.IsValidFile (fullPath: fullPath)) {
+                hasNoEnding = false;
+
+            } else {
+                string fileName = fullPath.Split ('/').Last ();
+                string lastPart = fileName.Split ('.').Last ();
+                bool containsLetters = lastPart.Any (x => char.IsLetter (x));
+                bool containsWhitespaces = lastPart.Any (x => char.IsWhiteSpace (x));
+                bool containsPunctuation = lastPart.Any (x => char.IsPunctuation (x));
+
+                hasNoEnding = !containsLetters || containsWhitespaces || containsPunctuation;
+
+                Log.Debug ("HasNoEnding: result=", hasNoEnding, ", fileName=", fileName, ", lastPart=", lastPart, ", containsLetters=", containsLetters, ", containsWhitespaces=", containsWhitespaces, ", containsPunctuation=", containsPunctuation);
+            }
+            return hasNoEnding;
+        }
+
+        public static bool DetermineFileEnding (string fullPath, out string fileEnding)
+        {
+            string mimeType = lib.GetMimeType (fullPath: fullPath);
+            if (Picture.MIME_TYPES.ContainsKey (mimeType)) {
+                fileEnding = Picture.MIME_TYPES [mimeType];
+            } else if (Audio.MIME_TYPES.ContainsKey (mimeType)) {
+                fileEnding = Audio.MIME_TYPES [mimeType];
+            } else if (Video.MIME_TYPES.ContainsKey (mimeType)) {
+                fileEnding = Video.MIME_TYPES [mimeType];
+            } else if (Document.MIME_TYPES.ContainsKey (mimeType)) {
+                fileEnding = Document.MIME_TYPES [mimeType];
+            } else {
+                fileEnding = null;
+            }
+
+            Log.Debug ("DetermineFileEnding: mimeType=", mimeType, ", fileEnding=", fileEnding);
+
+            return fileEnding != null;
+        }
+
+        public static void AddFileEnding (ref string fullPath, string fileEnding)
+        {
+            string oldFullPath = fullPath;
+            string newFullPath = fullPath + fileEnding;
+            File.Move (sourceFileName: oldFullPath, destFileName: newFullPath);
+            fullPath = newFullPath;
+
+            Log.Message ("Rename file: old full path = ", oldFullPath);
+            Log.Message ("             new full path = ", newFullPath);
         }
 
         public override string ToString ()

@@ -1,6 +1,7 @@
 using System;
-using Shell.Common.IO;
 using System.Linq;
+using Shell.Common.IO;
+using Shell.Common.Tasks;
 using Shell.Common.Util;
 
 namespace Shell.Common.IO

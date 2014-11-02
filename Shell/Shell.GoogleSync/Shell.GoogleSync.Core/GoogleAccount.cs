@@ -12,7 +12,7 @@ using Shell.Common.IO;
 using Shell.Common.Tasks;
 using Shell.Common.Util;
 
-namespace Shell.GoogleSync
+namespace Shell.GoogleSync.Core
 {
     public class GoogleAccount : Library
     {

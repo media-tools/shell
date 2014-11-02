@@ -11,7 +11,7 @@ using Shell.Common;
 using Shell.Common.IO;
 using Shell.Common.Tasks;
 
-namespace Shell.GoogleSync
+namespace Shell.GoogleSync.Core
 {
     public class GoogleApp : Library
     {

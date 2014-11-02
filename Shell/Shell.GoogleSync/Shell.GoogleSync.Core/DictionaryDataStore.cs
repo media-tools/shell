@@ -6,7 +6,7 @@ using Shell.Common.Util;
 using Google.Apis.Json;
 using Google.Apis.Util.Store;
 
-namespace Shell.GoogleSync
+namespace Shell.GoogleSync.Core
 {
     public class DictionaryDataStore : IDataStore
     {

@@ -4,7 +4,7 @@ using Shell.Common.IO;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Shell.GoogleSync
+namespace Shell.GoogleSync.Core
 {
     public class GoogleUserTask : ScriptTask, MainScriptTask
     {

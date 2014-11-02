@@ -1,11 +1,12 @@
 using System;
-using Shell.Common.Tasks;
-using Shell.Common.IO;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
+using Shell.Common.IO;
+using Shell.Common.Tasks;
 using Shell.Common.Util;
+using Shell.GoogleSync.Core;
 
-namespace Shell.GoogleSync
+namespace Shell.GoogleSync.Contacts
 {
     public class GoogleContactsTask : ScriptTask, MainScriptTask
     {

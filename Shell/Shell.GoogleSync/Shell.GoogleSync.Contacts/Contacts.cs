@@ -8,8 +8,9 @@ using Google.GData.Extensions;
 using Shell.Common.IO;
 using Shell.Common.Tasks;
 using Shell.Common.Util;
+using Shell.GoogleSync.Core;
 
-namespace Shell.GoogleSync
+namespace Shell.GoogleSync.Contacts
 {
     public class Contacts : Library
     {

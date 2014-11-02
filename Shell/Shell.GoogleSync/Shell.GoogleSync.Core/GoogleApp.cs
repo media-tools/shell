@@ -30,7 +30,8 @@ namespace Shell.GoogleSync.Core
             PlusService.Scope.PlusLogin,
             PlusService.Scope.UserinfoProfile,
             PlusService.Scope.UserinfoEmail,
-            "https://www.google.com/m8/feeds"
+            "https://www.google.com/m8/feeds",
+            "https://picasaweb.google.com/data/"
         };
         public List<GoogleAccount> Accounts = new List<GoogleAccount> ();
 

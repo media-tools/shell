@@ -113,6 +113,7 @@
   <Import Project="..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" />
   <ItemGroup>
     <Folder Include="Shell.GoogleSync.Contacts\" />
+    <Folder Include="Shell.GoogleSync.Photos\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -121,6 +122,10 @@
     <ProjectReference Include="..\Shell.Common\Shell.Common.csproj">
       <Project>{CBB5DE48-A305-4F9C-88F3-F0F071AC3298}</Project>
       <Name>Shell.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Shell.Pictures\Shell.Pictures.csproj">
+      <Project>{F2C117FF-E1E9-4512-BECB-CBEBBA7FAB05}</Project>
+      <Name>Shell.Pictures</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>

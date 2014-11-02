@@ -11,8 +11,10 @@ namespace Shell.Common
     {
         public static ScriptTask[] Tasks { get; private set; }
 
-        public static Action<ScriptTask> HooksBeforeTask = (tsk) => {};
-        public static Action<ScriptTask> HooksAfterTask = (tsk) => {};
+        public static Action<ScriptTask> HooksBeforeTask = (tsk) => {
+        };
+        public static Action<ScriptTask> HooksAfterTask = (tsk) => {
+        };
 
         public Program (IEnumerable<ScriptTask> tasks)
         {
@@ -23,7 +25,9 @@ namespace Shell.Common
         {
             // check for experimental flag
             Commons.IS_EXPERIMENTAL = args.Where (arg => arg.StartsWith ("--ex")).Any ();
-            args = (from arg in args where !arg.StartsWith ("--ex") select arg).ToArray ();
+            args = (from arg in args
+                             where !arg.StartsWith ("--ex")
+                             select arg).ToArray ();
 
             ScriptTask matchingTask = null;
             if (args.Length > 0 && findMatchingTask (args [0], out matchingTask)) {

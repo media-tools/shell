@@ -9,7 +9,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Shell.Old</RootNamespace>
     <AssemblyName>Shell.Tasks.Old</AssemblyName>
-    <ReleaseVersion>0.2</ReleaseVersion>
+    <ReleaseVersion>0.3</ReleaseVersion>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">

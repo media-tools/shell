@@ -1,20 +1,22 @@
 using System;
 using System.Collections.Generic;
-using System.Reflection;
-using System.Linq;
 using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.Versioning;
+using System.Threading;
+using Shell.Common;
+using Shell.Common.Hooks;
+using Shell.Common.IO;
 using Shell.Common.Tasks;
 using Shell.Common.Util;
-using Shell.Common.IO;
-using Shell.Common.Hooks;
-using Shell.Common;
-using System.Threading;
 
 namespace Shell
 {
     public class MainClass
     {
         private static IEnumerable<ScriptTask> mainTasks;
+
 
         public static void Main (string[] args)
         {
@@ -26,6 +28,7 @@ namespace Shell
             Log.Init (program: "shell", version: Commons.VERSION_STR);
 
             IEnumerable<Assembly> asses = ReflectiveEnumerator.LoadAssemblies ();
+
             mainTasks = from ass in asses
                                  from type in ReflectiveEnumerator.FindClassImplementingInterface<MainScriptTask> (ass)
                                  select type as ScriptTask;

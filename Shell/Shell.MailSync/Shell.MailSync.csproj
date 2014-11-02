@@ -33,16 +33,16 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="BouncyCastle">
-      <HintPath>..\packages\MimeKit.0.97.0.0\lib\net45\BouncyCastle.dll</HintPath>
-    </Reference>
-    <Reference Include="MimeKit">
-      <HintPath>..\packages\MimeKit.0.97.0.0\lib\net45\MimeKit.dll</HintPath>
-    </Reference>
     <Reference Include="System.Data" />
     <Reference Include="System.Security" />
+    <Reference Include="BouncyCastle">
+      <HintPath>..\packages\MimeKit.1.0.0.0\lib\net45\BouncyCastle.dll</HintPath>
+    </Reference>
+    <Reference Include="MimeKit">
+      <HintPath>..\packages\MimeKit.1.0.0.0\lib\net45\MimeKit.dll</HintPath>
+    </Reference>
     <Reference Include="MailKit">
-      <HintPath>..\packages\MailKit.0.98.0.0\lib\net45\MailKit.dll</HintPath>
+      <HintPath>..\packages\MailKit.1.0.1.0\lib\net45\MailKit.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

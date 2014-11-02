@@ -90,6 +90,10 @@
       <Project>{F2C117FF-E1E9-4512-BECB-CBEBBA7FAB05}</Project>
       <Name>Shell.Pictures</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Shell.GooglePhotoSync\Shell.GooglePhotoSync.csproj">
+      <Project>{0818A8EC-A69C-47FE-A202-967D8321F379}</Project>
+      <Name>Shell.GooglePhotoSync</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Shell\" />

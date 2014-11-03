@@ -13,7 +13,7 @@ namespace Shell.GoogleSync.Photos
             Description = "Synchronize google photos";
             Options = new string[] { "google-photos", "g-photos" };
             ConfigName = "Google";
-            ParameterSyntax = "list-albums | config | sync";
+            ParameterSyntax = "list-albums | list-photos | config | sync";
         }
 
         protected override void InternalRun (string[] args)
@@ -25,6 +25,9 @@ namespace Shell.GoogleSync.Photos
                     break;
                 case "list-albums":
                     listAlbums ();
+                    break;
+                case "list-photos":
+                    listPhotos ();
                     break;
                 case "sync":
                     sync ();
@@ -43,6 +46,18 @@ namespace Shell.GoogleSync.Photos
         }
 
         void listAlbums ()
+        {
+            foreach (GoogleAccount acc in GoogleAccount.List()) {
+                Log.Message ("Google Account: ", acc);
+                Log.Indent++;
+                acc.Refresh ();
+                Albums albums = new Albums (account: acc);
+                albums.PrintAllAlbums ();
+                Log.Indent--;
+            }
+        }
+
+        void listPhotos ()
         {
             foreach (GoogleAccount acc in GoogleAccount.List()) {
                 Log.Message ("Google Account: ", acc);

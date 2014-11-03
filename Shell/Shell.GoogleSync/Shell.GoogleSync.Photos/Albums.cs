@@ -27,25 +27,27 @@ namespace Shell.GoogleSync
 
         public void PrintAllAlbums ()
         {
-            AlbumQuery query = new AlbumQuery (PicasaQuery.CreatePicasaUri (account.Id));
-            PicasaFeed feed = service.Query (query);
+            CatchErrors (() => {
+                AlbumQuery query = new AlbumQuery (PicasaQuery.CreatePicasaUri (account.Id));
+                PicasaFeed feed = service.Query (query);
 
-            List<AlbumWrapper> albumList = new List<AlbumWrapper> ();
-            foreach (PicasaEntry entry in feed.Entries) {
-                Album accessor = new Album ();
-                accessor.AtomEntry = entry;
-                AlbumWrapper album = new AlbumWrapper (accessor: accessor);
-                albumList.Add (album);
-            }
+                List<AlbumWrapper> albumList = new List<AlbumWrapper> ();
+                foreach (PicasaEntry entry in feed.Entries) {
+                    Album accessor = new Album ();
+                    accessor.AtomEntry = entry;
+                    AlbumWrapper album = new AlbumWrapper (accessor: accessor);
+                    albumList.Add (album);
+                }
 
 
-            Log.Message (albumList.ToStringTable (
-                a => LogColor.Reset,
-                new[] { "Title", "Id", "NumPhotos" },
-                a => a.Title,
-                a => a.Id,
-                a => a.NumPhotos
-            ));
+                Log.Message (albumList.ToStringTable (
+                    a => LogColor.Reset,
+                    new[] { "Title", "Id", "NumPhotos" },
+                    a => a.Title,
+                    a => a.Id,
+                    a => a.NumPhotos
+                ));
+            });
         }
     }
 }

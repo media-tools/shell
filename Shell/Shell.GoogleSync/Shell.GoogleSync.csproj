@@ -101,6 +101,7 @@
     <Reference Include="Google.GData.Photos">
       <HintPath>..\packages\Google.GData.Photos.2.2.0.0\lib\Google.GData.Photos.dll</HintPath>
     </Reference>
+    <Reference Include="System.Drawing" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -111,11 +112,12 @@
     <Compile Include="Shell.GoogleSync.Contacts\GoogleContactsTask.cs" />
     <Compile Include="Shell.GoogleSync.Contacts\Contacts.cs" />
     <Compile Include="Shell.GoogleSync.Photos\GooglePhotosTask.cs" />
-    <Compile Include="Shell.GoogleSync.Photos\Albums.cs" />
     <Compile Include="Shell.GoogleSync.Contacts\GDataContactExtensions.cs" />
     <Compile Include="Shell.GoogleSync.Core\GDataExtensions.cs" />
     <Compile Include="Shell.GoogleSync.Core\GDataLibrary.cs" />
-    <Compile Include="Shell.GoogleSync.Photos\AlbumWrapper.cs" />
+    <Compile Include="Shell.GoogleSync.Photos\WebAlbum.cs" />
+    <Compile Include="Shell.GoogleSync.Photos\AlbumCollection.cs" />
+    <Compile Include="Shell.GoogleSync.Photos\WebPhoto.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" />

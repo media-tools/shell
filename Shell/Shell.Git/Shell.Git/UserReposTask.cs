@@ -131,11 +131,6 @@ namespace Shell.Git
                 Log.Message ("No repositories.");
             }
         }
-
-        private void error ()
-        {
-            Log.Error ("One of the following options is required: " + ParameterSyntax);
-        }
     }
 }
 

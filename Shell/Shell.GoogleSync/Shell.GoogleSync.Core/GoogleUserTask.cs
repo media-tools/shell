@@ -80,11 +80,6 @@ namespace Shell.GoogleSync.Core
                 Log.Indent--;
             }
         }
-
-        void error ()
-        {
-            Log.Error ("One of the following options is required: " + ParameterSyntax);
-        }
     }
 }
 

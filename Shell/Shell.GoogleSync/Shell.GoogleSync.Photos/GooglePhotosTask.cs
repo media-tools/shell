@@ -56,8 +56,8 @@ namespace Shell.GoogleSync.Photos
                 Log.Message ("Google Account: ", acc);
                 Log.Indent++;
                 acc.Refresh ();
-                Albums albums = new Albums (account: acc);
-                albums.PrintAllAlbums ();
+                AlbumCollection albums = new AlbumCollection (account: acc);
+                albums.PrintAlbums ();
                 Log.Indent--;
             }
         }
@@ -67,20 +67,21 @@ namespace Shell.GoogleSync.Photos
             foreach (GoogleAccount acc in GoogleAccount.List()) {
                 Log.Message ("Google Account: ", acc);
                 Log.Indent++;
+                Log.Message ();
                 acc.Refresh ();
-                Albums albums = new Albums (account: acc);
-                albums.PrintAllAlbums ();
+                AlbumCollection albums = new AlbumCollection (account: acc);
+                foreach (WebAlbum album in albums.GetAlbums()) {
+                    Log.Message ("Album: ", album.Title);
+                    Log.Indent++;
+                    album.PrintPhotos ();
+                    Log.Indent--;
+                }
                 Log.Indent--;
             }
         }
 
         void sync ()
         {
-        }
-
-        void error ()
-        {
-            Log.Error ("One of the following options is required: " + ParameterSyntax);
         }
     }
 }

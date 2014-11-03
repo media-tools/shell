@@ -221,11 +221,6 @@ namespace Shell.GoogleSync.Contacts
                 }
             }
         }
-
-        void error ()
-        {
-            Log.Error ("One of the following options is required: " + ParameterSyntax);
-        }
     }
 }
 

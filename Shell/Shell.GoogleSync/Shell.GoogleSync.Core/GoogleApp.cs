@@ -21,7 +21,6 @@ namespace Shell.GoogleSync.Core
 
         public ClientSecrets Secrets { get; private set; }
 
-
         public static readonly string ApplicationName = "Shell.Google";
         // Installed (non-web) application
         public static string RedirectUri = "urn:ietf:wg:oauth:2.0:oob";

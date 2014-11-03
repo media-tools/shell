@@ -29,11 +29,19 @@ namespace Shell.Pictures.Content
                 string newFullPath = Path.GetDirectoryName (fullPath) + Path.DirectorySeparatorChar + Path.GetFileNameWithoutExtension (fullPath) + ".mkv";
 
                 if (!File.Exists (newFullPath)) {
-                    long oldFileSize = new FileInfo (oldFullPath).Length;
-                    int crf = oldFileSize < 50 * 1000000 ? 18 : oldFileSize > 200 * 1000000 ? 21 : 20;
+                    string ffmpegParams = string.Empty;
+
+                    if (Path.GetFileNameWithoutExtension (fullPath).StartsWith ("VID_")) {
+                        ffmpegParams = " -vcodec copy -acodec copy ";
+                    } else {
+                        long oldFileSize = new FileInfo (oldFullPath).Length;
+                        int crf = oldFileSize < 50 * 1000000 ? 18 : oldFileSize > 200 * 1000000 ? 21 : 20;
+                        ffmpegParams = " -c:v libx264 -preset slower -crf " + crf + " ";
+                    }
+
                     string script = "export tempfile=$(mktemp --suffix .mkv) ;" +
                                     "rm -f '" + newFullPath + "' \"${tempfile}\" && " +
-                                    "nice -n 19 ffmpeg -i '" + oldFullPath + "' -c:v libx264 -preset slower -crf " + crf + " \"${tempfile}\" &&" +
+                                    "nice -n 19 ffmpeg -i '" + oldFullPath + "' " + ffmpegParams + " \"${tempfile}\" &&" +
                                     "mv \"${tempfile}\" '" + newFullPath + "' &&" +
                                     "rm '" + oldFullPath + "' ;" +
                                     "rm -f \"${tempfile}\" ";

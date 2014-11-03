@@ -42,6 +42,7 @@ namespace Shell.GoogleSync.Core
 
         void addAccount ()
         {
+            
             GoogleApp appConfig = new GoogleApp ();
             appConfig.Authenticate ();
         }

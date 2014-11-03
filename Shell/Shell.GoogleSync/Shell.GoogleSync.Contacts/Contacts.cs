@@ -12,11 +12,8 @@ using Shell.GoogleSync.Core;
 
 namespace Shell.GoogleSync.Contacts
 {
-    public class Contacts : Library
+    public class Contacts : GDataLibrary
     {
-        private RequestSettings settings;
-        private GoogleAccount account;
-
         private static ConfigFile _syncConfig;
 
         private static ConfigFile syncConfig { get { return _syncConfig = _syncConfig ?? new Contacts ().fs.Config.OpenConfigFile ("sync.ini"); } }
@@ -41,34 +38,13 @@ namespace Shell.GoogleSync.Contacts
         }
 
         public Contacts (GoogleAccount account)
-            : this ()
+            : base (account)
         {
-            this.account = account;
-
-            NetworkHelper.DisableCertificateChecks ();
-
-            OAuth2Parameters parameters = account.GetOAuth2Parameters ();
-            settings = new RequestSettings (GoogleApp.ApplicationName, parameters);
         }
 
         private Contacts ()
+            : base ()
         {
-            ConfigName = "Google";
-        }
-
-        public void CatchErrors (Action todo)
-        {
-            try {
-                todo ();
-            } catch (GDataRequestException ex) {
-                if (ex.InnerException.Message.Contains ("wrong scope")) {
-                    account.Reauthenticate ();
-                    todo ();
-                } else {
-                    Log.Error ("GDataRequestException: ", ex.ResponseString);
-                    // Log.Error (ex);
-                }
-            }
         }
 
         private Contact[] _contactList;
@@ -165,14 +141,14 @@ namespace Shell.GoogleSync.Contacts
 
             Log.Debug ("Birthday:", slave.ContactEntry.Birthday);
 
-            GDataExtensions.Merge (slave.Emails, master.Emails, mail => mail.Address);
+            GDataContactExtensions.Merge (slave.Emails, master.Emails, mail => mail.Address);
             slave.Emails.ForEach (mail => mail.Primary = slave.Emails.Count > 1 && mail.Address == slave.Emails.PrimaryAddress ());
-            GDataExtensions.Merge (slave.Organizations, master.Organizations, org => org.JobDescription + org.Title + org.Department + org.Name + org.Location);
-            GDataExtensions.Merge (slave.Languages, master.Languages, l => l.Value);
-            GDataExtensions.Merge (slave.IMs, master.IMs, l => l.Value);
-            GDataExtensions.Merge (slave.Phonenumbers, master.Phonenumbers, l => l.Value, GDataExtensions.UniqueFormat);
+            GDataContactExtensions.Merge (slave.Organizations, master.Organizations, org => org.JobDescription + org.Title + org.Department + org.Name + org.Location);
+            GDataContactExtensions.Merge (slave.Languages, master.Languages, l => l.Value);
+            GDataContactExtensions.Merge (slave.IMs, master.IMs, l => l.Value);
+            GDataContactExtensions.Merge (slave.Phonenumbers, master.Phonenumbers, l => l.Value, GDataContactExtensions.UniqueFormat);
             slave.Phonenumbers.Remove (slave.Phonenumbers.Where (n => n.Value == "+4915234218133").FirstOrDefault ());
-            GDataExtensions.Merge (slave.PostalAddresses, master.PostalAddresses, a => a.City);
+            GDataContactExtensions.Merge (slave.PostalAddresses, master.PostalAddresses, a => a.City);
 
             Log.Debug ("Emails:", string.Join (", ", slave.Emails.Select (e => e.Address)));
             Log.Debug ("Organizations:", string.Join (", ", slave.Organizations.Select (org => org.JobDescription + org.Title + org.Department + org.Name + org.Location)));
@@ -236,13 +212,13 @@ namespace Shell.GoogleSync.Contacts
             Log.Debug ("Given Name: ", contact.Name.GivenName.FormatName ());
             Log.Debug ("Birthday:", contact.ContactEntry.Birthday);
 
-            GDataExtensions.Merge (contact.Emails, contact.Emails, mail => mail.Address);
+            GDataContactExtensions.Merge (contact.Emails, contact.Emails, mail => mail.Address);
             contact.Emails.ForEach (mail => mail.Primary = contact.Emails.Count > 1 && mail.Address == contact.Emails.PrimaryAddress ());
-            GDataExtensions.Merge (contact.Organizations, contact.Organizations, org => org.JobDescription + org.Title + org.Department + org.Name + org.Location);
-            GDataExtensions.Merge (contact.Languages, contact.Languages, l => l.Value);
-            GDataExtensions.Merge (contact.IMs, contact.IMs, l => l.Value);
-            GDataExtensions.Merge (contact.Phonenumbers, contact.Phonenumbers, l => l.Value, GDataExtensions.UniqueFormat);
-            GDataExtensions.Merge (contact.PostalAddresses, contact.PostalAddresses, a => a.City);
+            GDataContactExtensions.Merge (contact.Organizations, contact.Organizations, org => org.JobDescription + org.Title + org.Department + org.Name + org.Location);
+            GDataContactExtensions.Merge (contact.Languages, contact.Languages, l => l.Value);
+            GDataContactExtensions.Merge (contact.IMs, contact.IMs, l => l.Value);
+            GDataContactExtensions.Merge (contact.Phonenumbers, contact.Phonenumbers, l => l.Value, GDataContactExtensions.UniqueFormat);
+            GDataContactExtensions.Merge (contact.PostalAddresses, contact.PostalAddresses, a => a.City);
 
             Log.Debug ("Emails:", string.Join (", ", contact.Emails.Select (e => e.Address)));
             Log.Debug ("Organizations:", string.Join (", ", contact.Organizations.Select (org => org.JobDescription + org.Title + org.Department + org.Name + org.Location)));

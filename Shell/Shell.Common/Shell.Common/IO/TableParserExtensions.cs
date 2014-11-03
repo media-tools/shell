@@ -27,7 +27,7 @@ namespace Shell.Common.IO
 
             Debug.Assert (columnHeaders.Length == valueSelectors.Length);
 
-            string[,] arrValues = new string[_values.Length + 1, valueSelectors.Length];
+            string[,] arrValues = new string [_values.Length + 1, valueSelectors.Length];
             LogColor[] highlightColors = new LogColor[_values.Length + 1];
 
             // Fill headers

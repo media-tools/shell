@@ -10,10 +10,15 @@ namespace Shell.GoogleSync.Photos
         public GooglePhotosTask ()
         {
             Name = "GooglePhotos";
-            Description = "Synchronize google photos";
-            Options = new string[] { "google-photos", "g-photos" };
+            Description = new [] {
+                "List the albums of all users",
+                "List the photos of a specified album",
+                "Configure google albums",
+                "Synchronize google photos"
+            };
+            Options = new [] { "google-photos", "g-photos" };
             ConfigName = "Google";
-            ParameterSyntax = "list-albums | list-photos | config | sync";
+            ParameterSyntax = new [] { "list-albums", "list-photos", "config", "sync" };
         }
 
         protected override void InternalRun (string[] args)

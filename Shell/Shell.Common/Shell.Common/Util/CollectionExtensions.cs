@@ -14,7 +14,7 @@ namespace Shell.Common.Util
 
         public static string[] SplitValues (this string str)
         {
-            return str.Split (new string[]{ ";" }, StringSplitOptions.RemoveEmptyEntries);
+            return str.Split (new []{ ";" }, StringSplitOptions.RemoveEmptyEntries);
         }
 
         public static string JoinValues (this IEnumerable<string> values)
@@ -62,7 +62,7 @@ namespace Shell.Common.Util
                 }
             }
 
-            result = string.Join (" ", result.Split (new string[]{ " " }, StringSplitOptions.RemoveEmptyEntries).Select (word => word.ToUpperFirst ()));
+            result = string.Join (" ", result.Split (new []{ " " }, StringSplitOptions.RemoveEmptyEntries).Select (word => word.ToUpperFirst ()));
 
             return result.ToString ();
         }

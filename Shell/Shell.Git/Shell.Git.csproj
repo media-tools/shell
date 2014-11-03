@@ -40,7 +40,6 @@
     <Compile Include="Shell.Git\GitLibrary.cs" />
     <Compile Include="Shell.Git\UserReposTask.cs" />
     <Compile Include="Shell.Git\ConfigGitTask.cs" />
-    <Compile Include="Shell.Git\ConfigCommitTask.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

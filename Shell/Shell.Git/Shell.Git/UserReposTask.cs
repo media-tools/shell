@@ -14,9 +14,14 @@ namespace Shell.Git
         public UserReposTask ()
         {
             Name = "UserRepos";
-            Description = "Commit changes in the user's selected repositories or modify the list of repositories";
-            Options = new string[] { "user-repos", "ur" };
-            ParameterSyntax = "commit | add | list | remove";
+            Description = new [] {
+                "Commit changes in the user's selected repositories",
+                "Add a repository to the list",
+                "List the repositories",
+                "Remove an repository from the list"
+            };
+            Options = new [] { "user-repos" };
+            ParameterSyntax = new [] { "commit", "add", "list", "remove" };
         }
 
         private HashSet<string> _repoPaths;
@@ -35,7 +40,8 @@ namespace Shell.Git
 
         private void SaveRepoPaths ()
         {
-            RepoPaths = new HashSet<string> (from path in RepoPaths select path.TrimEnd (new char[] { '/', '\\' }));
+            RepoPaths = new HashSet<string> (from path in RepoPaths
+                                                      select path.TrimEnd (new char[] { '/', '\\' }));
             config ["UserRepos", "paths", ""] = string.Join (":", RepoPaths);
         }
 

@@ -13,10 +13,15 @@ namespace Shell.GoogleSync.Contacts
         public GoogleContactsTask ()
         {
             Name = "GoogleContacts";
-            Description = "Synchronize google contacts";
-            Options = new string[] { "google-contacts", "g-contacts" };
+            Description = new [] {
+                "List the google contacts of all users",
+                "Configure the google contacts",
+                "Synchronize the google contacts",
+                "Clean the google contacts of all users"
+            };
+            Options = new [] { "google-contacts", "g-contacts" };
             ConfigName = "Google";
-            ParameterSyntax = "list | config | sync | clean";
+            ParameterSyntax = new [] { "list", "config", "sync", "clean" };
         }
 
         protected override void InternalRun (string[] args)

@@ -126,7 +126,7 @@ namespace Shell.GoogleSync.Contacts
 
         public static Name Format (this Name name)
         {
-            string[] InvalidFamilyNames = new string[] {
+            string[] InvalidFamilyNames = new [] {
                 "(kein Familienname)",
                 "kein Familienname",
                 "Kein Familienname",
@@ -143,10 +143,10 @@ namespace Shell.GoogleSync.Contacts
             name.FullName = name.FullName.FormatName ();
             name.FullName = name.FullName ?? "Unknown";
             if (string.IsNullOrWhiteSpace (name.FamilyName) || string.IsNullOrWhiteSpace (name.GivenName)) {
-                string[] names = name.FullName.Split (new string[]{ " " }, StringSplitOptions.RemoveEmptyEntries);
+                string[] names = name.FullName.Split (new []{ " " }, StringSplitOptions.RemoveEmptyEntries);
                 if (names.Length >= 2) {
                     name.FamilyName = names [names.Length - 1];
-                    name.GivenName = string.Join (" ", names.Except (new string[]{ names [names.Length - 1] }));
+                    name.GivenName = string.Join (" ", names.Except (new []{ names [names.Length - 1] }));
                 } else {
                     name.FamilyName = InvalidFamilyNames [0];
                     name.GivenName = name.FullName;

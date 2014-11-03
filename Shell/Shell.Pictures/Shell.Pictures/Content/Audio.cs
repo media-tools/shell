@@ -10,7 +10,7 @@ namespace Shell.Pictures.Content
 {
     public class Audio : Medium
     {
-        public static HashSet<string> FILE_ENDINGS = new string[]{ ".mp3", ".wav", ".ogg", ".aac", ".m4a" }.ToHashSet ();
+        public static HashSet<string> FILE_ENDINGS = new []{ ".mp3", ".wav", ".ogg", ".aac", ".m4a" }.ToHashSet ();
 
         public static Dictionary<string,string> MIME_TYPES = new Dictionary<string,string> () {
             { "audio/mpeg", ".mp3" },

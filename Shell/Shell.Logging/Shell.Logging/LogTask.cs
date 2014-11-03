@@ -12,9 +12,9 @@ namespace Shell.Logging
         public LogTask ()
         {
             Name = "Log";
-            Description = "Print log file";
-            Options = new string[] { "log" };
-            ParameterSyntax = "[NUM_OF_LINES]";
+            Description = new [] { "Print log file" };
+            Options = new [] { "log" };
+            ParameterSyntax = new [] { "[NUM_OF_LINES]" };
         }
 
         protected override void InternalRun (string[] args)
@@ -36,7 +36,7 @@ namespace Shell.Logging
                     return;
                 }
             }
-            for (int i = Math.Max(lines.Length - count, 0); i < lines.Length; ++i) {
+            for (int i = Math.Max (lines.Length - count, 0); i < lines.Length; ++i) {
                 printLine (lines [i]);
             }
             if (tail) {
@@ -46,7 +46,7 @@ namespace Shell.Logging
 
         private void tailLog ()
         {
-            using (StreamReader reader = new StreamReader(new FileStream(Log.CURRENT_LOGFILE, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))) {
+            using (StreamReader reader = new StreamReader (new FileStream (Log.CURRENT_LOGFILE, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))) {
                 //start at the end of the file
                 long lastMaxOffset = reader.BaseStream.Length;
 
@@ -62,7 +62,7 @@ namespace Shell.Logging
 
                     //read out of the file until the EOF
                     string line = "";
-                    while ((line = reader.ReadLine()) != null)
+                    while ((line = reader.ReadLine ()) != null)
                         printLine (line);
 
                     //update the last max offset
@@ -77,7 +77,7 @@ namespace Shell.Logging
         {
             string[] parts = str.Split (new char[] { ' ' }, 4);
             if (parts.Length == 4) {
-                if (parts [2] != lastPid && !string.IsNullOrEmpty(lastPid)) {
+                if (parts [2] != lastPid && !string.IsNullOrEmpty (lastPid)) {
                     Console.WriteLine ();
                 }
                 Console.ForegroundColor = ConsoleColor.DarkGray;

@@ -37,7 +37,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Shell.Series\SeriesTask.cs" />
     <Compile Include="Shell.Series\SeriesLibrary.cs" />
-    <Compile Include="Shell.Series\SeriesScanTask.cs" />
     <Compile Include="Shell.Series\EpisodeFile.cs" />
     <Compile Include="Shell.Series\EpisodeInfo.cs" />
   </ItemGroup>

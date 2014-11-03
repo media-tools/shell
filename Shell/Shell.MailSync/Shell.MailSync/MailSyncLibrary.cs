@@ -182,7 +182,7 @@ namespace Shell.MailSync
 		private bool ApplyFilter (IMessageSummary summary, Dictionary<string,string> parameters)
 		{
 			if (parameters.ContainsKey ("filter")) {
-				string[] all = new string[] {
+				string[] all = new [] {
 					summary.Envelope.Subject,
 					summary.Envelope.From == null ? string.Empty : string.Join (" ", summary.Envelope.From.Where (i => i != null && i.Name != null).Select (i => i.Name)),
 					summary.Envelope.To == null ? string.Empty : string.Join (" ", summary.Envelope.To.Where (i => i != null && i.Name != null).Select (i => i.Name)),
@@ -193,7 +193,7 @@ namespace Shell.MailSync
 				}.Where (x => !string.IsNullOrWhiteSpace (x)).Select (x => x.ToLower ().Trim ()).ToArray ();
 
 				string[] includedStrings = parameters ["filter"]
-					.Split (new string[]{ ",", "|" }, StringSplitOptions.RemoveEmptyEntries)
+					.Split (new []{ ",", "|" }, StringSplitOptions.RemoveEmptyEntries)
 					.Select (x => x.ToLower ().Trim ()).ToArray ();
 
 				foreach (string includedString in includedStrings) {
@@ -322,7 +322,7 @@ namespace Shell.MailSync
 						MessageList notThere = fromList.Except (toList);
 						MessageList needToCopy = ApplyFilter (unfiltered: notThere, parameters: channel.Parameters);
 
-						taggedLog.Message ("status", string.Join (", ", new string[] {
+						taggedLog.Message ("status", string.Join (", ", new [] {
 							"source: " + fromCount, "target: " + toCount,
 							"already there: " + alreadyThere.Count, "not there: " + notThere.Count,
 							"need to copy: " + needToCopy.Count, "filtered: " + (notThere.Count - needToCopy.Count)

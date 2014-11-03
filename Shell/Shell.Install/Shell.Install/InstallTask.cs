@@ -12,16 +12,41 @@ namespace Shell.Git
         public InstallTask ()
         {
             Name = "Install";
-            Description = "Install";
-            Options = new string[] { "install" };
+            Description = new [] { "Install" };
+            Options = new [] { "install" };
         }
 
         protected override void InternalRun (string[] args)
         {
             // write the bash completion config file
-            IEnumerable<string> options = from task in Program.Tasks from option in task.Options select option;
-            string bash_completion = "_dotnetshell_completion() {     local cur=${COMP_WORDS[COMP_CWORD]};     COMPREPLY=( $(compgen -W \"" + string.Join (" ", options) + "\" -- $cur) ); }\n";
-            bash_completion += "complete -F _dotnetshell_completion cs dotnetshell\n";
+            IEnumerable<string> options = from task in Program.Tasks
+                                                   from option in task.Options
+                                                   select option;
+            string bash_completion = string.Join ("\n", new [] {
+                "_dotnetshell_completion() {",
+                "    local cur=${COMP_WORDS[COMP_CWORD]};",
+                "    prev=${COMP_WORDS[COMP_CWORD-1]}",
+                "    local frst=${COMP_WORDS[1]}",
+                "",
+                "    COMPREPLY=( $(compgen -W \"" + string.Join (" ", options) + "\" -- $cur) );",
+                "",
+                "    case \"${prev}\" in",
+                ""
+            });
+            foreach (ScriptTask task in Program.Tasks) {
+                string taskOptions = string.Join (" | ", from o in task.Options
+                                                                     select "'" + o + "'");
+                string taskParams = string.Join (" ", from p in task.ParameterSyntax
+                                                                  where !p.StartsWith ("[")
+                                                                  select p.Split (' ') [0]);
+                bash_completion += "    " + taskOptions + " )\n        COMPREPLY=( $(compgen -W \"" + taskParams + "\" -- ${cur}) )\n        return 0;;\n";
+            }
+            bash_completion += string.Join ("\n", new [] {
+                "    esac",
+                "}",
+                "complete -F _dotnetshell_completion cs dotnetshell",
+                ""
+            });
             fs.Runtime.WriteAllText (path: "bash_completion.sh", contents: bash_completion);
 
             // write the install script

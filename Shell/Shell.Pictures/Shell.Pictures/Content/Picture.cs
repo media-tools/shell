@@ -11,7 +11,7 @@ namespace Shell.Pictures.Content
 {
     public class Picture : Medium
     {
-        public static HashSet<string> FILE_ENDINGS = new string[] {
+        public static HashSet<string> FILE_ENDINGS = new [] {
             ".png",
             ".jpg",
             ".gif",

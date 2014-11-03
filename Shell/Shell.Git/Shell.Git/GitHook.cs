@@ -9,7 +9,7 @@ namespace Shell.Git
     {
         public override void HookBeforeTask (ScriptTask task)
         {
-            if (!(task is ConfigGitTask || task is ConfigCommitTask)) {
+            if (!(task is ConfigGitTask)) {
                 GitLibrary.Commit ();
             }
         }

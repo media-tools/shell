@@ -113,7 +113,7 @@ namespace Shell.Pictures.Content
         public static bool ReadFromExiftool (string line, out ExifTag tag)
         {
             tag = null;
-            string[] parts = line.Split (new string[]{ ": " }, 2, StringSplitOptions.RemoveEmptyEntries);
+            string[] parts = line.Split (new []{ ": " }, 2, StringSplitOptions.RemoveEmptyEntries);
             if (parts.Length == 2) {
                 string value = parts [1].Trim ();
                 string[] parts2 = parts [0].Trim ().Split (new char[]{ ']' }, 2, StringSplitOptions.RemoveEmptyEntries);

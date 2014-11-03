@@ -10,7 +10,7 @@ namespace Shell.Pictures.Content
 {
     public class Video : Medium
     {
-        public static HashSet<string> FILE_ENDINGS = new string[] {
+        public static HashSet<string> FILE_ENDINGS = new [] {
             ".mkv",
             ".mp4",
             ".avi",

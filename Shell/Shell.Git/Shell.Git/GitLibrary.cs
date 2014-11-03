@@ -36,7 +36,8 @@ namespace Shell.Git
             }
             script += "git add --all\n";
             foreach (string[] args in commands) {
-                script += "git " + string.Join (" ", from arg in args select "\"" + arg + "\"") + "\n";
+                script += "git " + string.Join (" ", from arg in args
+                                                                 select "\"" + arg + "\"") + "\n";
             }
             fsRuntime.WriteAllText (path: "git.sh", contents: script);
             fsRuntime.RequirePackages ("git");

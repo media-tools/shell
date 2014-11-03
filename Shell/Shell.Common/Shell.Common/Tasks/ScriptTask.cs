@@ -17,15 +17,15 @@ namespace Shell.Common.Tasks
 
         public string[] Options { protected set; get; }
 
-        public string ParameterSyntax { protected set; get; }
+        public string[] ParameterSyntax { protected set; get; }
 
-        public string Description { protected set; get; }
+        public string[] Description { protected set; get; }
 
         protected FileSystems fs;
 
         public ScriptTask ()
         {
-            ParameterSyntax = "";
+            ParameterSyntax = new [] { "" };
         }
 
         protected void CheckValid ()
@@ -33,8 +33,11 @@ namespace Shell.Common.Tasks
             if (string.IsNullOrEmpty (Name)) {
                 throw new ArgumentException ("Task(" + this + ") has illegal name: '" + Name + "'");
             }
-            if (string.IsNullOrEmpty (Description)) {
+            if (Description.Length == 0 || Description.Where (d => string.IsNullOrEmpty (d)).Any ()) {
                 throw new ArgumentException ("Task(" + Name + ") has illegal description: '" + Description + "'");
+            }
+            if (ParameterSyntax.Length != Description.Length) {
+                Log.Error ("Invalid parameters and descriptions in ", Name, ": ParameterSyntax.Length=", ParameterSyntax.Length, ", Description.Length=", Description.Length);
             }
             if (Options.Length == 0) {
                 throw new ArgumentException ("Task(" + Name + ") has no options!");
@@ -61,35 +64,57 @@ namespace Shell.Common.Tasks
 
         protected abstract void InternalRun (string[] args);
 
-        public virtual int LengthOfUsageLine (string indent)
+        protected void error ()
         {
-            return indent.Length + Options [0].Length + 1 + ParameterSyntax.Length;
+            Log.Error ("One of the following options is required: " + string.Join (" | ", ParameterSyntax));
         }
 
-        public virtual void PrintUsage (string indent, int maxLength)
+        public virtual int LengthOfUsageLine (string indent, int maxOptionLength)
+        {
+            return indent.Length + maxOptionLength + 1 + ParameterSyntax.Max (x => x.Length) + 2;
+        }
+
+        public virtual int LengthOfOption (string indent)
+        {
+            return indent.Length + Options [0].Length;
+        }
+
+        public virtual void PrintUsage (string indent, int maxLineLength, int maxOptionLength)
         {
             CheckValid ();
 
-            int lineLength = 0;
-            Console.ResetColor ();
-            Console.Write (indent);
-            lineLength += indent.Length;
-            Console.ForegroundColor = ConsoleColor.DarkGreen;
-            Console.Write (Options [0]);
-            lineLength += Options [0].Length;
-            if (ParameterSyntax.Length != 0) {
+            int maxParameterLength = ParameterSyntax.Max (x => x.Length);
+            for (int p = 0; p < ParameterSyntax.Length; ++p) {
+                string parameter = ParameterSyntax [p];
+                string description = Description [p];
+
+                int lineLength = 0;
                 Console.ResetColor ();
-                Console.Write (" ");
-                lineLength += 1;
-                Console.ForegroundColor = ConsoleColor.DarkGray;
-                Console.Write (ParameterSyntax);
-                lineLength += ParameterSyntax.Length;
+                Console.Write (indent);
+                lineLength += indent.Length;
+                Console.ForegroundColor = ConsoleColor.DarkGreen;
+
+                if (p == 0)
+                    Console.Write (Options [0]);
+                else
+                    Console.Write (String.Concat (Enumerable.Repeat (" ", Options [0].Length)));
+
+                Console.Write (String.Concat (Enumerable.Repeat (" ", maxOptionLength - Options [0].Length)));
+                lineLength += maxOptionLength;
+
+                if (ParameterSyntax.Length != 0) {
+                    Console.ResetColor ();
+                    Console.ForegroundColor = ConsoleColor.DarkGray;
+                    Console.Write (parameter);
+                    Console.Write (String.Concat (Enumerable.Repeat (" ", maxParameterLength - parameter.Length)));
+                    lineLength += maxParameterLength;
+                }
+                Console.ResetColor ();
+                Console.Write (String.Concat (Enumerable.Repeat (" ", maxLineLength - lineLength)));
+                // Console.ForegroundColor = ConsoleColor.;
+                Console.WriteLine (description);
+                Console.ResetColor ();
             }
-            Console.ResetColor ();
-            Console.Write (String.Concat (Enumerable.Repeat (" ", maxLength - lineLength)));
-            // Console.ForegroundColor = ConsoleColor.;
-            Console.WriteLine (Description);
-            Console.ResetColor ();
         }
 
         public virtual bool MatchesOption (string str)

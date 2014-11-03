@@ -7,7 +7,7 @@ using Shell.Common.Util;
 
 namespace Shell.Common
 {
-    public class Program
+    public sealed class Program
     {
         public static ScriptTask[] Tasks { get; private set; }
 
@@ -71,9 +71,10 @@ namespace Shell.Common
 
             string indent = "  ";
             if (Tasks.Any ()) {
-                int maxLength = Tasks.Max (task => task.LengthOfUsageLine (indent: indent)) + 2;
+                int maxOptionLength = Tasks.Max (task => task.LengthOfOption (indent: indent));
+                int maxLineLength = Tasks.Max (task => task.LengthOfUsageLine (indent: indent, maxOptionLength: maxOptionLength));
                 foreach (ScriptTask task in Tasks) {
-                    task.PrintUsage (indent: indent, maxLength: maxLength);
+                    task.PrintUsage (indent: indent, maxLineLength: maxLineLength, maxOptionLength: maxOptionLength);
                 }
             } else {
                 Console.WriteLine ("No tasks found.");

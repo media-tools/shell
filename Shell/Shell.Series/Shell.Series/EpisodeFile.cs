@@ -24,7 +24,7 @@ namespace Shell.Series
 
         public static bool Match (string filepath, out EpisodeInfo info)
         {
-            string[] patterns = new string[] {
+            string[] patterns = new [] {
                 @"^(?<series>.*?)\.S(?<season>[0-9]*?)E(?<episode>[0-9]*?)\.(?<stuff>.*)$",
             };
             string filename = Path.GetFileNameWithoutExtension (filepath);

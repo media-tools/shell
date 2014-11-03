@@ -46,7 +46,7 @@ namespace Shell.Series
         private void extractReleaseGroup (ref string suffix, out string releaseGroup)
         {
             releaseGroup = "";
-            string[] patterns = new string[] {
+            string[] patterns = new [] {
                 @"[-](?<group>[A-Za-z0-9]+)(?<after>\.|$)",
                 @"\.(?<group>[A-Za-z0-9]+)$",
             };
@@ -62,7 +62,7 @@ namespace Shell.Series
         private void extractResolution (ref string suffix, out int resolution)
         {
             resolution = 400;
-            string[] patterns = new string[] {
+            string[] patterns = new [] {
                 @"\.(?<resolution>720|1080)p",
                 @"(?<resolution>720|1080)p\.",
             };
@@ -78,7 +78,7 @@ namespace Shell.Series
         private void extractCodec (ref string suffix, out string codec)
         {
             codec = "";
-            string[] patterns = new string[] {
+            string[] patterns = new [] {
                 @"\.(?<codec>H\.264|x264|h264)",
                 @"(?<codec>H\.264|x264|h264)\.",
             };
@@ -94,7 +94,7 @@ namespace Shell.Series
         private void extractIsRepack (ref string suffix, out bool isRepack)
         {
             isRepack = false;
-            string[] patterns = new string[] {
+            string[] patterns = new [] {
                 @"\.(?<codec>repack|proper)",
                 @"(?<codec>repack|proper)\.",
                 @"(?<codec>repack|proper)",

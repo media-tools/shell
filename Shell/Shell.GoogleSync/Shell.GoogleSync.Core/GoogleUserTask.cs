@@ -11,10 +11,14 @@ namespace Shell.GoogleSync.Core
         public GoogleUserTask ()
         {
             Name = "GoogleUser";
-            Description = "Modify the list of google accounts";
-            Options = new string[] { "google-users", "g-users" };
+            Description = new [] {
+                "Add a google account",
+                "List all google accounts",
+                "Try to authenticate all google acounts"
+            };
+            Options = new [] { "google-users", "g-users" };
             ConfigName = "Google";
-            ParameterSyntax = "add | list | auth";
+            ParameterSyntax = new [] { "add", "list", "auth" };
         }
 
         protected override void InternalRun (string[] args)

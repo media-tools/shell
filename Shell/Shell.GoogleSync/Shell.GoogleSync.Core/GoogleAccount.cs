@@ -114,7 +114,7 @@ namespace Shell.GoogleSync.Core
             IAuthorizationCodeFlow flow =
                 new GoogleAuthorizationCodeFlow (new GoogleAuthorizationCodeFlow.Initializer {
                     ClientSecrets = new GoogleApp ().Secrets,
-                    Scopes = new string[] { PlusService.Scope.PlusLogin }
+                    Scopes = new [] { PlusService.Scope.PlusLogin }
                 });
 
             UserCredential credential = new UserCredential (flow, "me", token);

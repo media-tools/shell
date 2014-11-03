@@ -21,10 +21,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shell.Compatibility.Linux",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shell.GoogleSync", "Shell.GoogleSync\Shell.GoogleSync.csproj", "{B5516B19-633A-4601-8698-61AC2CBD6865}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shell.HolePunching", "Shell.HolePunching\Shell.HolePunching.csproj", "{65136320-8B2B-409E-A9B7-AF45C1D6DAE9}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shell.Proxy", "Shell.Proxy\Shell.Proxy.csproj", "{478068DD-C4BB-4363-A331-F9AB00BDFEA5}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shell.Old", "Shell.Old\Shell.Old.csproj", "{434A00B7-00D4-43D8-A2C6-308D8A294D26}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shell.Pictures", "Shell.Pictures\Shell.Pictures.csproj", "{F2C117FF-E1E9-4512-BECB-CBEBBA7FAB05}"
@@ -43,18 +39,10 @@ Global
 		{434A00B7-00D4-43D8-A2C6-308D8A294D26}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{434A00B7-00D4-43D8-A2C6-308D8A294D26}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{434A00B7-00D4-43D8-A2C6-308D8A294D26}.Release|Any CPU.Build.0 = Release|Any CPU
-		{478068DD-C4BB-4363-A331-F9AB00BDFEA5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{478068DD-C4BB-4363-A331-F9AB00BDFEA5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{478068DD-C4BB-4363-A331-F9AB00BDFEA5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{478068DD-C4BB-4363-A331-F9AB00BDFEA5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{63C0126A-4870-4769-B6F7-C22179DB5445}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{63C0126A-4870-4769-B6F7-C22179DB5445}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{63C0126A-4870-4769-B6F7-C22179DB5445}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{63C0126A-4870-4769-B6F7-C22179DB5445}.Release|Any CPU.Build.0 = Release|Any CPU
-		{65136320-8B2B-409E-A9B7-AF45C1D6DAE9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{65136320-8B2B-409E-A9B7-AF45C1D6DAE9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{65136320-8B2B-409E-A9B7-AF45C1D6DAE9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{65136320-8B2B-409E-A9B7-AF45C1D6DAE9}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9BB662D5-9C55-485F-B714-E5A4625ADD97}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9BB662D5-9C55-485F-B714-E5A4625ADD97}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9BB662D5-9C55-485F-B714-E5A4625ADD97}.Release|Any CPU.ActiveCfg = Release|Any CPU

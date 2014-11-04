@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Shell.Common.IO;
 using Shell.Common.Tasks;
 using Shell.Compatibility;
 
-namespace Shell.FileSync
+namespace Shell.Common.Shares
 {
     public class FileSystemLibrary : Library
     {
@@ -40,7 +41,9 @@ namespace Shell.FileSync
         {
             IEnumerable<FileInfo> fileList = null;
             try {
-                fileList = rootDirectory.GetFiles ();
+                fileList = from file in rootDirectory.GetFiles ()
+                                       orderby file.Name
+                                       select file;
             } catch (UnauthorizedAccessException ex) {
                 Log.DebugLog ("UnauthorizedAccessException: " + ex.Message);
                 yield break;
@@ -61,7 +64,9 @@ namespace Shell.FileSync
 
             IEnumerable<DirectoryInfo> directoryList = null;
             try {
-                directoryList = rootDirectory.GetDirectories ();
+                directoryList = from dir in rootDirectory.GetDirectories ()
+                                            orderby dir.Name
+                                            select dir;
             } catch (UnauthorizedAccessException ex) {
                 Log.DebugLog ("UnauthorizedAccessException: " + ex.Message);
                 yield break;

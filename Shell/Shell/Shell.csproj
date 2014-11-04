@@ -92,6 +92,10 @@
       <Project>{F2C117FF-E1E9-4512-BECB-CBEBBA7FAB05}</Project>
       <Name>Shell.Pictures</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Shell.Common.Shares\Shell.Common.Shares.csproj">
+      <Project>{C58D63FE-50CC-4EA7-98AA-AE7EBC5B8330}</Project>
+      <Name>Shell.Common.Shares</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Shell\" />

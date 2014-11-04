@@ -1,82 +1,36 @@
 using System;
-using System.IO;
-using Shell.Common.IO;
-using System.Linq;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using Shell.Common.IO;
+using Shell.Common.Shares;
 using Shell.Common.Util;
 
 namespace Shell.FileSync
 {
-    public class Tree
+    public sealed class Tree : CommonShare<Tree>
     {
-        public static string TREE_CONFIG_FILENAME = "control.ini";
         private static string CONFIG_SECTION = "FileSync";
 
-        public string ConfigPath { get; private set; }
+        public IEnumerable<DataFile> Files { get { return from file in FileMap.Keys
+                                                                   select file; } }
 
-        public string RootDirectory { get; private set; }
-
-        public IEnumerable<DataFile> Files { get { return from file in FileMap.Keys select file; } }
-        
         public bool IsSource { get; set; }
+
         public bool IsDestination { get; set; }
 
         private Dictionary<DataFile, DataFile> FileMap;
-        private ConfigFile config;
 
         public Tree (string path)
+            : base (path: path, configSection: CONFIG_SECTION)
         {
-            if (Path.GetFileName (path) == TREE_CONFIG_FILENAME) {
-                RootDirectory = Path.GetDirectoryName (path);
-                ConfigPath = path;
-            } else {
-                throw new ArgumentException ("Illegal tree config file: " + path);
-            }
-
-            config = new ConfigFile (filename: ConfigPath);
-            int fuuuck = (Name + IsEnabled + IsReadable + IsWriteable + IsExperimental).GetHashCode ();
-            fuuuck++;
-
-            if (Commons.IS_EXPERIMENTAL != IsExperimental) {
-                throw new ArgumentException ("Can't use that in "+(Commons.IS_EXPERIMENTAL?"":"not ")+"experimental mode: " + path);
-            }
-        }
-
-        public string Name {
-            get { return config [CONFIG_SECTION, "name", RandomString ()]; }
-            set { config [CONFIG_SECTION, "name", RandomString ()] = value; }
-        }
-
-        public bool IsEnabled {
-            get { return config [CONFIG_SECTION, "enabled", false]; }
-            set { config [CONFIG_SECTION, "enabled", false] = value; }
-        }
-
-        public bool IsReadable {
-            get { return config [CONFIG_SECTION, "read", true]; }
-            set { config [CONFIG_SECTION, "read", true] = value; }
-        }
-
-        public bool IsWriteable {
-            get { return config [CONFIG_SECTION, "write", true]; }
-            set { config [CONFIG_SECTION, "write", true] = value; }
-        }
-
-        public bool IsDeletable {
-            get { return config [CONFIG_SECTION, "delete", false]; }
-            set { config [CONFIG_SECTION, "delete", false] = value; }
-        }
-
-        public bool IsExperimental {
-            get { return config [CONFIG_SECTION, "experimental", false]; }
-            set { config [CONFIG_SECTION, "experimental", false] = value; }
         }
 
         public void CreateIndex ()
         {
             if (FileMap == null) {
                 FileMap = new Dictionary<DataFile, DataFile> ();
-                Func<FileInfo, bool> excludeTreeConfig = fileInfo => fileInfo.Name != Tree.TREE_CONFIG_FILENAME;
+                Func<FileInfo, bool> excludeTreeConfig = fileInfo => fileInfo.Name != CommonShare<Tree>.CONFIG_FILENAME;
                 IEnumerable<FileInfo> files = FileSystemLibrary.GetFileList (rootDirectory: RootDirectory, fileFilter: excludeTreeConfig, dirFilter: dir => true);
                 foreach (FileInfo fileInfo in files) {
                     DataFile file = new DataFile (fileInfo: fileInfo, tree: this);
@@ -85,12 +39,12 @@ namespace Shell.FileSync
             }
             
             Log.DebugLog ("Index of: ", RootDirectory);
-            Log.Indent ++;
+            Log.Indent++;
             foreach (DataFile file in Files) {
 
                 Log.DebugLog ("- ", file);
             }
-            Log.Indent --;
+            Log.Indent--;
         }
 
         public bool ContainsFile (DataFile search, out DataFile result)
@@ -109,27 +63,29 @@ namespace Shell.FileSync
             return string.Format ("Tree(name=\"{0}\", rootDirectory=\"{1}\", enabled={2}, read={3}, write={4}, delete={5})", Name, RootDirectory, IsEnabled, IsReadable, IsWriteable, IsDeletable);
         }
 
-        public override int GetHashCode ()
+        protected override IEnumerable<object> Reflect ()
         {
-            return ToString ().GetHashCode ();
+            return new object[] { ToString () };
         }
 
         public override bool Equals (object obj)
         {
-            return Equals (obj as Tree);
+            return ValueObject<Tree>.Equals (myself: this, obj: obj);
         }
 
-        public bool Equals (Tree obj)
+        public override int GetHashCode ()
         {
-            return obj != null && GetHashCode () == obj.GetHashCode ();
+            return base.GetHashCode ();
         }
 
-        private static string RandomString ()
+        public static bool operator == (Tree a, Tree b)
         {
-            var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".ToLower ();
-            var random = new Random ();
-            var result = new string (Enumerable.Repeat (chars, 8).Select (s => s [random.Next (s.Length)]).ToArray ());
-            return result;
+            return ValueObject<Tree>.Equality (a, b);
+        }
+
+        public static bool operator != (Tree a, Tree b)
+        {
+            return ValueObject<Tree>.Inequality (a, b);
         }
     }
 }

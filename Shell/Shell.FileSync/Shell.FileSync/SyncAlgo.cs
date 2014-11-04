@@ -27,34 +27,43 @@ namespace Shell.FileSync
         public void Synchronize ()
         {
             PrintInfo ();
-            Log.Indent ++;
+            Log.Indent++;
             Source.CreateIndex ();
             Destination.CreateIndex ();
 
             LookForChanges ();
             PrintChanges ();
             ApplyChanges ();
-            Log.Indent --;
+            Log.Indent--;
         }
 
         private void PrintInfo ()
         {
             Log.Message ("Synchronization:");
-            Log.Indent ++;
+            Log.Indent++;
             Log.Message ("Source:      ", Source);
             Log.Message ("Destination: ", Destination);
-            Log.Indent --;
+            Log.Indent--;
         }
 
         private void LookForChanges ()
         {
-            Changes = new ChangesList (source: Source, destination: Destination);
+            ProgressBar progressBar = Log.OpenProgressBar (
+                                          identifier: "FileSync:SyncAlgo:LookForChanges:" + Source.RootDirectory + ":" + Destination.RootDirectory,
+                                          description: "Look for changes..."
+                                      );
+            float max = Source.Files.Count () + Destination.Files.Count ();
+            float current = 0;
 
+            Changes = new ChangesList (source: Source, destination: Destination);
             foreach (DataFile sourceFile in Source.Files) {
+
+                progressBar.Print (current: current++, min: 0, max: max, currentDescription: sourceFile.Name, showETA: true, updateETA: true);
+
                 DataFile destFile;
                 if (Destination.ContainsFile (search: sourceFile, result: out destFile)) {
-                    if (sourceFile.ContentEquals (otherFile: destFile)) {
 
+                    if (sourceFile.ContentEquals (otherFile: destFile)) {
                         Changes.Unchanged.Add (sourceFile);
                     } else {
                         TimeSpan diff = sourceFile.GetWriteTimeDiff (otherFile: destFile);
@@ -71,6 +80,9 @@ namespace Shell.FileSync
                 }
             }
             foreach (DataFile destFile in Destination.Files) {
+
+                progressBar.Print (current: current++, min: 0, max: max, currentDescription: destFile.Name, showETA: true, updateETA: true);
+
                 DataFile sourceFile;
                 if (!Source.ContainsFile (search: destFile, result: out sourceFile)) {
                     if (!Destination.IsSource && Destination.IsDeletable) {
@@ -83,10 +95,9 @@ namespace Shell.FileSync
         }
 
         private void PrintChanges ()
-
         {
             Log.Message ("Changes: ");
-            Log.Indent ++;
+            Log.Indent++;
             foreach (DataFile sourceFile in Changes.Unchanged) {
                 Log.Message (LogColor.DarkGray, "[unchanged] ", LogColor.Reset, sourceFile);
             }
@@ -112,13 +123,13 @@ namespace Shell.FileSync
             foreach (DataFile destFile in Changes.Inexistant) {
                 Log.Message (LogColor.DarkGray, "[inexistant] ", LogColor.Reset, destFile);
             }
-            Log.Indent --;
+            Log.Indent--;
         }
 
         private void ApplyChanges ()
         {
             Log.Message ("Apply changes: ");
-            Log.Indent ++;
+            Log.Indent++;
             int done = 0;
             if (Destination.IsWriteable) {
                 foreach (DataFile sourceFile in Changes.Created) {
@@ -151,7 +162,7 @@ namespace Shell.FileSync
             if (done == 0) {
                 Log.Message ("Nothing to do.");
             }
-            Log.Indent --;
+            Log.Indent--;
         }
 
         private void CopyFileExactly (DataFile sourceFile, Tree destinationTree)

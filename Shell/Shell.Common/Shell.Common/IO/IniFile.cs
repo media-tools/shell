@@ -147,5 +147,29 @@ namespace Shell.Common.IO
                 return new Dictionary<string, string> ();
             }
         }
+
+        public bool ContainsSection (string section)
+        {
+            return Data.ContainsKey (section);
+        }
+
+        public bool ContainsValue (string section, string key)
+        {
+            return Data.ContainsKey (section) && Data [section].ContainsKey (key);
+        }
+
+        public void RemoveSection (string section)
+        {
+            if (Data.ContainsKey (section)) {
+                Data.Remove (section);
+            }
+        }
+
+        public void RemoveValue (string section, string key)
+        {
+            if (Data.ContainsKey (section) && Data [section].ContainsKey (key)) {
+                Data [section].Remove (key);
+            }
+        }
     }
 }

@@ -9,25 +9,20 @@ using Shell.Common.Util;
 using System.Security.Cryptography;
 using Shell.Pictures.Files;
 using Shell.Pictures.Content;
+using Shell.Common.Shares;
 
 namespace Shell.Pictures
 {
-    public class PictureShare : ValueObject<PictureShare>
+    public sealed class PictureShare : CommonShare<PictureShare>
     {
         private static Dictionary<string, PictureShare> Instances = new Dictionary<string, PictureShare> ();
 
-        public static string PICTURE_CONFIG_FILENAME = "control.ini";
         private static string CONFIG_SECTION = "Pictures";
-
-        public string ConfigPath { get; private set; }
-
-        public string RootDirectory { get; private set; }
 
         public HashSet<Album> Albums { get; private set; }
 
         public Dictionary<HexString, Medium> Media { get; private set; }
 
-        private ConfigFile config;
         private ConfigFile serializedAlbums;
         private ConfigFile serializedMedia;
 
@@ -43,22 +38,12 @@ namespace Shell.Pictures
         }
 
         private PictureShare (string path, FileSystems filesystems)
+            : base (path: path, configSection: CONFIG_SECTION)
         {
             fs = filesystems;
-            if (Path.GetFileName (path) == PICTURE_CONFIG_FILENAME) {
-                RootDirectory = Path.GetDirectoryName (path);
-                ConfigPath = path;
-            } else {
-                throw new ArgumentException ("Illegal tree config file: " + path);
-            }
 
-            config = new ConfigFile (filename: ConfigPath);
-            int fuuuck = (Name + IsEnabled + IsWriteable + IsExperimental).GetHashCode ();
+            int fuuuck = (GoogleAccount).GetHashCode ();
             fuuuck++;
-
-            if (Commons.IS_EXPERIMENTAL != IsExperimental) {
-                throw new ArgumentException ("Can't use that in " + (Commons.IS_EXPERIMENTAL ? "" : "not ") + "experimental mode: " + path);
-            }
 
             Albums = new HashSet<Album> ();
             Media = new Dictionary<HexString, Medium> ();
@@ -68,29 +53,9 @@ namespace Shell.Pictures
             serializedMedia.AutoSaveEnabled = false;
         }
 
-        public string Name {
-            get { return config [CONFIG_SECTION, "name", RandomString ()]; }
-            set { config [CONFIG_SECTION, "name", RandomString ()] = value; }
-        }
-
-        public bool IsEnabled {
-            get { return config [CONFIG_SECTION, "enabled", false]; }
-            set { config [CONFIG_SECTION, "enabled", false] = value; }
-        }
-
-        public bool IsWriteable {
-            get { return config [CONFIG_SECTION, "write", true]; }
-            set { config [CONFIG_SECTION, "write", true] = value; }
-        }
-
-        public bool IsDeletable {
-            get { return config [CONFIG_SECTION, "delete", false]; }
-            set { config [CONFIG_SECTION, "delete", false] = value; }
-        }
-
-        public bool IsExperimental {
-            get { return config [CONFIG_SECTION, "experimental", false]; }
-            set { config [CONFIG_SECTION, "experimental", false] = value; }
+        public string GoogleAccount {
+            get { return config [CONFIG_SECTION, "google-account", "username"]; }
+            set { config [CONFIG_SECTION, "google-account", "username"] = value; }
         }
 
         public void AddAlbum (Album album)
@@ -152,19 +117,11 @@ namespace Shell.Pictures
             return ValueObject<PictureShare>.Inequality (a, b);
         }
 
-        private static string RandomString ()
-        {
-            var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".ToLower ();
-            var random = new Random ();
-            var result = new string (Enumerable.Repeat (chars, 8).Select (s => s [random.Next (s.Length)]).ToArray ());
-            return result;
-        }
-
         public void Index ()
         {
             // list media files
             Log.Message ("List media files...");
-            FileInfo[] pictureFiles = Shell.FileSync.FileSystemLibrary.GetFileList (rootDirectory: RootDirectory, fileFilter: file => true, dirFilter: dir => true).ToArray ();
+            FileInfo[] pictureFiles = FileSystemLibrary.GetFileList (rootDirectory: RootDirectory, fileFilter: file => true, dirFilter: dir => true).ToArray ();
 
             // put albums into internal dictionary
             Dictionary<string, Album> albums = Albums.ToDictionary (a => a.AlbumPath, a => a);

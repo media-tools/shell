@@ -10,7 +10,7 @@ namespace Shell.Pictures.Content
 {
     public class Document : Medium
     {
-        public static HashSet<string> FILE_ENDINGS = new []{ ".pdf", ".txt", ".rtf", ".eml" }.ToHashSet ();
+        public static HashSet<string> FILE_ENDINGS = new []{ ".pdf", ".txt", ".rtf", ".eml", ".nfo" }.ToHashSet ();
 
         public static Dictionary<string,string> MIME_TYPES = new Dictionary<string,string> () {
             { "application/pdf", ".pdf" },

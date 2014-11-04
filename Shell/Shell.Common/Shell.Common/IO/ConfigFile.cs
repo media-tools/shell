@@ -169,5 +169,25 @@ namespace Shell.Common.IO
                 SetOption (section, option, value);
             }
         }
+
+        public bool ContainsSection (string section)
+        {
+            return ini.ContainsSection (section: section);
+        }
+
+        public bool ContainsValue (string section, string key)
+        {
+            return ini.ContainsValue (section: section, key: key);
+        }
+
+        public void RemoveSection (string section)
+        {
+            ini.RemoveSection (section: section);
+        }
+
+        public void RemoveValue (string section, string key)
+        {
+            ini.RemoveValue (section: section, key: key);
+        }
     }
 }

@@ -29,10 +29,14 @@ namespace Shell.Pictures.Content
                 string newFullPath = Path.GetDirectoryName (fullPath) + Path.DirectorySeparatorChar + Path.GetFileNameWithoutExtension (fullPath) + ".mkv";
 
                 if (!File.Exists (newFullPath)) {
+                    string ffmpegCommand = "ffmpeg";
                     string ffmpegParams = string.Empty;
 
-                    if (Path.GetFileNameWithoutExtension (fullPath).StartsWith ("VID_")) {
+                    if (Path.GetFileNameWithoutExtension (fullPath).Contains ("VID_")) {
                         ffmpegParams = " -vcodec copy -acodec copy ";
+                    } else if (fullPath.Contains ("Music") || fullPath.Contains ("Musik")) {
+                        ffmpegCommand = "x265-ffmpeg";
+                        ffmpegParams = " -c:v hevc -c:a libfaac -preset slower ";
                     } else {
                         long oldFileSize = new FileInfo (oldFullPath).Length;
                         int crf = oldFileSize < 50 * 1000000 ? 18 : oldFileSize > 200 * 1000000 ? 21 : 20;
@@ -40,10 +44,10 @@ namespace Shell.Pictures.Content
                     }
 
                     string script = "export tempfile=$(mktemp --suffix .mkv) ;" +
-                                    "rm -f '" + newFullPath + "' \"${tempfile}\" && " +
-                                    "nice -n 19 ffmpeg -i '" + oldFullPath + "' " + ffmpegParams + " \"${tempfile}\" &&" +
-                                    "mv \"${tempfile}\" '" + newFullPath + "' &&" +
-                                    "rm '" + oldFullPath + "' ;" +
+                                    "rm -f " + newFullPath.SingleQuoteShell () + " \"${tempfile}\" && " +
+                                    "nice -n 19 " + ffmpegCommand + " -i " + oldFullPath.SingleQuoteShell () + " " + ffmpegParams + " \"${tempfile}\" && " +
+                                    "mv \"${tempfile}\" " + newFullPath.SingleQuoteShell () + " && " +
+                                    "rm " + oldFullPath.SingleQuoteShell () + " ;" +
                                     "rm -f \"${tempfile}\" ";
 
                     bool success = true;
@@ -51,6 +55,10 @@ namespace Shell.Pictures.Content
                         if (line.ToLower ().Contains ("error")) {
                             success = false;
                             Log.Error ("Matroska Convert Error: ", line);
+                            Log.Error ("Script:");
+                            Log.Indent++;
+                            Log.Error (script);
+                            Log.Indent--;
                         }
                     };
 

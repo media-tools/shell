@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using Shell.Common;
 using Shell.Common.IO;
+using Shell.Common.Shares;
 using Shell.Common.Tasks;
 
 namespace Shell.Pictures
@@ -26,26 +27,23 @@ namespace Shell.Pictures
         public void Initialize (bool cached)
         {
             if (!cached || !fs.Config.FileExists (path: "trees.txt")) {
-                Func<FileInfo, bool> onlyPictureConfig = fileInfo => fileInfo.Name == PictureShare.PICTURE_CONFIG_FILENAME;
-                IEnumerable<FileInfo> configFiles = Shell.FileSync.FileSystemLibrary.GetFileList (rootDirectory: "/", fileFilter: onlyPictureConfig, dirFilter: dir => true);
+                Func<FileInfo, bool> onlyPictureConfig = fileInfo => fileInfo.Name == CommonShare<PictureShare>.CONFIG_FILENAME;
+                IEnumerable<FileInfo> configFiles = FileSystemLibrary.GetFileList (rootDirectory: "/", fileFilter: onlyPictureConfig, dirFilter: dir => true);
                 fs.Config.WriteAllLines (path: "trees.txt", contents: from file in configFiles
-                                                                      where file.Name == PictureShare.PICTURE_CONFIG_FILENAME
-                                                                      select file.FullName);
+                                                                                  where file.Name == CommonShare<PictureShare>.CONFIG_FILENAME
+                                                                                  select file.FullName);
             }
             PictureDirectories.Clear ();
             string[] files = fs.Config.ReadAllLines (path: "trees.txt");
             foreach (string file in files) {
                 try {
                     PictureShare share = PictureShare.CreateInstance (file, filesystems: fs);
-                    if (share.IsEnabled) {
-                        PictureDirectories [file] = share;
-                    } else {
-                        Log.Error ("Can't use, not enabled: ", share);
-                    }
+
+                    PictureDirectories [file] = share;
                 } catch (IOException) {
                     Log.Error ("Can't open tree config file: ", file);
-                } catch (ArgumentException ex) {
-                    Log.Error (ex);
+                } catch (ShareUnavailableException ex) {
+                    Log.Error (ex.Message);
                 }
             }
         }

@@ -63,9 +63,9 @@
       <Project>{CBB5DE48-A305-4F9C-88F3-F0F071AC3298}</Project>
       <Name>Shell.Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Shell.FileSync\Shell.FileSync.csproj">
-      <Project>{34F8AD42-90C2-4CC1-B7A2-047AD1874BAD}</Project>
-      <Name>Shell.FileSync</Name>
+    <ProjectReference Include="..\Shell.Common.Shares\Shell.Common.Shares.csproj">
+      <Project>{C58D63FE-50CC-4EA7-98AA-AE7EBC5B8330}</Project>
+      <Name>Shell.Common.Shares</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

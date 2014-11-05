@@ -88,7 +88,7 @@ namespace Shell.Pictures
                     share.Serialize (verbose: true);
                 }
             } else {
-                Log.Message ("No shares are available for indexing.");
+                Log.Message ("No shares are available for serializing.");
             }
         }
 
@@ -99,7 +99,7 @@ namespace Shell.Pictures
                     share.Deserialize ();
                 }
             } else {
-                Log.Message ("No shares are available for indexing.");
+                Log.Message ("No shares are available for deserializing.");
             }
         }
 
@@ -110,7 +110,7 @@ namespace Shell.Pictures
                     share.Sort ();
                 }
             } else {
-                Log.Message ("No shares are available for synchronization.");
+                Log.Message ("No shares are available for sorting.");
             }
         }
     }

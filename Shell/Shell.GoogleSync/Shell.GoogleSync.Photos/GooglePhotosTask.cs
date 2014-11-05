@@ -17,11 +17,12 @@ namespace Shell.GoogleSync.Photos
                 "List the albums of all users",
                 "List the photos of a specified album",
                 "Configure google albums",
-                "Synchronize google photos"
+                "Synchronize google photos",
+                "Find all picture directories"
             };
             Options = new [] { "google-photos", "g-photos" };
             ConfigName = "Google";
-            ParameterSyntax = new [] { "list-albums", "list-photos", "config", "upload" };
+            ParameterSyntax = new [] { "list-albums", "list-photos", "config", "upload", "find-shares" };
         }
 
         protected override void InternalRun (string[] args)
@@ -39,6 +40,9 @@ namespace Shell.GoogleSync.Photos
                     break;
                 case "upload":
                     upload ();
+                    break;
+                case "find-shares":
+                    findShares ();
                     break;
                 default:
                     error ();
@@ -86,7 +90,7 @@ namespace Shell.GoogleSync.Photos
 
         void upload ()
         {
-            PictureShareManager shares = new PictureShareManager (rootDirectory: "/", filesystems: fs);
+            PictureShareManager shares = new PictureShareManager (rootDirectory: "/", filesystems: new PictureDummyLibrary ().FileSystems);
             shares.Initialize (cached: true);
             shares.Print ();
             shares.Deserialize ();
@@ -96,11 +100,14 @@ namespace Shell.GoogleSync.Photos
             if (shares.PictureDirectories.Count != 0) {
                 // for all shares
                 foreach (PictureShare share in from share in shares.PictureDirectories.Values orderby share.RootDirectory select share) {
+                    Log.Message ();
                     Log.Message ("Share: ", share);
+                    Log.Indent++;
+                    Log.Message ();
 
                     // if there is a valid google account config value
                     if (!string.IsNullOrWhiteSpace (share.GoogleAccount)) {
-                        GoogleAccount[] matches = googleAccounts.Where (a => a.Emails.Replace (".", "").ToLower ().Contains (share.GoogleAccount)).ToArray ();
+                        GoogleAccount[] matches = googleAccounts.Where (a => a.Emails.Replace (".", "").ToLower ().Contains (share.GoogleAccount.Replace (".", "").ToLower ())).ToArray ();
 
                         // if there are no google accounts matching the value
                         if (matches.Length == 0) {
@@ -115,13 +122,14 @@ namespace Shell.GoogleSync.Photos
                             GoogleAccount account = matches [0];
 
                             Log.Message ("One google account matches the share: ", account);
-                            Log.Indent++;
-                            Log.Message ();
                             account.Refresh ();
-                            uploadShare (share, account);
-                            Log.Indent--;
+                            AlbumCollection webAlbumCollection = new AlbumCollection (account: account);
+                            webAlbumCollection.UploadShare (share);
                         }
                     }
+
+                    Log.Indent--;
+                    Log.Message ();
                 }
             } else {
                 Log.Message ("No shares are available for uploading.");
@@ -130,25 +138,19 @@ namespace Shell.GoogleSync.Photos
             shares.Serialize ();
         }
 
-        void uploadShare (PictureShare share, GoogleAccount account)
+        void findShares ()
         {
-            // load web albums
-            Log.Message ("Load web albums: ");
-            Log.Indent++;
-            Dictionary<WebAlbum, WebPhoto[]> webAlbums = new Dictionary<WebAlbum, WebPhoto[]> ();
-            AlbumCollection webAlbumCollection = new AlbumCollection (account: account);
-            foreach (WebAlbum album in webAlbumCollection.GetAlbums()) {
-                webAlbums [album] = webAlbumCollection.GetPhotos (album);
-                Log.Message ("- ", album.Title);
+            PictureShareManager shares = new PictureShareManager (rootDirectory: "/", filesystems: new PictureDummyLibrary ().FileSystems);
+            shares.Initialize (cached: false);
+            shares.Print ();
+        }
+
+        protected class PictureDummyLibrary : Library
+        {
+            public PictureDummyLibrary ()
+            {
+                ConfigName = "Pictures";
             }
-            Log.Indent--;
-
-            // compare local and web albums...
-            Log.Message ("Compare local and web albums...");
-            Log.Indent++;
-
-
-            Log.Indent--;
         }
     }
 }

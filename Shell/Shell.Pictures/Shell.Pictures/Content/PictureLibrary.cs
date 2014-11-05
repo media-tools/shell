@@ -20,7 +20,7 @@ namespace Shell.Pictures.Content
 
         public List<ExifTag> GetExifTags (string fullPath)
         {
-            string script = "exiftool -time:all -a -G0:1 -s '" + fullPath + "'";
+            string script = "exiftool -time:all -a -G0:1 -s " + fullPath.SingleQuoteShell ();
 
             List<ExifTag> tags = new List<ExifTag> ();
             Action<string> receiveOutput = line => {
@@ -41,10 +41,18 @@ namespace Shell.Pictures.Content
         public void SetExifDate (string fullPath, DateTime date)
         {
             string dateString = string.Format ("{0:yyyy:MM:dd HH:mm:ss}", date); //JJJJ:MM:TT HH:MM:SS
-            string script = "exiftool -AllDates='" + dateString + "' '" + fullPath + "' && rm -f '" + fullPath + "_original'";
+            string script = "exiftool -AllDates='" + dateString + "' '" + fullPath + "' && rm -f " + fullPath.SingleQuoteShell () + "_original";
 
             fs.Runtime.WriteAllText (path: "run2.sh", contents: script);
             fs.Runtime.ExecuteScript (path: "run2.sh", ignoreEmptyLines: true);
+        }
+
+        public void CopyExifTags (string sourcePath, string destPath)
+        {
+            string script = "exiftool -TagsFromFile " + sourcePath.SingleQuoteShell () + " " + destPath.SingleQuoteShell ();
+
+            fs.Runtime.WriteAllText (path: "run3.sh", contents: script);
+            fs.Runtime.ExecuteScript (path: "run3.sh", ignoreEmptyLines: true, verbose: false);
         }
 
         class FormatCombo

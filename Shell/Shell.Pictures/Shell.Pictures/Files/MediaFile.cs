@@ -116,18 +116,8 @@ namespace Shell.Pictures.Files
 
         public static bool DetermineFileEnding (string fullPath, out string fileEnding)
         {
-            string mimeType = lib.GetMimeType (fullPath: fullPath);
-            if (Picture.MIME_TYPES.ContainsKey (mimeType)) {
-                fileEnding = Picture.MIME_TYPES [mimeType];
-            } else if (Audio.MIME_TYPES.ContainsKey (mimeType)) {
-                fileEnding = Audio.MIME_TYPES [mimeType];
-            } else if (Video.MIME_TYPES.ContainsKey (mimeType)) {
-                fileEnding = Video.MIME_TYPES [mimeType];
-            } else if (Document.MIME_TYPES.ContainsKey (mimeType)) {
-                fileEnding = Document.MIME_TYPES [mimeType];
-            } else {
-                fileEnding = null;
-            }
+            string mimeType = lib.GetMimeTypeByExternalCall (fullPath: fullPath);
+            fileEnding = lib.GetExtensionByMimeType (mimeType: mimeType);
 
             Log.Debug ("DetermineFileEnding: mimeType=", mimeType, ", fileEnding=", fileEnding);
 

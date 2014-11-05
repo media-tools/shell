@@ -51,6 +51,22 @@ namespace Shell.Common.IO
 
         private static ConfigFile _default;
 
+        public string GetTempFilename (string name)
+        {
+            if (name.Contains ("/") || name.Contains ("\\"))
+                name = Path.GetFileName (name.Replace ("\\", "/"));
+            Directory.CreateDirectory (RootDirectory + SystemInfo.PathSeparator + "tmp");
+            return RootDirectory + SystemInfo.PathSeparator + "tmp" + SystemInfo.PathSeparator + name;
+        }
+
+        public void ClearTempFiles ()
+        {
+            try {
+                Directory.Delete (RootDirectory + SystemInfo.PathSeparator + "tmp");
+            } catch (Exception) {
+            }
+        }
+
         public bool FileExists (string path)
         {
             return File.Exists (RootDirectory + SystemInfo.PathSeparator + path);

@@ -32,6 +32,8 @@ namespace Shell.Common.Tasks
                 };
             }
         }
+
+        public FileSystems FileSystems { get { return fs; } }
     }
 }
 

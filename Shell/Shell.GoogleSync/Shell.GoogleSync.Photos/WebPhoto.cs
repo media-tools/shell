@@ -4,7 +4,7 @@ using Google.Picasa;
 using Shell.Common.IO;
 using System.Drawing;
 
-namespace Shell.GoogleSync
+namespace Shell.GoogleSync.Photos
 {
     public class WebPhoto
     {

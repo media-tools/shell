@@ -3,7 +3,7 @@ using Google.GData.Photos;
 using Google.Picasa;
 using Shell.Common.IO;
 
-namespace Shell.GoogleSync
+namespace Shell.GoogleSync.Photos
 {
     public class WebAlbum
     {

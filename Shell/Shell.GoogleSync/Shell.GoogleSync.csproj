@@ -118,6 +118,9 @@
     <Compile Include="Shell.GoogleSync.Photos\WebAlbum.cs" />
     <Compile Include="Shell.GoogleSync.Photos\AlbumCollection.cs" />
     <Compile Include="Shell.GoogleSync.Photos\WebPhoto.cs" />
+    <Compile Include="Shell.GoogleSync.Photos\PhotoSyncUtilities.cs" />
+    <Compile Include="Shell.GoogleSync.Photos\AlbumSyncStatus.cs" />
+    <Compile Include="Shell.GoogleSync.Photos\ImageResizeUtilities.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" />

@@ -12,12 +12,12 @@ namespace Shell.Pictures.Content
     {
         public static HashSet<string> FILE_ENDINGS = new []{ ".mp3", ".wav", ".ogg", ".aac", ".m4a" }.ToHashSet ();
 
-        public static Dictionary<string,string> MIME_TYPES = new Dictionary<string,string> () {
-            { "audio/mpeg", ".mp3" },
-            { "audio/x-wav", ".wav" },
-            { "audio/ogg", ".ogg" },
-            { "audio/x-ms-wma", ".wma" },
-            { "audio/flac", ".flac" }
+        public static Dictionary<string[],string[]> MIME_TYPES = new Dictionary<string[],string[]> () {
+            { new [] { "audio/mpeg" }, new [] { ".mp3" } },
+            { new [] { "audio/x-wav" }, new [] { ".wav" } },
+            { new [] { "audio/ogg" }, new [] { ".ogg" } },
+            { new [] { "audio/x-ms-wma" }, new [] { ".wma" } },
+            { new [] { "audio/flac" }, new [] { ".flac" } }
         };
 
         public static readonly string TYPE = "audio";

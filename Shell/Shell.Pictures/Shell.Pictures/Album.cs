@@ -12,6 +12,8 @@ namespace Shell.Pictures
 
         public List<MediaFile> Files { get; private set; }
 
+        public bool IsDeleted { get; set; }
+
         public Album (string albumPath)
         {
             AlbumPath = albumPath;

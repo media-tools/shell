@@ -29,6 +29,8 @@ namespace Shell.Pictures.Files
 
         private static MediaFileLibrary lib = new MediaFileLibrary ();
 
+        public bool IsDeleted { get; set; }
+
         public MediaFile (string fullPath, PictureShare share)
         {
             Debug.Assert (fullPath.StartsWith (share.RootDirectory), "file path is not in root directory (FullName=" + fullPath + ",root=" + share.RootDirectory + ")");

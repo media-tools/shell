@@ -6,6 +6,7 @@ using Shell.Common;
 using Shell.Common.IO;
 using Shell.Common.Shares;
 using Shell.Common.Tasks;
+using Shell.Pictures.Content;
 
 namespace Shell.Pictures
 {
@@ -48,6 +49,11 @@ namespace Shell.Pictures
             }
         }
 
+        private string printCount (int count, string ifZero)
+        {
+            return count > 0 ? count + "" : ifZero;
+        }
+
         public void Print ()
         {
             if (PictureDirectories.Count != 0) {
@@ -57,14 +63,19 @@ namespace Shell.Pictures
                 foreach (PictureShare share in from share in PictureDirectories.Values orderby share.RootDirectory select share) {
                     Log.Message (share, ":");
                     Log.Indent++;
-                    foreach (Album album in share.Albums) {
-                        Log.Message ("- ", album);
-                    }
+                    Log.Message (share.Albums.ToStringTable (
+                        a => LogColor.Reset,
+                        new[] { "Album", "Picture Files", "Audio Files", "Video Files", "Document Files" },
+                        a => a.AlbumPath,
+                        a => printCount (count: a.Files.Count (f => f.Medium is Picture), ifZero: ""),
+                        a => printCount (count: a.Files.Count (f => f.Medium is Audio), ifZero: ""),
+                        a => printCount (count: a.Files.Count (f => f.Medium is Video), ifZero: ""),
+                        a => printCount (count: a.Files.Count (f => f.Medium is Document), ifZero: "")
+                    ));
                     Log.Indent--;
                     i++;
                 }
                 Log.Indent--;
-                Log.Message ();
             } else {
                 Log.Message ("No shares or directory trees available.");
             }
@@ -74,10 +85,27 @@ namespace Shell.Pictures
         {
             if (PictureDirectories.Count != 0) {
                 foreach (PictureShare share in from share in PictureDirectories.Values orderby share.RootDirectory select share) {
+                    Log.Message ("Share: ", share.Name);
+                    Log.Indent++;
                     share.Index ();
+                    Log.Indent--;
                 }
             } else {
                 Log.Message ("No shares are available for indexing.");
+            }
+        }
+
+        public void Clean ()
+        {
+            if (PictureDirectories.Count != 0) {
+                foreach (PictureShare share in from share in PictureDirectories.Values orderby share.RootDirectory select share) {
+                    Log.Message ("Share: ", share.Name);
+                    Log.Indent++;
+                    share.Clean ();
+                    Log.Indent--;
+                }
+            } else {
+                Log.Message ("No shares are available for cleaning.");
             }
         }
 

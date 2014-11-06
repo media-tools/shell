@@ -124,7 +124,7 @@ namespace Shell.Pictures
             FileInfo[] pictureFiles = FileSystemLibrary.GetFileList (rootDirectory: RootDirectory, fileFilter: file => true, dirFilter: dir => true).ToArray ();
 
             // put albums into internal dictionary
-            Dictionary<string, Album> albums = Albums.ToDictionary (a => a.AlbumPath, a => a);
+            Dictionary<string, Album> albumInternalDict = Albums.ToDictionary (a => a.AlbumPath, a => a);
 
             // open progress bar
             ProgressBar progress = Log.OpenProgressBar (identifier: "PictureShare:" + RootDirectory, description: "Indexing media files...");
@@ -163,7 +163,7 @@ namespace Shell.Pictures
 
                 // create album, if necessery
                 string albumPath = PictureShareUtilities.GetAlbumPath (fullPath: fullPath, share: this);
-                Album album = albums.TryCreateEntry (key: albumPath, defaultValue: () => new Album (albumPath: albumPath), onValueCreated: a => Albums.Add (a));
+                Album album = albumInternalDict.TryCreateEntry (key: albumPath, defaultValue: () => new Album (albumPath: albumPath), onValueCreated: a => Albums.Add (a));
 
                 string relativePath = PictureShareUtilities.GetRelativePath (fullPath: fullPath, share: this);
 
@@ -180,7 +180,7 @@ namespace Shell.Pictures
                         cached.Index ();
 
                         // put albums into global hashset
-                        Albums = albums.Values.ToHashSet ();
+                        Albums = albumInternalDict.Values.ToHashSet ();
                         if (i % 100 == 0 || i >= max - 5) {
                             Serialize (verbose: false);
                         }
@@ -195,7 +195,7 @@ namespace Shell.Pictures
                     album.AddFile (file);
 
                     // put albums into global hashset
-                    Albums = albums.Values.ToHashSet ();
+                    Albums = albumInternalDict.Values.ToHashSet ();
                     if (i % 50 == 0 || i >= max - 5) {
                         Serialize (verbose: false);
                     }
@@ -212,7 +212,33 @@ namespace Shell.Pictures
             progress.Finish ();
 
             // put albums into global hashset
-            Albums = albums.Values.ToHashSet ();
+            Albums = albumInternalDict.Values.ToHashSet ();
+
+            // serialize
+            Serialize (verbose: false);
+        }
+
+        public void Clean ()
+        {
+            // clean up album list
+            Log.Message ("Clean up index...");
+            Log.Indent++;
+            // iterate over a copy to be able to delete stuff
+            foreach (Album album in Albums) {
+                // iterate over a copy to be able to delete stuff
+                foreach (MediaFile file in album.Files) {
+                    if (!File.Exists (Path.Combine (RootDirectory, album.AlbumPath, file.Name))) {
+                        Log.Message ("File does not exist: ", file.RelativePath);
+                        file.IsDeleted = true;
+                    }
+                }
+                if (!Directory.Exists (Path.Combine (RootDirectory, album.AlbumPath))) {
+                    Log.Message ("Album does not exist: ", album.AlbumPath);
+                    album.IsDeleted = true;
+                }
+            }
+            Serialize (verbose: false);
+            Log.Indent--;
         }
 
         public void Serialize (bool verbose)
@@ -227,15 +253,24 @@ namespace Shell.Pictures
             }
 
             Commons.PendingOperations++;
-            foreach (Album album in Albums) {
+            foreach (Album album in Albums.ToArray()) {
                 foreach (MediaFile file in album.Files.ToArray()) {
                     try {
-                        serializedAlbums [section: album.AlbumPath, option: file.Name, defaultValue: ""] = file.Medium.Hash.Hash;
+                        if (file.IsDeleted) {
+                            serializedAlbums.RemoveValue (section: album.AlbumPath, key: file.Name);
+                            album.RemoveFile (file);
+                        } else {
+                            serializedAlbums [section: album.AlbumPath, option: file.Name, defaultValue: ""] = file.Medium.Hash.Hash;
+                        }
                     } catch (Exception ex) {
                         Log.Debug (file.Medium);
                         Log.Error (ex);
                         album.RemoveFile (file);
                     }
+                }
+                if (album.IsDeleted) {
+                    serializedAlbums.RemoveSection (section: album.AlbumPath);
+                    Albums.Remove (album);
                 }
             }
 

@@ -20,6 +20,10 @@ namespace Shell.GoogleSync.Photos
         public AlbumCollection (GoogleAccount account)
             : base (account)
         {
+        }
+
+        protected override void UpdateAuth ()
+        {
             service = new PicasaService (requestFactory.ApplicationName);
             service.RequestFactory = requestFactory;
         }
@@ -67,15 +71,26 @@ namespace Shell.GoogleSync.Photos
             List<WebPhoto> albumList = new List<WebPhoto> ();
 
             CatchErrors (() => {
-                PhotoQuery query = new PhotoQuery (PicasaQuery.CreatePicasaUri (account.Id, album.Id));
-                PicasaFeed feed = service.Query (query);
+                int startIndex = 0;
+                int numResults = 0;
+                do {
+                    startIndex += numResults;
+                    numResults = 0;
 
-                foreach (PicasaEntry entry in feed.Entries) {
-                    Picasa.Photo internalPhoto = new Picasa.Photo ();
-                    internalPhoto.AtomEntry = entry;
-                    WebPhoto photo = new WebPhoto (albumCollection: this, album: album, internalPhoto: internalPhoto);
-                    albumList.Add (photo);
-                }
+                    PhotoQuery query = new PhotoQuery (PicasaQuery.CreatePicasaUri (account.Id, album.Id));
+                    query.NumberToRetrieve = 1000;
+                    query.StartIndex = startIndex;
+                    PicasaFeed feed = service.Query (query);
+
+                    foreach (PicasaEntry entry in feed.Entries) {
+                        Picasa.Photo internalPhoto = new Picasa.Photo ();
+                        internalPhoto.AtomEntry = entry;
+                        WebPhoto photo = new WebPhoto (albumCollection: this, album: album, internalPhoto: internalPhoto);
+                        albumList.Add (photo);
+                        numResults++;
+                    }
+                    Log.Debug ("startIndex=", startIndex, ", numResults=", numResults);
+                } while (numResults > 999);
             });
 
             return albumList.ToArray ();
@@ -89,7 +104,7 @@ namespace Shell.GoogleSync.Photos
                 Log.Indent++;
                 foreach (Album localAlbum in share.Albums) {
                     if (PhotoSyncUtilities.IsIncludedInSync (localAlbum)) {
-                        Log.Message (" - ", PhotoSyncUtilities.ToSyncedAlbumName (localAlbum));
+                        Log.Message ("- ", PhotoSyncUtilities.ToSyncedAlbumName (localAlbum));
                     }
                 }
                 Log.Indent--;
@@ -137,7 +152,15 @@ namespace Shell.GoogleSync.Photos
             foreach (WebAlbum album in GetAlbums()) {
                 Log.Message ("- ", album.Title);
                 if (PhotoSyncUtilities.IsSyncedAlbum (album)) {
-                    webAlbums [album] = GetPhotos (album);
+                    WebPhoto[] photos = GetPhotos (album);
+                    webAlbums [album] = photos;
+
+                    // if the album doesn't contain any photos and doesn't exist locally, delete it!
+                    if (photos.Length == 0 && !share.Albums.Any (a => album.Title == PhotoSyncUtilities.ToSyncedAlbumName (a))) {
+                        Log.Indent++;
+                        album.Delete ();
+                        Log.Indent--;
+                    }
                 }
             }
             Log.Indent--;

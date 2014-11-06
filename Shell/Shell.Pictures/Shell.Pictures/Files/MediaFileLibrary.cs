@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Shell.Common.Tasks;
 using Shell.Pictures.Content;
 
@@ -37,11 +38,15 @@ namespace Shell.Pictures.Files
         private Dictionary<string, string> mimeTypeToExtension = new Dictionary<string, string> ();
         private Dictionary<string, string> extensionToMimeType = new Dictionary<string, string> ();
 
-        private void createMimeTypeDictionary (Dictionary<string, string> _mimeTypeToExtension)
+        private void createMimeTypeDictionary (Dictionary<string[], string[]> _mimeTypesToExtensions)
         {
-            foreach (var entry in _mimeTypeToExtension) {
-                mimeTypeToExtension [entry.Key] = entry.Value;
-                extensionToMimeType [entry.Value] = entry.Key;
+            foreach (var entry in _mimeTypesToExtensions) {
+                foreach (string mimeType in entry.Key) {
+                    mimeTypeToExtension [mimeType] = entry.Value.First ();
+                }
+                foreach (string extension in entry.Value) {
+                    extensionToMimeType [extension] = entry.Key.First ();
+                }
             }
         }
 

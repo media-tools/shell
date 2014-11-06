@@ -13,9 +13,13 @@ namespace Shell.Pictures
         {
             Name = "Pictures";
             ConfigName = "Pictures";
-            Description = new [] { "Create an index of all pictures", "Find all picture directories" };
+            Description = new [] {
+                "Update the picture index of all shares",
+                "Update the picture index of all shares, and delete non-existant entries",
+                "Find all picture shares"
+            };
             Options = new [] { "pictures" };
-            ParameterSyntax = new [] { "index", "find-shares" };
+            ParameterSyntax = new [] { "index", "clean", "find-shares" };
         }
 
         protected override void InternalRun (string[] args)
@@ -24,6 +28,9 @@ namespace Shell.Pictures
                 switch (args [0].ToLower ()) {
                 case "index":
                     index ();
+                    break;
+                case "clean":
+                    clean ();
                     break;
                 case "find-shares":
                     findShares ();
@@ -41,9 +48,19 @@ namespace Shell.Pictures
         {
             PictureShareManager shares = new PictureShareManager (rootDirectory: "/", filesystems: fs);
             shares.Initialize (cached: true);
-            shares.Print ();
             shares.Deserialize ();
+            shares.Print ();
             shares.Index ();
+            shares.Serialize ();
+        }
+
+        void clean ()
+        {
+            PictureShareManager shares = new PictureShareManager (rootDirectory: "/", filesystems: fs);
+            shares.Initialize (cached: true);
+            shares.Deserialize ();
+            shares.Print ();
+            shares.Clean ();
             shares.Serialize ();
         }
 

@@ -75,6 +75,9 @@ namespace Shell.Common.IO
             // print it
             int left = Console.CursorLeft;
             string line = string.Format ("{0} {1:P2} {2}{3}", Description, progress, currentDescription, etaString);
+            if (line.Length > MAX_WIDTH) {
+                line = line.Substring (0, MAX_WIDTH);
+            }
             Console.Write (line + String.Concat (Enumerable.Repeat (" ", Math.Max (0, MAX_WIDTH - line.Length))));
             Console.CursorLeft = left;
             Console.Out.Flush ();

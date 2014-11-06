@@ -25,6 +25,11 @@ namespace Shell.GoogleSync.Core
 
             NetworkHelper.DisableCertificateChecks ();
 
+            UpdateAuthInternal ();
+        }
+
+        private void UpdateAuthInternal ()
+        {
             // get the OAuth2 parameters
             OAuth2Parameters parameters = account.GetOAuth2Parameters ();
 
@@ -33,7 +38,13 @@ namespace Shell.GoogleSync.Core
 
             // for service-based libraries
             requestFactory = new GOAuth2RequestFactory ("apps", GoogleApp.ApplicationName, parameters);
+            requestFactory.MethodOverride = true;
+
+            // call the method implemented in the derived class
+            UpdateAuth ();
         }
+
+        protected abstract void UpdateAuth ();
 
         // use this contuctor only for accessing the file system variables !
         public GDataLibrary ()
@@ -47,10 +58,19 @@ namespace Shell.GoogleSync.Core
                 todo ();
             } catch (GDataRequestException ex) {
                 if (ex.InnerException.Message.Contains ("wrong scope")) {
+                    Log.Error ("GDataRequestException: ", ex.ResponseString);
                     account.Reauthenticate ();
                     todo ();
                 } else {
                     Log.Error ("GDataRequestException: ", ex.ResponseString);
+                    Log.Error (ex);
+                    if (ex.ResponseString.Contains ("Token invalid")) {
+                        Log.Debug ("Refresh account authorization:");
+                        Log.Indent++;
+                        account.Refresh ();
+                        UpdateAuthInternal ();
+                        Log.Indent--;
+                    }
                     // Log.Error (ex);
                 }
             }

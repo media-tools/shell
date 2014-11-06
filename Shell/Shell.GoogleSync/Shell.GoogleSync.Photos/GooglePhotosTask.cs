@@ -92,7 +92,6 @@ namespace Shell.GoogleSync.Photos
         {
             PictureShareManager shares = new PictureShareManager (rootDirectory: "/", filesystems: new PictureDummyLibrary ().FileSystems);
             shares.Initialize (cached: true);
-            shares.Print ();
             shares.Deserialize ();
 
             GoogleAccount[] googleAccounts = GoogleAccount.List ().ToArray ();

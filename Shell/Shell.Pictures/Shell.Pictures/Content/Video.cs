@@ -24,16 +24,16 @@ namespace Shell.Pictures.Content
             ".wmv"
         }.ToHashSet ();
 
-        public static Dictionary<string,string> MIME_TYPES = new Dictionary<string,string> () {
-            { "video/mp4", ".mp4" },
-            { "video/x-flv", ".flv" },
-            { "video/x-msvideo", ".avi" },
-            { "video/x-matroska", ".mkv" },
-            { "video/webm", ".webm" },
-            { "video/mpeg", ".mpg" },
-            { "video/ogg", ".ogv" },
-            { "video/x-ms-wmv", ".wmv" },
-            { "video/3gpp", ".3gp" }
+        public static Dictionary<string[],string[]> MIME_TYPES = new Dictionary<string[],string[]> () {
+            { new [] { "video/mp4" }, new [] { ".mp4" } },
+            { new [] { "video/x-flv" }, new [] { ".flv" } },
+            { new [] { "video/x-msvideo" }, new [] { ".avi" } },
+            { new [] { "video/x-matroska" }, new [] { ".mkv" } },
+            { new [] { "video/webm" }, new [] { ".webm" } },
+            { new [] { "video/mpeg" }, new [] { ".mpg" } },
+            { new [] { "video/ogg" }, new [] { ".ogv" } },
+            { new [] { "video/x-ms-wmv" }, new [] { ".wmv" } },
+            { new [] { "video/3gpp" }, new [] { ".3gp" } }
         };
 
         public static readonly string TYPE = "video";

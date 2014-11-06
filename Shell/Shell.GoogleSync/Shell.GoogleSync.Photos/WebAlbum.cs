@@ -43,6 +43,14 @@ namespace Shell.GoogleSync.Photos
                 p => p.Dimensions.Width + "x" + p.Dimensions.Height
             ));
         }
+
+        public void Delete ()
+        {
+            Log.Message ("Delete album.");
+            AlbumCollection.CatchErrors (() => {
+                InternalAlbum.AtomEntry.Delete ();
+            });
+        }
     }
 }
 

@@ -10,14 +10,25 @@ namespace Shell.Pictures.Content
 {
     public class Document : Medium
     {
-        public static HashSet<string> FILE_ENDINGS = new []{ ".pdf", ".txt", ".rtf", ".eml", ".nfo" }.ToHashSet ();
+        public static HashSet<string> FILE_ENDINGS = new [] {
+            ".pdf",
+            ".txt",
+            ".rtf",
+            ".eml",
+            ".nfo",
+            ".html",
+            ".htm",
+            ".chm"
+        }.ToHashSet ();
 
-        public static Dictionary<string,string> MIME_TYPES = new Dictionary<string,string> () {
-            { "application/pdf", ".pdf" },
-            { "application/rtf", ".rtf" },
-            { "text/rtf", ".rtf" },
-            { "text/plain", ".txt" },
-            { "message/rfc822", ".eml" }
+        public static Dictionary<string[],string[]> MIME_TYPES = new Dictionary<string[],string[]> () {
+            { new [] { "application/pdf" }, new [] { ".pdf" } },
+            { new [] { "application/rtf", "text/rtf" }, new [] { ".rtf" } },
+            { new [] { "text/plain" }, new [] { ".txt" } },
+            { new [] { "text/x-markdown" }, new [] { ".md" } },
+            { new [] { "message/rfc822" }, new [] { ".eml" } },
+            { new [] { "text/html" }, new [] { ".html", ".htm" } },
+            { new [] { "application/x-chm" }, new [] { ".chm" } }
         };
 
         public static readonly string TYPE = "document";

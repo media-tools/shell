@@ -65,6 +65,11 @@ namespace Shell.Pictures.Content
                     fs.Runtime.WriteAllText (path: "run4.sh", contents: script);
                     fs.Runtime.ExecuteScript (path: "run4.sh", receiveOutput: receiveOutput, ignoreEmptyLines: true);
 
+                    if (!success && File.Exists (newFullPath) && !File.Exists (oldFullPath)) {
+                        Log.Error ("New video files exists and the old one doesn't; let's assume it worked!");
+                        success = true;
+                    }
+
                     if (success) {
                         outputPath = newFullPath;
                     } else {

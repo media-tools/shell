@@ -22,13 +22,14 @@ namespace Shell.Pictures.Content
             ".tif"
         }.ToHashSet ();
 
-        public static Dictionary<string,string> MIME_TYPES = new Dictionary<string,string> () {
-            { "image/jpeg", ".jpg" },
-            { "image/png", ".png" },
-            { "image/gif", ".gif" },
-            { "image/svg+xml", ".svg" },
-            { "image/tiff", ".tif" },
-            { "image/x-ms-bmp", ".bmp" }
+        public static Dictionary<string[],string[]> MIME_TYPES = new Dictionary<string[],string[]> () {
+            { new [] { "image/jpeg" }, new [] { ".jpg", ".jpeg" } },
+            { new [] { "image/png" }, new [] { ".png" } },
+            { new [] { "image/gif" }, new [] { ".gif" } },
+            { new [] { "image/svg+xml" }, new [] { ".svg" } },
+            { new [] { "image/tiff" }, new [] { ".tif", ".tiff" } },
+            { new [] { "image/x-ms-bmp" }, new [] { ".bmp" } },
+            { new [] { "image/x-icon", "image/vnd.microsoft.icon" }, new [] { ".ico" } }
         };
 
         public static readonly string TYPE = "picture";

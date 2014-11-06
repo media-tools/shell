@@ -18,7 +18,6 @@ namespace Shell.GoogleSync.Contacts
 
         private static ConfigFile syncConfig { get { return _syncConfig = _syncConfig ?? new Contacts ().fs.Config.OpenConfigFile ("sync.ini"); } }
 
-
         public static HashSet<string> IncludeNames {
             get {
                 return syncConfig ["General", "IncludeNames", ""].SplitValues ().Where (v => v.Length > 1).ToHashSet ();
@@ -39,6 +38,10 @@ namespace Shell.GoogleSync.Contacts
 
         public Contacts (GoogleAccount account)
             : base (account)
+        {
+        }
+
+        protected override void UpdateAuth ()
         {
         }
 

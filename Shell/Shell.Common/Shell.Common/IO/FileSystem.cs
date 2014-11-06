@@ -62,7 +62,7 @@ namespace Shell.Common.IO
         public void ClearTempFiles ()
         {
             try {
-                Directory.Delete (RootDirectory + SystemInfo.PathSeparator + "tmp");
+                Directory.Delete (path: RootDirectory + SystemInfo.PathSeparator + "tmp", recursive: true);
             } catch (Exception) {
             }
         }

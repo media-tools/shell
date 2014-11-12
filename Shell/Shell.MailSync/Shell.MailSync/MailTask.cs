@@ -15,6 +15,7 @@ namespace Shell.MailSync
                 "Show status of all e-mail folders"
             };
             Options = new [] { "mail" };
+            ConfigName = "MailSync";
             ParameterSyntax = new [] { "sync", "status" };
         }
 

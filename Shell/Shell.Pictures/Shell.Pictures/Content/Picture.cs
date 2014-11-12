@@ -6,6 +6,8 @@ using Newtonsoft.Json.Linq;
 using Shell.Common.IO;
 using Shell.Common.Util;
 using Shell.Pictures.Files;
+using System.Drawing.Imaging;
+using System.Drawing;
 
 namespace Shell.Pictures.Content
 {
@@ -80,6 +82,38 @@ namespace Shell.Pictures.Content
             get {
                 return ExifTags.Count > 0 || IsDateless;
             }
+        }
+
+        public static void RunIndexHooks (ref string fullPath)
+        {
+            // is the file ending in BMP format?
+            if (Path.GetExtension (fullPath) == ".bmp") {
+                Picture.ConvertToJpeg (fullPath: ref fullPath);
+            }
+        }
+
+        public static bool ConvertToJpeg (ref string fullPath)
+        {
+            string oldPath = fullPath;
+            string newPath = Path.GetDirectoryName (oldPath) + SystemInfo.PathSeparator + Path.GetFileNameWithoutExtension (oldPath) + ".jpg";
+
+            try {
+                Log.Message ();
+                Log.Message ("Convert picture to JPEG: ", Path.GetFileName (oldPath), " => ", Path.GetFileName (newPath));
+                Image original = Image.FromFile (oldPath);
+                EncoderParameters encoderParams = new EncoderParameters (1);
+                encoderParams.Param [0] = new EncoderParameter (System.Drawing.Imaging.Encoder.Quality, 100L);
+                original.Save (filename: newPath, encoder: PictureLibrary.GetEncoder (ImageFormat.Jpeg), encoderParams: encoderParams);
+                lib.CopyExifTags (sourcePath: oldPath, destPath: newPath);
+                if (File.Exists (newPath) && File.Exists (oldPath)) {
+                    File.Delete (oldPath);
+                    fullPath = newPath;
+                }
+                return true;
+            } catch (Exception ex) {
+                Log.Error (ex);
+            }
+            return false;
         }
 
         public override Dictionary<string, string> Serialize ()

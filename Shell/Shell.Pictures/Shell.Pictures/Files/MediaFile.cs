@@ -91,12 +91,73 @@ namespace Shell.Pictures.Files
             }
         }
 
+        public static void RunIndexHooks (ref string fullPath)
+        {
+            // does the file have no proper filename?
+            if (MediaFile.HasNoFileEnding (fullPath: fullPath)) {
+                string fileEnding;
+                // determine the best file ending
+                if (MediaFile.DetermineFileEnding (fullPath: fullPath, fileEnding: out fileEnding)) {
+                    // rename the file
+                    MediaFile.AddFileEnding (fullPath: ref fullPath, fileEnding: fileEnding);
+                }
+            }
+
+            // is the file ending not completely lower case?
+            MediaFile.ChangeFileEndingToLowerCase (fullPath: ref fullPath);
+
+            // does the file name contain characters that are not allowed in NTFS?
+            MediaFile.RenameFilePlatformIndependent (fullPath: ref fullPath);
+        }
+
+        public static bool RenameFilePlatformIndependent (ref string fullPath)
+        {
+            if (Path.GetFileName (fullPath).Contains (":")) {
+                string oldPath = fullPath;
+                string newPath = Path.GetDirectoryName (oldPath) + SystemInfo.PathSeparator + Path.GetFileName (oldPath).Replace (":", "_");
+                return RenamePath (fullPath: ref fullPath, oldPath: oldPath, newPath: newPath);
+            }
+            if (Path.GetFileName (fullPath).StartsWith ("_")) {
+                string oldPath = fullPath;
+                string newPath = Path.GetDirectoryName (oldPath) + SystemInfo.PathSeparator + Path.GetFileName (oldPath).Trim ('_');
+                return RenamePath (fullPath: ref fullPath, oldPath: oldPath, newPath: newPath);
+            }
+            return false;
+        }
+
+        public static bool ChangeFileEndingToLowerCase (ref string fullPath)
+        {
+            if (Path.GetFileNameWithoutExtension (fullPath).Length >= 1 && Path.GetExtension (fullPath) != Path.GetExtension (fullPath).ToLower ()) {
+                string oldPath = fullPath;
+                string newPath = Path.GetDirectoryName (oldPath) + SystemInfo.PathSeparator + Path.GetFileNameWithoutExtension (oldPath) + Path.GetExtension (oldPath).ToLower ();
+                return RenamePath (fullPath: ref fullPath, oldPath: oldPath, newPath: newPath);
+            }
+            return false;
+        }
+
+        public static bool RenamePath (ref string fullPath, string oldPath, string newPath)
+        {
+            try {
+                Log.Message ();
+                Log.Message ("Rename file: ", Path.GetFileName (oldPath), " => ", Path.GetFileName (newPath));
+                if (File.Exists (newPath) && File.Exists (oldPath)) {
+                    File.Delete (newPath);
+                }
+                File.Move (sourceFileName: oldPath, destFileName: newPath);
+                fullPath = newPath;
+                return true;
+            } catch (IOException ex) {
+                Log.Error (ex);
+            }
+            return false;
+        }
+
         public static bool IsValidFile (string fullPath)
         {
             return Picture.IsValidFile (fullPath: fullPath) || Audio.IsValidFile (fullPath: fullPath) || Video.IsValidFile (fullPath: fullPath) || Document.IsValidFile (fullPath: fullPath);
         }
 
-        public static bool HasNoEnding (string fullPath)
+        public static bool HasNoFileEnding (string fullPath)
         {
             bool hasNoEnding;
             if (MediaFile.IsValidFile (fullPath: fullPath)) {

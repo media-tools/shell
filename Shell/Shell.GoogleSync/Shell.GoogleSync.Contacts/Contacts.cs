@@ -9,6 +9,7 @@ using Shell.Common.IO;
 using Shell.Common.Tasks;
 using Shell.Common.Util;
 using Shell.GoogleSync.Core;
+using System.IO;
 
 namespace Shell.GoogleSync.Contacts
 {
@@ -99,10 +100,10 @@ namespace Shell.GoogleSync.Contacts
                     Contact slaveContact;
                     if (otherContacts.FindContact (checkFor: masterContact, result: out slaveContact)) {
                         Log.Message ("Update contact: ", slaveContact);
-                        otherContacts.UpdateContact (slave: slaveContact, master: masterContact);
+                        otherContacts.UpdateContact (slave: slaveContact, master: masterContact, masterList: this);
                     } else {
                         Log.Message ("Create contact.");
-                        otherContacts.CreateContact (template: masterContact);
+                        otherContacts.CreateContact (template: masterContact, templateList: this);
                     }
 
                     Log.Indent--;
@@ -111,22 +112,24 @@ namespace Shell.GoogleSync.Contacts
             Log.Indent--;
         }
 
-        public void UpdateContact (Contact slave, Contact master)
+        public void UpdateContact (Contact slave, Contact master, Contacts masterList)
         {
             CatchErrors (() => {
-                MergeContact (slave: slave, master: master);
+                MergeContact (slave: slave, master: master, masterList: masterList);
 
                 ContactsRequest cr = new ContactsRequest (settings);
                 cr.Update (slave);
+
+                MergePhoto (slave: slave, master: master, masterList: masterList);
             });
         }
 
-        public void CreateContact (Contact template)
+        public void CreateContact (Contact template, Contacts templateList)
         {
             CatchErrors (() => {
                 Contact newContact = new Contact ();
 
-                MergeContact (slave: newContact, master: template);
+                MergeContact (slave: newContact, master: template, masterList: templateList);
 
                 Uri feedUri = new Uri (ContactsQuery.CreateContactsUri ("default"));
                 ContactsRequest cr = new ContactsRequest (settings);
@@ -135,7 +138,8 @@ namespace Shell.GoogleSync.Contacts
             });
         }
 
-        void MergeContact (Contact slave, Contact master)
+
+        void MergeContact (Contact slave, Contact master, Contacts masterList)
         {
             slave.Name = master.Name.Format ();
             slave.ContactEntry.Birthday = master.ContactEntry.Birthday;
@@ -159,6 +163,72 @@ namespace Shell.GoogleSync.Contacts
             Log.Debug ("IMs:", string.Join (", ", slave.IMs.Select (i => i.Value)));
             Log.Debug ("Phonenumbers:", string.Join (", ", slave.Phonenumbers.Select (p => p.Value + " (" + (p.Rel != null ? p.Rel : p.Label) + ")")));
             Log.Debug ("PostalAddresses:", string.Join ("; ", slave.PostalAddresses.Select (a => a.Format ())));
+
+        }
+
+
+        void MergePhoto (Contact slave, Contact master, Contacts masterList)
+        {
+            if (masterList != null) {
+                byte[] masterPhoto = masterList.DownloadPhoto (master);
+                byte[] slavePhoto = DownloadPhoto (slave);
+                Log.Debug ("master photo: ", (masterPhoto != null) ? masterPhoto.Length : -1);
+                Log.Debug ("slave photo: ", (slavePhoto != null) ? slavePhoto.Length : -1);
+                if (masterPhoto != null) {
+                    Log.Message ("Copy master photo to slave.");
+                    UpdateContactPhoto (slave, masterPhoto);
+                }
+                if (masterPhoto == null && slavePhoto != null) {
+                    Log.Message ("Reverse copy slave photo to master.");
+                    masterList.UpdateContactPhoto (master, slavePhoto);
+                }
+            }
+        }
+
+        public byte[] DownloadPhoto (Contact contact)
+        {
+            try {
+                ContactsRequest cr = new ContactsRequest (settings);
+                Stream photoStream = cr.Service.Query (contact.ContactEntry.PhotoUri);
+                if (photoStream != null) {
+                    using (var memoryStream = new MemoryStream ()) {
+                        photoStream.CopyTo (memoryStream);
+                        return memoryStream.ToArray ();
+                    }
+                } else {
+                    return null;
+                }
+            } catch (GDataRequestException ex) {
+                return null;
+            }
+        }
+
+        public void UpdateContactPhoto (Contact contact, byte[] photo)
+        {
+            ContactsRequest cr = new ContactsRequest (settings);
+            using (var photoStream = new MemoryStream (photo)) {
+                try {
+                    FileStream fs = File.Create ("/tmp/test.jpg");
+                    fs.Write (photo, 0, photo.Length);
+                    fs.Close ();
+                    //cr.Service.Update (contact.PhotoUri, photoStream, "image/jpeg", "");
+                    Stream res = cr.Service.StreamSend (contact.PhotoUri, photoStream, GDataRequestType.Update, "image/jpeg", null, "*");
+                    return;
+                    GDataReturnStream r = res as GDataReturnStream;
+                    if (r != null) {
+                        contact.PhotoEtag = r.Etag;
+                    }
+                    res.Close ();
+                    //cr.SetPhoto (contact, photoStream);
+                } catch (GDataVersionConflictException ex) {
+                    // Etags mismatch: handle the exception.
+                    Log.Error (ex);
+                } catch (GDataRequestException ex) {
+                    // Etags mismatch: handle the exception.
+                    Log.Error (ex.ResponseString);
+                }
+            }
+            //Environment.Exit (0);
         }
 
         public bool HasContact (Contact checkFor)

@@ -4,6 +4,7 @@ using System.IO;
 using Shell.Common;
 using Shell.Common.Tasks;
 using Shell.Common.IO;
+using System.Linq;
 
 namespace Shell.FileSync
 {
@@ -24,6 +25,13 @@ namespace Shell.FileSync
 
         protected override void InternalRun (string[] args)
         {
+            if (args.Contains ("--deep")) {
+                DataFile.DEEP_COMPARE = true;
+                args = args.Where (arg => arg != "--deep").ToArray ();
+            } else {
+                DataFile.DEEP_COMPARE = false;
+            }
+
             if (args.Length >= 1) {
                 switch (args [0].ToLower ()) {
                 case "sync":

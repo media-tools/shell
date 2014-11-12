@@ -8,6 +8,7 @@ using Shell.Common.IO;
 using Shell.Common.Tasks;
 using Shell.Common.Util;
 using Shell.Pictures.Files;
+using System.Drawing.Imaging;
 
 namespace Shell.Pictures.Content
 {
@@ -49,7 +50,8 @@ namespace Shell.Pictures.Content
 
         public void CopyExifTags (string sourcePath, string destPath)
         {
-            string script = "exiftool -TagsFromFile " + sourcePath.SingleQuoteShell () + " " + destPath.SingleQuoteShell ();
+            string script = "exiftool -TagsFromFile " + sourcePath.SingleQuoteShell () + " " + destPath.SingleQuoteShell ()
+                            + " && rm -f " + destPath.SingleQuoteShell () + "_original ";
 
             fs.Runtime.WriteAllText (path: "run3.sh", contents: script);
             fs.Runtime.ExecuteScript (path: "run3.sh", ignoreEmptyLines: true, verbose: false);
@@ -67,18 +69,24 @@ namespace Shell.Pictures.Content
             new FormatCombo { Prefix = "", Format = "yyyyMMdd HHmmss" },
             new FormatCombo { Prefix = "", Format = "yyyyMMdd" },
             new FormatCombo { Prefix = "IMG_", Format = "yyyyMMdd_HHmmss" },
+            new FormatCombo { Prefix = "IMG_", Format = "ddMMyyyy_HHmmss" },
             new FormatCombo { Prefix = "IMG-", Format = "yyyyMMdd-HHmmss" },
             new FormatCombo { Prefix = "IMG-", Format = "yyyyMMdd" },
             new FormatCombo { Prefix = "Screenshot_", Format = "yyyy-MM-dd-HH-mm-ss" },
             new FormatCombo { Prefix = "Screenshot_", Format = "yyyy-MM-dd HH.mm.ss" },
             new FormatCombo { Prefix = "Screenshot ", Format = "yyyy-MM-dd HH.mm.ss" },
-            new FormatCombo { Prefix = "Screenshot - ", Format = "dd.MM.yyyy HH_mm_ss" },
+            new FormatCombo { Prefix = "Screenshot - ", Format = "dd.MM.yyyy - HH_mm_ss" },
+            new FormatCombo { Prefix = "Bildschirmfoto vom ", Format = "yyyy-MM-dd HH_mm_ss" },
+            new FormatCombo { Prefix = "Bildschirmfoto - ", Format = "dd.MM.yyyy - HH_mm_ss" },
             new FormatCombo { Prefix = "", Format = "yyyy-MM-dd HH-mm-ss" },
             new FormatCombo { Prefix = "", Format = "yyyy-MM-dd HH.mm.ss" },
             new FormatCombo { Prefix = "", Format = "yyyy-MM-dd HHmmss" },
             new FormatCombo { Prefix = "", Format = "yyyy-MM-dd-HH-mm-ss" },
             new FormatCombo { Prefix = "", Format = "yyyy-MM-dd-HH.mm.ss" },
             new FormatCombo { Prefix = "", Format = "yyyy-MM-dd-HHmmss" },
+            new FormatCombo { Prefix = "", Format = "yyyy-MM-dd_HH-mm-ss" },
+            new FormatCombo { Prefix = "", Format = "yyyy-MM-dd_HH.mm.ss" },
+            new FormatCombo { Prefix = "", Format = "yyyy-MM-dd_HHmmss" },
             new FormatCombo { Prefix = "", Format = "yyyy-MM-dd" },
         };
 
@@ -104,6 +112,17 @@ namespace Shell.Pictures.Content
             }
             date = new DateTime ();
             return false;
+        }
+
+        public static ImageCodecInfo GetEncoder (ImageFormat format)
+        {
+            ImageCodecInfo[] codecs = ImageCodecInfo.GetImageDecoders ();
+            foreach (ImageCodecInfo codec in codecs) {
+                if (codec.FormatID == format.Guid) {
+                    return codec;
+                }
+            }
+            return null;
         }
     }
 

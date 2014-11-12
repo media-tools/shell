@@ -69,9 +69,11 @@ namespace Shell.GoogleSync.Photos
         public WebPhoto[] GetPhotos (WebAlbum album)
         {
             List<WebPhoto> albumList = new List<WebPhoto> ();
+            HashSet<string> uniqueFilenames = new HashSet<string> ();
 
+            Log.Indent++;
             CatchErrors (() => {
-                int startIndex = 0;
+                int startIndex = 1; // starts with 1
                 int numResults = 0;
                 do {
                     startIndex += numResults;
@@ -85,13 +87,21 @@ namespace Shell.GoogleSync.Photos
                     foreach (PicasaEntry entry in feed.Entries) {
                         Picasa.Photo internalPhoto = new Picasa.Photo ();
                         internalPhoto.AtomEntry = entry;
-                        WebPhoto photo = new WebPhoto (albumCollection: this, album: album, internalPhoto: internalPhoto);
-                        albumList.Add (photo);
+                        string uniqueFilename = internalPhoto.Title;
+                        if (uniqueFilenames.Contains (uniqueFilename)) {
+                            Log.Message ("Delete duplicate: ", uniqueFilename);
+                            CatchErrors (() => entry.Delete ());
+                        } else {
+                            WebPhoto photo = new WebPhoto (albumCollection: this, album: album, internalPhoto: internalPhoto);
+                            albumList.Add (photo);
+                            uniqueFilenames.Add (uniqueFilename);
+                        }
                         numResults++;
                     }
                     Log.Debug ("startIndex=", startIndex, ", numResults=", numResults);
                 } while (numResults > 999);
             });
+            Log.Indent--;
 
             return albumList.ToArray ();
         }
@@ -110,6 +120,7 @@ namespace Shell.GoogleSync.Photos
                 Log.Indent--;
 
                 WebAlbum[] webAlbums = GetAlbums ();
+
                 // create missing web albums
                 Log.Message ("Create non-existant web albums:");
                 Log.Indent++;
@@ -167,7 +178,7 @@ namespace Shell.GoogleSync.Photos
             return webAlbums;
         }
 
-        private AlbumSyncStatus[] CompareLocalAndWebAlbums (PictureShare share, Dictionary<WebAlbum, WebPhoto[]> webAlbums)
+        private AlbumSyncStatus[] CompareLocalAndWebAlbums (PictureShare share, Dictionary<WebAlbum, WebPhoto[]> webAlbums, Type[] validTypes)
         {
             // compare local and web albums...
             Log.Message ("Compare local and web albums:");
@@ -182,7 +193,7 @@ namespace Shell.GoogleSync.Photos
                         WebAlbum webAlbum = webAlbums.Keys.First (wa => wa.Title == webAlbumName);
                         WebPhoto[] webPhotos = webAlbums [webAlbum];
 
-                        AlbumSyncStatus syncStatus = new AlbumSyncStatus (localAlbum: localAlbum, webAlbum: webAlbum, webPhotos: webPhotos);
+                        AlbumSyncStatus syncStatus = new AlbumSyncStatus (localAlbum: localAlbum, webAlbum: webAlbum, webPhotos: webPhotos, validTypes: validTypes);
                         syncStatusList.Add (syncStatus);
                     }
                 }
@@ -209,7 +220,7 @@ namespace Shell.GoogleSync.Photos
             Log.Indent--;
         }
 
-        private void UploadDifferences (AlbumSyncStatus[] syncStatusList)
+        private void UploadDifferences (AlbumSyncStatus[] syncStatusList, Type[] validTypes)
         {
             Log.Message ("Upload: ");
             Log.Indent++;
@@ -220,6 +231,7 @@ namespace Shell.GoogleSync.Photos
                     fs.Runtime.ClearTempFiles ();
                     foreach (MediaFile localPhoto in syncStatus.OnlyInLocalAlbum) {
                         try {
+                            string errorMessage;
                             CatchErrors (() => {
                                 string fullPath = localPhoto.FullPath;
                                 string mimeType = libMediaFile.GetMimeTypeByExtension (fullPath: localPhoto.FullPath);
@@ -243,7 +255,12 @@ namespace Shell.GoogleSync.Photos
                                 } else {
                                     Log.Error ("Unknown mime type: ", localPhoto.FullPath);
                                 }
-                            });
+                            }, out errorMessage);
+
+                            // if the photo limit is reached, skip to the next album
+                            if (errorMessage != null && errorMessage.Contains ("Photo limit reached")) {
+                                break;
+                            }
                         } catch (Exception ex) {
                             Log.Error (ex);
                         }
@@ -255,7 +272,7 @@ namespace Shell.GoogleSync.Photos
             Log.Indent--;
         }
 
-        public void UploadShare (PictureShare share)
+        public void UploadShare (PictureShare share, Type[] validTypes)
         {
             // create missing web albums
             CreateMissingWebAlbums (share: share);
@@ -263,14 +280,16 @@ namespace Shell.GoogleSync.Photos
             // list photos in web albums
             Dictionary<WebAlbum, WebPhoto[]> webAlbums = ListWebAlbums (share: share);
 
-            // compare local and web albums...
-            AlbumSyncStatus[] syncStatusList = CompareLocalAndWebAlbums (share: share, webAlbums: webAlbums);
+            foreach (Type validType in validTypes) {
+                // compare local and web albums...
+                AlbumSyncStatus[] syncStatusList = CompareLocalAndWebAlbums (share: share, webAlbums: webAlbums, validTypes: new [] { validType });
 
-            // print the differences between local and web albums
-            PrintSyncStatus (syncStatusList: syncStatusList);
+                // print the differences between local and web albums
+                PrintSyncStatus (syncStatusList: syncStatusList);
 
-            // upload missing photos
-            UploadDifferences (syncStatusList: syncStatusList);
+                // upload missing photos
+                UploadDifferences (syncStatusList: syncStatusList, validTypes: new [] { validType });
+            }
         }
     }
 }

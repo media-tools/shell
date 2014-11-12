@@ -52,7 +52,7 @@ namespace Shell.GoogleSync.Photos
                 if (mimeType == "image/jpeg") {
                     EncoderParameters encoderParams = new EncoderParameters (1);
                     encoderParams.Param [0] = new EncoderParameter (System.Drawing.Imaging.Encoder.Quality, 100L);
-                    resized.Save (filename: destPath, encoder: GetEncoder (ImageFormat.Jpeg), encoderParams: encoderParams);
+                    resized.Save (filename: destPath, encoder: PictureLibrary.GetEncoder (ImageFormat.Jpeg), encoderParams: encoderParams);
                     libPicture.CopyExifTags (sourcePath: sourcePath, destPath: destPath);
                 } else if (mimeType == "image/png") {
                     resized.Save (filename: destPath, format: ImageFormat.Png);
@@ -65,17 +65,6 @@ namespace Shell.GoogleSync.Photos
                 Log.Error (ex);
                 return false;
             }
-        }
-
-        private static ImageCodecInfo GetEncoder (ImageFormat format)
-        {
-            ImageCodecInfo[] codecs = ImageCodecInfo.GetImageDecoders ();
-            foreach (ImageCodecInfo codec in codecs) {
-                if (codec.FormatID == format.Guid) {
-                    return codec;
-                }
-            }
-            return null;
         }
     }
 }

@@ -62,18 +62,22 @@ namespace Shell.FileSync
 
                 DataFile destFile;
                 if (Destination.ContainsFile (search: sourceFile, result: out destFile)) {
-
-                    if (sourceFile.ContentEquals (otherFile: destFile)) {
-                        Changes.Unchanged.Add (sourceFile);
-                    } else {
-                        TimeSpan diff = sourceFile.GetWriteTimeDiff (otherFile: destFile);
-                        if (diff.TotalMilliseconds > 0) {
-                            Changes.Newer.Add (Tuple.Create (sourceFile, diff));
-                        } else if (diff.TotalMilliseconds < 0) {
-                            Changes.Older.Add (Tuple.Create (sourceFile, diff));
+                    try {
+                        if (sourceFile.ContentEquals (otherFile: destFile)) {
+                            Changes.Unchanged.Add (sourceFile);
                         } else {
-                            Changes.Changed.Add (sourceFile);
+                            TimeSpan diff = sourceFile.GetWriteTimeDiff (otherFile: destFile);
+                            if (diff.TotalMilliseconds > 0) {
+                                Changes.Newer.Add (Tuple.Create (sourceFile, diff));
+                            } else if (diff.TotalMilliseconds < 0) {
+                                Changes.Older.Add (Tuple.Create (sourceFile, diff));
+                            } else {
+                                Changes.Changed.Add (sourceFile);
+                            }
                         }
+                    } catch (Exception ex) {
+                        Changes.Error.Add (Tuple.Create (sourceFile, ex));
+                        //Log.Error ("Error while comparing files: ", ex.Message);
                     }
                 } else {
                     Changes.Created.Add (sourceFile);
@@ -84,6 +88,7 @@ namespace Shell.FileSync
                 progressBar.Print (current: current++, min: 0, max: max, currentDescription: destFile.Name, showETA: true, updateETA: true);
 
                 DataFile sourceFile;
+                
                 if (!Source.ContainsFile (search: destFile, result: out sourceFile)) {
                     if (!Destination.IsSource && Destination.IsDeletable) {
                         Changes.Deleted.Add (destFile);
@@ -122,6 +127,11 @@ namespace Shell.FileSync
             }
             foreach (DataFile destFile in Changes.Inexistant) {
                 Log.Message (LogColor.DarkGray, "[inexistant] ", LogColor.Reset, destFile);
+            }
+            foreach (Tuple<DataFile, Exception> tuple in Changes.Error) {
+                DataFile sourceFile = tuple.Item1;
+                Exception ex = tuple.Item2;
+                Log.Message (LogColor.DarkGray, "[error] ", LogColor.Reset, sourceFile, " (", LogColor.Red, ex.Message, LogColor.Reset, ")");
             }
             Log.Indent--;
         }
@@ -199,6 +209,7 @@ namespace Shell.FileSync
             public List<DataFile> Created = new List<DataFile> ();
             public List<DataFile> Deleted = new List<DataFile> ();
             public List<DataFile> Inexistant = new List<DataFile> ();
+            public List<Tuple<DataFile, Exception>> Error = new List<Tuple<DataFile, Exception>> ();
 
             public ChangesList (Tree source, Tree destination)
             {

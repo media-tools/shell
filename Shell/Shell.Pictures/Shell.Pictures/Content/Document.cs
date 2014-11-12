@@ -60,6 +60,10 @@ namespace Shell.Pictures.Content
             }
         }
 
+        public static void RunIndexHooks (ref string fullPath)
+        {
+        }
+
         public override Dictionary<string, string> Serialize ()
         {
             return new Dictionary<string, string> ();

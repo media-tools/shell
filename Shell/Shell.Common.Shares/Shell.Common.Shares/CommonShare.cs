@@ -56,7 +56,7 @@ namespace Shell.Common.Shares
                 IsReadableOverride = ReadPathsInclude.Split (',', ';', '|').Any (p => path.ToLower ().Contains (p.ToLower ()));
                 Log.Debug ("Option 'read' of " + shareType + " is overridden: value=" + IsReadableOverride.Value + ", path=" + path + ", include=" + ReadPathsInclude);
             } else if (ReadPathsExclude.Length != 0) {
-                IsReadableOverride = ReadPathsExclude.Split (',', ';', '|').Any (p => path.ToLower ().Contains (p.ToLower ()));
+                IsReadableOverride = !ReadPathsExclude.Split (',', ';', '|').Any (p => path.ToLower ().Contains (p.ToLower ()));
                 Log.Debug ("Option 'read' of " + shareType + " is overridden: value=" + IsReadableOverride.Value + ", path=" + path + ", exclude=" + ReadPathsExclude);
             }
 
@@ -65,7 +65,7 @@ namespace Shell.Common.Shares
                 IsWriteableOverride = WritePathsInclude.Split (',', ';', '|').Any (p => path.ToLower ().Contains (p.ToLower ()));
                 Log.Debug ("Option 'write' of " + shareType + " is overridden: value=" + IsWriteableOverride.Value + ", path=" + path + ", include=" + WritePathsInclude);
             } else if (WritePathsExclude.Length != 0) {
-                IsWriteableOverride = WritePathsExclude.Split (',', ';', '|').Any (p => path.ToLower ().Contains (p.ToLower ()));
+                IsWriteableOverride = !WritePathsExclude.Split (',', ';', '|').Any (p => path.ToLower ().Contains (p.ToLower ()));
                 Log.Debug ("Option 'write' of " + shareType + " is overridden: value=" + IsWriteableOverride.Value + ", path=" + path + ", exclude=" + WritePathsExclude);
             }
 

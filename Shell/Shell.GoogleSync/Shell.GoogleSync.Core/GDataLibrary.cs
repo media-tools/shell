@@ -54,10 +54,17 @@ namespace Shell.GoogleSync.Core
 
         public void CatchErrors (Action todo)
         {
+            string dummy;
+            CatchErrors (todo: todo, errorMessage: out dummy);
+        }
+
+        public void CatchErrors (Action todo, out string errorMessage)
+        {
             try {
                 todo ();
+                errorMessage = null;
             } catch (GDataRequestException ex) {
-                if (ex.InnerException.Message.Contains ("wrong scope")) {
+                if (ex.InnerException != null && ex.InnerException.Message.Contains ("wrong scope")) {
                     Log.Error ("GDataRequestException: ", ex.ResponseString);
                     account.Reauthenticate ();
                     todo ();
@@ -72,7 +79,13 @@ namespace Shell.GoogleSync.Core
                         Log.Indent--;
                     }
                     // Log.Error (ex);
+                    throw new ArgumentOutOfRangeException ();
                 }
+                errorMessage = ex.ResponseString;
+            } catch (ClientFeedException ex) {
+                Log.Error ("ClientFeedException: ", ex.InnerException);
+                Log.Error (ex);
+                errorMessage = ex.InnerException.Message;
             }
         }
     }

@@ -31,7 +31,7 @@ namespace Shell.FileSync
             if (FileMap == null) {
                 FileMap = new Dictionary<DataFile, DataFile> ();
                 Func<FileInfo, bool> excludeTreeConfig = fileInfo => fileInfo.Name != CommonShare<Tree>.CONFIG_FILENAME;
-                IEnumerable<FileInfo> files = FileSystemLibrary.GetFileList (rootDirectory: RootDirectory, fileFilter: excludeTreeConfig, dirFilter: dir => true);
+                IEnumerable<FileInfo> files = FileSystemLibrary.GetFileList (rootDirectory: RootDirectory, fileFilter: excludeTreeConfig, dirFilter: dir => true, symlinks: false);
                 foreach (FileInfo fileInfo in files) {
                     DataFile file = new DataFile (fileInfo: fileInfo, tree: this);
                     FileMap [file] = file;

@@ -5,6 +5,7 @@ using Shell.Common.IO;
 using Shell.Common.Tasks;
 using Shell.GoogleSync.Core;
 using Shell.Pictures;
+using Shell.Pictures.Content;
 
 namespace Shell.GoogleSync.Photos
 {
@@ -17,12 +18,22 @@ namespace Shell.GoogleSync.Photos
                 "List the albums of all users",
                 "List the photos of a specified album",
                 "Configure google albums",
-                "Synchronize google photos",
+                "Upload local photos and videos to google albums",
+                "Upload local photos to google albums",
+                "Upload local videos to google albums",
                 "Find all picture directories"
             };
             Options = new [] { "google-photos", "g-photos" };
             ConfigName = "Google";
-            ParameterSyntax = new [] { "list-albums", "list-photos", "config", "upload", "find-shares" };
+            ParameterSyntax = new [] {
+                "list-albums",
+                "list-photos",
+                "config",
+                "upload",
+                "upload-photos",
+                "upload-videos",
+                "find-shares"
+            };
         }
 
         protected override void InternalRun (string[] args)
@@ -39,7 +50,13 @@ namespace Shell.GoogleSync.Photos
                     listPhotos ();
                     break;
                 case "upload":
-                    upload ();
+                    upload (typeof(Picture), typeof(Video));
+                    break;
+                case "upload-photos":
+                    upload (typeof(Picture));
+                    break;
+                case "upload-videos":
+                    upload (typeof(Video));
                     break;
                 case "find-shares":
                     findShares ();
@@ -88,7 +105,7 @@ namespace Shell.GoogleSync.Photos
             }
         }
 
-        void upload ()
+        void upload (params Type[] validTypes)
         {
             PictureShareManager shares = new PictureShareManager (rootDirectory: "/", filesystems: new PictureDummyLibrary ().FileSystems);
             shares.Initialize (cached: true);
@@ -97,7 +114,8 @@ namespace Shell.GoogleSync.Photos
             GoogleAccount[] googleAccounts = GoogleAccount.List ().ToArray ();
 
             if (shares.PictureDirectories.Count != 0) {
-                // for all shares
+                // for all shares. ~/.bashrc
+                
                 foreach (PictureShare share in from share in shares.PictureDirectories.Values orderby share.RootDirectory select share) {
                     Log.Message ();
                     Log.Message ("Share: ", share);
@@ -123,7 +141,7 @@ namespace Shell.GoogleSync.Photos
                             Log.Message ("One google account matches the share: ", account);
                             account.Refresh ();
                             AlbumCollection webAlbumCollection = new AlbumCollection (account: account);
-                            webAlbumCollection.UploadShare (share);
+                            webAlbumCollection.UploadShare (share: share, validTypes: validTypes);
                         }
                     }
 

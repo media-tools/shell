@@ -17,14 +17,18 @@ namespace Shell.GoogleSync.Photos
         public MediaFile[] OnlyInLocalAlbum;
         public WebPhoto[] OnlyInWebAlbum;
 
-        public AlbumSyncStatus (Album localAlbum, WebAlbum webAlbum, WebPhoto[] webPhotos)
+        public Type[] ValidTypes;
+
+        public AlbumSyncStatus (Album localAlbum, WebAlbum webAlbum, WebPhoto[] webPhotos, Type[] validTypes)
         {
+            ValidTypes = validTypes;
+
             LocalAlbum = localAlbum;
             WebAlbum = webAlbum;
             WebPhotos = webPhotos.OrderBy (f => f.Title).ToArray ();
 
             // filter all photos from the list of local files
-            LocalPhotos = LocalAlbum.Files.Where (f => f.Medium is Picture).OrderBy (f => f.Name).ToArray ();
+            LocalPhotos = LocalAlbum.Files.Where (f => validTypes.Any (type => type.IsAssignableFrom (f.Medium.GetType ()))).OrderBy (f => f.Name).ToArray ();
 
             Compare ();
         }

@@ -153,7 +153,17 @@ namespace Shell.MailSync
 
         public ImapFolderWrapper GetFolder (SpecialFolder folder)
         {
-            return new ImapFolderWrapper (client: this, fullName: client.GetFolder (folder).FullName);
+            IMailFolder internalFolder = client.GetFolder (folder);
+            if (internalFolder == null) {
+                if (folder == SpecialFolder.Trash) {
+                    internalFolder = client.GetFolder ("Papierkorb");
+                }
+            }
+            if (internalFolder != null) {
+                return new ImapFolderWrapper (client: this, fullName: internalFolder.FullName);
+            } else {
+                return null;
+            }
         }
 
         public ImapFolderWrapper GetFolder (FolderNamespace folder)

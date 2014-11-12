@@ -25,7 +25,7 @@ namespace Shell.FileSync
         {
             if (!cached || !filesystems.Config.FileExists (path: "trees.txt")) {
                 Func<FileInfo, bool> onlyTreeConfig = fileInfo => fileInfo.Name == CommonShare<Tree>.CONFIG_FILENAME;
-                IEnumerable<FileInfo> configFiles = FileSystemLibrary.GetFileList (rootDirectory: "/", fileFilter: onlyTreeConfig, dirFilter: dir => true);
+                IEnumerable<FileInfo> configFiles = FileSystemLibrary.GetFileList (rootDirectory: "/", fileFilter: onlyTreeConfig, dirFilter: dir => true, symlinks: false);
                 filesystems.Config.WriteAllLines (path: "trees.txt", contents: from file in configFiles
                                                                                            where file.Name == CommonShare<Tree>.CONFIG_FILENAME
                                                                                            select file.FullName);

@@ -121,7 +121,7 @@ namespace Shell.Pictures
         {
             // list media files
             Log.Message ("List media files...");
-            FileInfo[] pictureFiles = FileSystemLibrary.GetFileList (rootDirectory: RootDirectory, fileFilter: file => true, dirFilter: dir => true).ToArray ();
+            FileInfo[] pictureFiles = FileSystemLibrary.GetFileList (rootDirectory: RootDirectory, fileFilter: file => true, dirFilter: dir => true, symlinks: true).ToArray ();
 
             // put albums into internal dictionary
             Dictionary<string, Album> albumInternalDict = Albums.ToDictionary (a => a.AlbumPath, a => a);
@@ -142,24 +142,12 @@ namespace Shell.Pictures
                     return;
                 }
 
-                // does the file have no proper filename?
-                if (MediaFile.HasNoEnding (fullPath: fullPath)) {
-                    string fileEnding;
-                    // determine the best file ending
-                    if (MediaFile.DetermineFileEnding (fullPath: fullPath, fileEnding: out fileEnding)) {
-                        // rename the file
-                        MediaFile.AddFileEnding (fullPath: ref fullPath, fileEnding: fileEnding);
-                    }
-                }
-
-                // is it a video that is not in the mkv file format?
-                if (Video.IsValidFile (fullPath: fullPath) && Path.GetExtension (fullPath) != ".mkv") {
-                    // convert the video file
-                    string outputPath;
-                    if (VideoLibrary.Instance.ConvertVideoToMatroska (fullPath: fullPath, outputPath: out outputPath)) {
-                        fullPath = outputPath;
-                    }
-                }
+                // run index hooks. they may change the full path (and rename the file, obviously)
+                MediaFile.RunIndexHooks (fullPath: ref fullPath);
+                Picture.RunIndexHooks (fullPath: ref fullPath);
+                Audio.RunIndexHooks (fullPath: ref fullPath);
+                Video.RunIndexHooks (fullPath: ref fullPath);
+                Document.RunIndexHooks (fullPath: ref fullPath);
 
                 // create album, if necessery
                 string albumPath = PictureShareUtilities.GetAlbumPath (fullPath: fullPath, share: this);

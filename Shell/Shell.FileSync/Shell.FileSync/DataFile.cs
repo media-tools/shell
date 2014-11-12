@@ -9,6 +9,8 @@ namespace Shell.FileSync
 {
     public class DataFile
     {
+        public static bool DEEP_COMPARE = false;
+
         public FileInfo FileInfo { get; private set; }
 
         public string RelativePath { get; private set; }
@@ -40,12 +42,42 @@ namespace Shell.FileSync
 
         public bool ContentEquals (DataFile otherFile)
         {
-            if (Length == otherFile.Length) {
-                byte[] sHash = this.SHA256Hash ();
-                byte[] dHash = otherFile.SHA256Hash ();
-                return sHash.SequenceEqual (dHash);
+            if (DEEP_COMPARE) {
+                if (Length == otherFile.Length) {
+                    byte[] sHash = this.SHA256Hash ();
+                    byte[] dHash = otherFile.SHA256Hash ();
+                    return sHash.SequenceEqual (dHash);
+                } else {
+                    return false;
+                }
             } else {
-                return false;
+                if (Length == otherFile.Length) {
+                    /*if (Length < 5 * 1000 * 1000) {
+                        byte[] sBytes = this.readFirstBytes ();
+                        byte[] dBytes = otherFile.readFirstBytes ();
+                        return sBytes.SequenceEqual (dBytes);
+                    } else {*/
+                    return true;
+                    //}
+                } else {
+                    return false;
+                }
+            }
+        }
+
+        private byte[] readFirstBytes ()
+        {
+            try {
+                byte[] buffer = new byte[512];
+                using (FileStream fs = new FileStream (FullPath, FileMode.Open, FileAccess.Read)) {
+                    fs.Read (buffer, 0, buffer.Length);
+                    fs.Close ();
+                }
+                return buffer;
+            } catch (Exception) {
+                //Log.Debug ("Error in readFirstBytes (): ", ex.Message);
+                //return new byte[0];
+                throw;
             }
         }
 

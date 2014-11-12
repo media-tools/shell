@@ -65,6 +65,18 @@ namespace Shell.Pictures.Content
             }
         }
 
+        public static void RunIndexHooks (ref string fullPath)
+        {
+            // is it a video that is not in the mkv file format?
+            if (Video.IsValidFile (fullPath: fullPath) && Path.GetExtension (fullPath) != ".mkv") {
+                // convert the video file
+                string outputPath;
+                if (VideoLibrary.Instance.ConvertVideoToMatroska (fullPath: fullPath, outputPath: out outputPath)) {
+                    fullPath = outputPath;
+                }
+            }
+        }
+
         public override Dictionary<string, string> Serialize ()
         {
             return new Dictionary<string, string> ();

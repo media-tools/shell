@@ -55,6 +55,17 @@ namespace Shell.Pictures.Files
             }
         }
 
+        public long Size {
+            get {
+                try {
+                    return new FileInfo (FullPath).Length;
+                } catch (Exception ex) {
+                    Log.Error ("Error while getting file size: ", FullPath, ": ", ex.Message);
+                    throw;
+                }
+            }
+        }
+
         public void Index ()
         {
             Medium medium;

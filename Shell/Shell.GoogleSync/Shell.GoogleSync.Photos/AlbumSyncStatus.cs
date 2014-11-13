@@ -10,25 +10,25 @@ namespace Shell.GoogleSync.Photos
     public class AlbumSyncStatus
     {
         public Album LocalAlbum;
+        public MediaFile[] LocalFiles;
         public MediaFile[] LocalPhotos;
+        public MediaFile[] LocalVideos;
         public WebAlbum WebAlbum;
-        public WebPhoto[] WebPhotos;
+        public WebPhoto[] WebFiles;
 
-        public MediaFile[] OnlyInLocalAlbum;
-        public WebPhoto[] OnlyInWebAlbum;
+        public MediaFile[] FilesOnlyInLocalAlbum;
+        public WebPhoto[] FilesOnlyInWebAlbum;
 
-        public Type[] ValidTypes;
-
-        public AlbumSyncStatus (Album localAlbum, WebAlbum webAlbum, WebPhoto[] webPhotos, Type[] validTypes)
+        public AlbumSyncStatus (Album localAlbum, WebAlbum webAlbum, WebPhoto[] webFiles)
         {
-            ValidTypes = validTypes;
-
             LocalAlbum = localAlbum;
             WebAlbum = webAlbum;
-            WebPhotos = webPhotos.OrderBy (f => f.Title).ToArray ();
+            WebFiles = webFiles.OrderBy (f => f.Title).ToArray ();
 
             // filter all photos from the list of local files
-            LocalPhotos = LocalAlbum.Files.Where (f => validTypes.Any (type => type.IsAssignableFrom (f.Medium.GetType ()))).OrderBy (f => f.Name).ToArray ();
+            LocalPhotos = LocalAlbum.Files.Where (f => f.Medium is Picture).OrderBy (f => f.Name).ToArray ();
+            LocalVideos = LocalAlbum.Files.Where (f => f.Medium is Video).OrderBy (f => f.Name).ToArray ();
+            LocalFiles = LocalPhotos.Concat (LocalVideos).ToArray ();
 
             Compare ();
         }
@@ -37,21 +37,21 @@ namespace Shell.GoogleSync.Photos
         {
             // find files that only exist locally
             List<MediaFile> onlyLocal = new List<MediaFile> ();
-            foreach (MediaFile localFile in LocalPhotos) {
-                if (!WebPhotos.Any (wp => wp.Title == localFile.Name)) {
+            foreach (MediaFile localFile in LocalFiles) {
+                if (!WebFiles.Any (wp => wp.Title == localFile.Name)) {
                     onlyLocal.Add (localFile);
                 }
             }
-            OnlyInLocalAlbum = onlyLocal.ToArray ();
+            FilesOnlyInLocalAlbum = onlyLocal.ToArray ();
 
             // find files that only exist in the web album
             List<WebPhoto> onlyWeb = new List<WebPhoto> ();
-            foreach (WebPhoto webFile in WebPhotos) {
-                if (!LocalPhotos.Any (lf => lf.Name == webFile.Title)) {
+            foreach (WebPhoto webFile in WebFiles) {
+                if (!LocalFiles.Any (lf => lf.Name == webFile.Title)) {
                     onlyWeb.Add (webFile);
                 }
             }
-            OnlyInWebAlbum = onlyWeb.ToArray ();
+            FilesOnlyInWebAlbum = onlyWeb.ToArray ();
         }
     }
 }

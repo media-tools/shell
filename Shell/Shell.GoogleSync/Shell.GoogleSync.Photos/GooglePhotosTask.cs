@@ -141,7 +141,7 @@ namespace Shell.GoogleSync.Photos
                             Log.Message ("One google account matches the share: ", account);
                             account.Refresh ();
                             AlbumCollection webAlbumCollection = new AlbumCollection (account: account);
-                            webAlbumCollection.UploadShare (share: share, validTypes: validTypes);
+                            webAlbumCollection.UploadShare (share: share, selectedTypes: validTypes);
                         }
                     }
 

@@ -55,10 +55,10 @@ namespace Shell.GoogleSync.Core
         public void CatchErrors (Action todo)
         {
             string dummy;
-            CatchErrors (todo: todo, errorMessage: out dummy);
+            CatchErrors (todo: todo, errorMessage: out dummy, catchAllExceptions: false);
         }
 
-        public void CatchErrors (Action todo, out string errorMessage)
+        public void CatchErrors (Action todo, out string errorMessage, bool catchAllExceptions)
         {
             try {
                 todo ();
@@ -79,13 +79,19 @@ namespace Shell.GoogleSync.Core
                         Log.Indent--;
                     }
                     // Log.Error (ex);
-                    throw new ArgumentOutOfRangeException ();
                 }
                 errorMessage = ex.ResponseString;
             } catch (ClientFeedException ex) {
                 Log.Error ("ClientFeedException: ", ex.InnerException);
                 Log.Error (ex);
-                errorMessage = ex.InnerException.Message;
+                errorMessage = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+            } catch (Exception ex) {
+                errorMessage = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+                if (catchAllExceptions) {
+                    Log.Error (ex);
+                } else {
+                    throw;
+                }
             }
         }
     }

@@ -1,14 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Google.GData.Client;
+using Google.GData.Photos;
 using Shell.Common.IO;
 using Shell.Common.Tasks;
 using Shell.GoogleSync.Core;
-using Google.GData.Photos;
-using System.Collections.Generic;
-using Picasa = Google.Picasa;
 using Shell.Pictures;
-using System.Linq;
+using Shell.Pictures.Content;
 using Shell.Pictures.Files;
+using Picasa = Google.Picasa;
 
 namespace Shell.GoogleSync.Photos
 {
@@ -166,19 +167,26 @@ namespace Shell.GoogleSync.Photos
                     WebPhoto[] photos = GetPhotos (album);
                     webAlbums [album] = photos;
 
-                    // if the album doesn't contain any photos and doesn't exist locally, delete it!
-                    if (photos.Length == 0 && !share.Albums.Any (a => album.Title == PhotoSyncUtilities.ToSyncedAlbumName (a))) {
-                        Log.Indent++;
-                        album.Delete ();
-                        Log.Indent--;
+                    Log.Indent++;
+                    // if the album doesn't exist locally...
+                    if (!share.Albums.Any (a => album.Title == PhotoSyncUtilities.ToSyncedAlbumName (a))) {
+                        // ... and doesn't contain any photos, delete it!
+                        if (photos.Length == 0) {
+                            album.Delete ();
+                        }
+                        // .. if it contains something, print it! it may be obsolete.
+                        else {
+                            Log.Message ("Album does not exist locally.");
+                        }
                     }
+                    Log.Indent--;
                 }
             }
             Log.Indent--;
             return webAlbums;
         }
 
-        private AlbumSyncStatus[] CompareLocalAndWebAlbums (PictureShare share, Dictionary<WebAlbum, WebPhoto[]> webAlbums, Type[] validTypes)
+        private AlbumSyncStatus[] CompareLocalAndWebAlbums (PictureShare share, Dictionary<WebAlbum, WebPhoto[]> webAlbums)
         {
             // compare local and web albums...
             Log.Message ("Compare local and web albums:");
@@ -191,9 +199,9 @@ namespace Shell.GoogleSync.Photos
 
                     if (webAlbums.Keys.Any (wa => wa.Title == webAlbumName)) {
                         WebAlbum webAlbum = webAlbums.Keys.First (wa => wa.Title == webAlbumName);
-                        WebPhoto[] webPhotos = webAlbums [webAlbum];
+                        WebPhoto[] webFiles = webAlbums [webAlbum];
 
-                        AlbumSyncStatus syncStatus = new AlbumSyncStatus (localAlbum: localAlbum, webAlbum: webAlbum, webPhotos: webPhotos, validTypes: validTypes);
+                        AlbumSyncStatus syncStatus = new AlbumSyncStatus (localAlbum: localAlbum, webAlbum: webAlbum, webFiles: webFiles);
                         syncStatusList.Add (syncStatus);
                     }
                 }
@@ -210,59 +218,94 @@ namespace Shell.GoogleSync.Photos
             Log.Indent++;
             Log.Message (syncStatusList.ToStringTable (
                 s => LogColor.Reset,
-                new[] { "Album", "Local (total)", "Web (total)", "Local (only)", "Web (only)" },
+                new[] {
+                    "Album",
+                    "Photos (local)",
+                    "Videos (local)",
+                    "All (local)",
+                    "All (web)",
+                    "Upload",
+                    "Download"
+                },
                 s => s.WebAlbum.Title,
                 s => s.LocalPhotos.Length,
-                s => s.WebPhotos.Length,
-                s => s.OnlyInLocalAlbum.Length,
-                s => s.OnlyInWebAlbum.Length
+                s => s.LocalVideos.Length,
+                s => s.LocalFiles.Length,
+                s => s.WebFiles.Length,
+                s => s.FilesOnlyInLocalAlbum.Length,
+                s => s.FilesOnlyInWebAlbum.Length
             ));
             Log.Indent--;
         }
 
-        private void UploadDifferences (AlbumSyncStatus[] syncStatusList, Type[] validTypes)
+        private void UploadDifferences (AlbumSyncStatus[] syncStatusList, Type[] selectedTypes)
         {
             Log.Message ("Upload: ");
             Log.Indent++;
             foreach (AlbumSyncStatus syncStatus in syncStatusList) {
-                if (syncStatus.OnlyInLocalAlbum.Length > 0) {
+                if (syncStatus.FilesOnlyInLocalAlbum.Length > 0) {
                     Log.Message ("Album: ", syncStatus.WebAlbum.Title);
                     Log.Indent++;
                     fs.Runtime.ClearTempFiles ();
-                    foreach (MediaFile localPhoto in syncStatus.OnlyInLocalAlbum) {
-                        try {
-                            string errorMessage;
-                            CatchErrors (() => {
-                                string fullPath = localPhoto.FullPath;
-                                string mimeType = libMediaFile.GetMimeTypeByExtension (fullPath: localPhoto.FullPath);
-                                if (mimeType != null) {
-                                    if (mimeType == "image/jpeg" || mimeType == "image/png") {
-                                        Log.Message ("Resize File: [", mimeType, "] ", localPhoto.Name);
-                                        string tempPath = fs.Runtime.GetTempFilename (fullPath);
-                                        if (ImageResizeUtilities.ResizeImage (sourcePath: fullPath, destPath: tempPath, mimeType: mimeType, maxHeight: 2048, maxWidth: 2048)) {
-                                            fullPath = tempPath;
-                                        }
-                                    }
-                                    Log.Message ("Upload File: [", mimeType, "] ", localPhoto.Name);
-                                    Uri postUri = new Uri (PicasaQuery.CreatePicasaUri (account.Id, syncStatus.WebAlbum.Id));
+                    foreach (MediaFile localFile in syncStatus.FilesOnlyInLocalAlbum) {
+                        // skip the non-selected file types
+                        if (!selectedTypes.Any (validType => validType.IsAssignableFrom (localFile.Medium.GetType ()))) {
+                            continue;
+                        }
 
-                                    System.IO.FileInfo fileInfo = new System.IO.FileInfo (fullPath);
-                                    System.IO.FileStream fileStream = fileInfo.OpenRead ();
+                        // get the mime type
+                        string fullPath = localFile.FullPath;
+                        string mimeType = libMediaFile.GetMimeTypeByExtension (fullPath: localFile.FullPath);
+                        // skip if the mime type is unknown
+                        if (mimeType == null) {
+                            Log.Error ("Unknown mime type: ", localFile.FullPath);
+                            continue;
+                        }
 
-                                    PicasaEntry entry = (PicasaEntry)service.Insert (postUri, fileStream, mimeType, localPhoto.Name);
-
-                                    fileStream.Close ();
-                                } else {
-                                    Log.Error ("Unknown mime type: ", localPhoto.FullPath);
-                                }
-                            }, out errorMessage);
-
-                            // if the photo limit is reached, skip to the next album
-                            if (errorMessage != null && errorMessage.Contains ("Photo limit reached")) {
-                                break;
+                        // for jpeg and png pictures, resize them
+                        if (mimeType == "image/jpeg" || mimeType == "image/png") {
+                            Log.Message ("Resize File: [", mimeType, "] ", localFile.Name);
+                            string tempPath = fs.Runtime.GetTempFilename (fullPath);
+                            if (ImageResizeUtilities.ResizeImage (sourcePath: fullPath, destPath: tempPath, mimeType: mimeType, maxHeight: 2048, maxWidth: 2048)) {
+                                fullPath = tempPath;
                             }
-                        } catch (Exception ex) {
-                            Log.Error (ex);
+                        }
+
+                        // announce the upload
+                        Log.Message ("Upload File: [", mimeType, "] ", localFile.Name);
+
+                        // skip videos over 100 MiB to avoid the error "Video file size exceeds 104857600"
+                        if (localFile.Medium is Video && localFile.Size > 1024 * 1024 * 100) {
+                            Log.Message ("Video file size is over 100 MiB.");
+                            continue;
+                        }
+
+                        // perform the upload
+                        string errorMessage;
+                        CatchErrors (todo: () => {
+                            Uri postUri = new Uri (PicasaQuery.CreatePicasaUri (account.Id, syncStatus.WebAlbum.Id));
+
+                            System.IO.FileInfo fileInfo = new System.IO.FileInfo (fullPath);
+                            System.IO.FileStream fileStream = fileInfo.OpenRead ();
+
+                            if (localFile.Medium is Picture) {
+                                PicasaEntry entry = (PicasaEntry)service.Insert (postUri, fileStream, mimeType, localFile.Name);
+                            } else if (localFile.Medium is Video) {
+                                PhotoEntry videoEntry = new PhotoEntry ();
+                                videoEntry.Title = new AtomTextConstruct (AtomTextConstructElementType.Title, localFile.Name);//I would change this to read the file type, This is just an example
+                                videoEntry.Summary = new AtomTextConstruct (AtomTextConstructElementType.Summary, "");
+                                MediaFileSource source = new MediaFileSource (fileStream, localFile.Name, mimeType);
+                                videoEntry.MediaSource = source;
+                                PicasaEntry entry = service.Insert (postUri, videoEntry);
+                                Log.Debug ("Uploaded entry: ", entry.Id);
+                            }
+
+                            fileStream.Close ();
+                        }, errorMessage: out errorMessage, catchAllExceptions: true);
+
+                        // if the photo limit is reached, skip to the next album
+                        if (errorMessage != null && errorMessage.Contains ("Photo limit reached")) {
+                            break;
                         }
                     }
                     fs.Runtime.ClearTempFiles ();
@@ -272,7 +315,7 @@ namespace Shell.GoogleSync.Photos
             Log.Indent--;
         }
 
-        public void UploadShare (PictureShare share, Type[] validTypes)
+        public void UploadShare (PictureShare share, Type[] selectedTypes)
         {
             // create missing web albums
             CreateMissingWebAlbums (share: share);
@@ -280,15 +323,15 @@ namespace Shell.GoogleSync.Photos
             // list photos in web albums
             Dictionary<WebAlbum, WebPhoto[]> webAlbums = ListWebAlbums (share: share);
 
-            foreach (Type validType in validTypes) {
-                // compare local and web albums...
-                AlbumSyncStatus[] syncStatusList = CompareLocalAndWebAlbums (share: share, webAlbums: webAlbums, validTypes: new [] { validType });
+            // compare local and web albums...
+            AlbumSyncStatus[] syncStatusList = CompareLocalAndWebAlbums (share: share, webAlbums: webAlbums);
 
-                // print the differences between local and web albums
-                PrintSyncStatus (syncStatusList: syncStatusList);
+            // print the differences between local and web albums
+            PrintSyncStatus (syncStatusList: syncStatusList);
 
+            foreach (Type selectedType in selectedTypes) {
                 // upload missing photos
-                UploadDifferences (syncStatusList: syncStatusList, validTypes: new [] { validType });
+                UploadDifferences (syncStatusList: syncStatusList, selectedTypes: new [] { selectedType });
             }
         }
     }

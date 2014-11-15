@@ -10,6 +10,7 @@ using Shell.Pictures;
 using Shell.Pictures.Content;
 using Shell.Pictures.Files;
 using Picasa = Google.Picasa;
+using System.Threading.Tasks;
 
 namespace Shell.GoogleSync.Photos
 {
@@ -67,13 +68,13 @@ namespace Shell.GoogleSync.Photos
             ));
         }
 
-        public WebPhoto[] GetPhotos (WebAlbum album)
+        public WebPhotoCollection GetPhotos (WebAlbum album)
         {
-            List<WebPhoto> albumList = new List<WebPhoto> ();
             HashSet<string> uniqueFilenames = new HashSet<string> ();
+            WebPhotoCollection result = new WebPhotoCollection ();
 
-            Log.Indent++;
-            CatchErrors (() => {
+            string errorMessage;
+            CatchErrors (todo: () => {
                 int startIndex = 1; // starts with 1
                 int numResults = 0;
                 do {
@@ -90,21 +91,23 @@ namespace Shell.GoogleSync.Photos
                         internalPhoto.AtomEntry = entry;
                         string uniqueFilename = internalPhoto.Title;
                         if (uniqueFilenames.Contains (uniqueFilename)) {
-                            Log.Message ("Delete duplicate: ", uniqueFilename);
+                            result.Log ("Delete duplicate: " + uniqueFilename);
                             CatchErrors (() => entry.Delete ());
                         } else {
                             WebPhoto photo = new WebPhoto (albumCollection: this, album: album, internalPhoto: internalPhoto);
-                            albumList.Add (photo);
+                            result.AddWebFile (photo);
                             uniqueFilenames.Add (uniqueFilename);
                         }
                         numResults++;
                     }
-                    Log.Debug ("startIndex=", startIndex, ", numResults=", numResults);
-                } while (numResults > 999);
-            });
-            Log.Indent--;
 
-            return albumList.ToArray ();
+                    //Log.Debug ("startIndex=", startIndex, ", numResults=", numResults);
+                    result.AddCompletedQuery (count: numResults);
+
+                } while (numResults > 999);
+            }, errorMessage: out errorMessage, catchAllExceptions: true, retryTimes: 3);
+
+            return result;
         }
 
         private void CreateMissingWebAlbums (PictureShare share)
@@ -115,7 +118,8 @@ namespace Shell.GoogleSync.Photos
                 Log.Indent++;
                 foreach (Album localAlbum in share.Albums) {
                     if (PhotoSyncUtilities.IsIncludedInSync (localAlbum)) {
-                        Log.Message ("- ", PhotoSyncUtilities.ToSyncedAlbumName (localAlbum));
+                        string albumTitle = PhotoSyncUtilities.ToSyncedAlbumName (localAlbum);
+                        Log.Message ("- ", Log.FillOrCut (text: albumTitle, length: 60, ending: "...]"), " files: ", string.Join (", ", localAlbum.Files.Count));
                     }
                 }
                 Log.Indent--;
@@ -125,6 +129,7 @@ namespace Shell.GoogleSync.Photos
                 // create missing web albums
                 Log.Message ("Create non-existant web albums:");
                 Log.Indent++;
+                int countNonExistantAlbums = 0;
                 foreach (Album localAlbum in share.Albums) {
                     if (PhotoSyncUtilities.IsIncludedInSync (localAlbum)) {
                         string webAlbumName = PhotoSyncUtilities.ToSyncedAlbumName (localAlbum);
@@ -144,10 +149,15 @@ namespace Shell.GoogleSync.Photos
                                 Uri query = new Uri (PicasaQuery.CreatePicasaUri (account.Id));
                                 PicasaEntry createdEntry = (PicasaEntry)service.Insert (query, entry);
                                 Log.Message ("Created entry: ", createdEntry.Id);
+
+                                countNonExistantAlbums++;
                             });
                             Log.Indent--;
                         }
                     }
+                }
+                if (countNonExistantAlbums == 0) {
+                    Log.Message ("All local albums have web album counterparts.");
                 }
                 Log.Indent--;
             } else {
@@ -161,27 +171,44 @@ namespace Shell.GoogleSync.Photos
             Log.Message ("List photos in web albums: ");
             Log.Indent++;
             Dictionary<WebAlbum, WebPhoto[]> webAlbums = new Dictionary<WebAlbum, WebPhoto[]> ();
-            foreach (WebAlbum album in GetAlbums()) {
-                Log.Message ("- ", album.Title);
-                if (PhotoSyncUtilities.IsSyncedAlbum (album)) {
-                    WebPhoto[] photos = GetPhotos (album);
-                    webAlbums [album] = photos;
 
-                    Log.Indent++;
+            object logLock = new object ();
+            Parallel.ForEach<WebAlbum> (
+                source: GetAlbums ().Where (a => PhotoSyncUtilities.IsSyncedAlbum (a)).OrderBy (a => a.Title),
+                body: album => {
+
+                    WebPhotoCollection result = GetPhotos (album: album);
+                    lock (webAlbums) {
+                        webAlbums [album] = result.WebFiles;
+                    }
+
+                    bool deleted = false;
                     // if the album doesn't exist locally...
                     if (!share.Albums.Any (a => album.Title == PhotoSyncUtilities.ToSyncedAlbumName (a))) {
                         // ... and doesn't contain any photos, delete it!
-                        if (photos.Length == 0) {
-                            album.Delete ();
+                        if (result.WebFiles.Length == 0) {
+                            album.Delete (verbose: false);
+                            result.Log ("Delete album.");
+                            deleted = true;
                         }
                         // .. if it contains something, print it! it may be obsolete.
                         else {
-                            Log.Message ("Album does not exist locally.");
+                            result.Log ("Album does not exist locally.");
                         }
                     }
-                    Log.Indent--;
+
+                    if (!deleted) {
+                        lock (logLock) {
+                            Log.Message ("- ", Log.FillOrCut (text: album.Title, length: 60, ending: "...]"), " files: ", string.Join (", ", result.NumResults));
+                            Log.Indent += 2;
+                            foreach (object[] message in result.Messages) {
+                                Log.Message (message);
+                            }
+                            Log.Indent -= 2;
+                        }
+                    }
                 }
-            }
+            );
             Log.Indent--;
             return webAlbums;
         }
@@ -242,6 +269,7 @@ namespace Shell.GoogleSync.Photos
         {
             Log.Message ("Upload: ");
             Log.Indent++;
+            int countUploadedFiles = 0;
             foreach (AlbumSyncStatus syncStatus in syncStatusList) {
                 if (syncStatus.FilesOnlyInLocalAlbum.Length > 0) {
                     Log.Message ("Album: ", syncStatus.WebAlbum.Title);
@@ -280,6 +308,8 @@ namespace Shell.GoogleSync.Photos
                             continue;
                         }
 
+                        countUploadedFiles++;
+
                         // perform the upload
                         string errorMessage;
                         CatchErrors (todo: () => {
@@ -301,7 +331,7 @@ namespace Shell.GoogleSync.Photos
                             }
 
                             fileStream.Close ();
-                        }, errorMessage: out errorMessage, catchAllExceptions: true);
+                        }, errorMessage: out errorMessage, catchAllExceptions: true, retryTimes: 0);
 
                         // if the photo limit is reached, skip to the next album
                         if (errorMessage != null && errorMessage.Contains ("Photo limit reached")) {
@@ -311,6 +341,9 @@ namespace Shell.GoogleSync.Photos
                     fs.Runtime.ClearTempFiles ();
                     Log.Indent--;
                 }
+            }
+            if (countUploadedFiles == 0) {
+                Log.Message ("No files to upload.");
             }
             Log.Indent--;
         }

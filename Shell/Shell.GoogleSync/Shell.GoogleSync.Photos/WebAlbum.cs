@@ -33,9 +33,9 @@ namespace Shell.GoogleSync.Photos
 
         public void PrintPhotos ()
         {
-            WebPhoto[] albums = AlbumCollection.GetPhotos (album: this);
+            WebPhotoCollection result = AlbumCollection.GetPhotos (album: this);
 
-            Log.Message (albums.ToStringTable (
+            Log.Message (result.WebFiles.ToStringTable (
                 p => LogColor.Reset,
                 new[] { "Title", "Id", "Dimensions" },
                 p => p.Title,
@@ -44,9 +44,11 @@ namespace Shell.GoogleSync.Photos
             ));
         }
 
-        public void Delete ()
+        public void Delete (bool verbose = true)
         {
-            Log.Message ("Delete album.");
+            if (verbose) {
+                Log.Message ("Delete album: " + Title);
+            }
             AlbumCollection.CatchErrors (() => {
                 InternalAlbum.AtomEntry.Delete ();
             });

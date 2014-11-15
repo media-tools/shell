@@ -105,6 +105,23 @@ namespace Shell.Common.Util
             }
             return value;
         }
+
+
+        public static IEnumerable<T> ConcatItem<T> (this IEnumerable<T> sequence, T item)
+        {
+            return (sequence ?? Enumerable.Empty<T> ()).Concat (new[] { item });
+        }
+
+        public static T[] AddRangeToArray<T> (this T[] sequence, T[] items)
+        {
+            return (sequence ?? Enumerable.Empty<T> ()).Concat (items).ToArray ();
+        }
+
+        public static T[] AddToArray<T> (this T[] sequence, T item)
+        {
+            return ConcatItem (sequence, item).ToArray ();
+        }
+
     }
 }
 

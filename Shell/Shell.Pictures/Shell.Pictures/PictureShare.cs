@@ -28,6 +28,17 @@ namespace Shell.Pictures
 
         private FileSystems fs;
 
+        private HashSet<string> _highQualityAlbums;
+
+        public HashSet<string> HighQualityAlbums {
+            get {
+                return _highQualityAlbums = _highQualityAlbums ?? new HashSet<string> (config [CONFIG_SECTION, "high-quality-albums", ""].Split (new char[] {
+                    ':',
+                    ';'
+                }, StringSplitOptions.RemoveEmptyEntries));
+            }
+        }
+
         public static PictureShare CreateInstance (string configPath, FileSystems filesystems)
         {
             if (Instances.ContainsKey (configPath)) {
@@ -151,7 +162,7 @@ namespace Shell.Pictures
 
                 // create album, if necessery
                 string albumPath = PictureShareUtilities.GetAlbumPath (fullPath: fullPath, share: this);
-                Album album = albumInternalDict.TryCreateEntry (key: albumPath, defaultValue: () => new Album (albumPath: albumPath), onValueCreated: a => Albums.Add (a));
+                Album album = albumInternalDict.TryCreateEntry (key: albumPath, defaultValue: () => new Album (albumPath: albumPath, share: this), onValueCreated: a => Albums.Add (a));
 
                 string relativePath = PictureShareUtilities.GetRelativePath (fullPath: fullPath, share: this);
 
@@ -237,8 +248,9 @@ namespace Shell.Pictures
             }
 
             if (verbose) {
-                Log.Message ("Serialize albums...");
+                Log.Debug ("Serialize share: ", Name, " albums...");
             }
+            
 
             Commons.PendingOperations++;
             foreach (Album album in Albums.ToArray()) {
@@ -251,7 +263,8 @@ namespace Shell.Pictures
                             serializedAlbums [section: album.AlbumPath, option: file.Name, defaultValue: ""] = file.Medium.Hash.Hash;
                         }
                     } catch (Exception ex) {
-                        Log.Debug (file.Medium);
+                        Log.Error ("Error while serializing share: ", Name);
+                        Log.Error ("In the albums loop, with album.AlbumPath=", album.AlbumPath, ", file.Name=", file.Name, ", file.Medium=" + file.Medium);
                         Log.Error (ex);
                         album.RemoveFile (file);
                     }
@@ -311,7 +324,7 @@ namespace Shell.Pictures
             Log.Message ("Deserialize albums...");
 
             foreach (string albumPath in serializedAlbums.Sections) {
-                Album album = new Album (albumPath: albumPath);
+                Album album = new Album (albumPath: albumPath, share: this);
                 Dictionary<string, string> files = serializedAlbums.SectionToDictionary (section: albumPath);
                 foreach (KeyValuePair<string, string> entry in files) {
                     string filename = entry.Key;

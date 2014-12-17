@@ -22,7 +22,7 @@ namespace Shell.GoogleSync.Photos
         public static bool IsIncludedInSync (Album album)
         {
             string name = album.AlbumPath;
-            return name.Length > 0 && !Regex.IsMatch (name, "[0-9]{4}[/-][0-9]{2}[/-][0-9]{2}");
+            return name.Length > 0 && !Regex.IsMatch (name, "(^|/)[0-9]{4}[/-][0-9]{2}[/-][0-9]{2}");
         }
     }
 }

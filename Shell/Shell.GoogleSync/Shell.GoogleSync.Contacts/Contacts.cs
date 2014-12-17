@@ -120,7 +120,8 @@ namespace Shell.GoogleSync.Contacts
                 ContactsRequest cr = new ContactsRequest (settings);
                 cr.Update (slave);
 
-                MergePhoto (slave: slave, master: master, masterList: masterList);
+                // TODO: hier hatte ich aufeghoert
+                // MergePhoto (slave: slave, master: master, masterList: masterList);
             });
         }
 
@@ -142,9 +143,19 @@ namespace Shell.GoogleSync.Contacts
         void MergeContact (Contact slave, Contact master, Contacts masterList)
         {
             slave.Name = master.Name.Format ();
+            //if (slave.Name.FamilyName != null && slave.Name.FamilyName.EndsWith ("berg")) {
+            //    slave.Name.FamilyName = "RuXXXX";
+            //    slave.Name.FullName = slave.Name.GivenName + " " + slave.Name.FamilyName;
+            //}
+            Log.Debug ("famnam: ", slave.Name.FamilyName);
             slave.ContactEntry.Birthday = master.ContactEntry.Birthday;
             slave.Organizations.Clear ();
-            //slave.Phonenumbers.Clear ();
+            string emails = string.Join (", ", slave.Emails.Select (e => e.Address)).ToLower ();
+            if (emails.Contains ("tobias") || emails.Contains ("thri") || emails.Contains ("isar") || emails.Contains ("tina")) {
+                slave.Phonenumbers.Clear ();
+                slave.Emails.Clear ();
+            }
+            slave.PostalAddresses.Clear ();
 
             Log.Debug ("Birthday:", slave.ContactEntry.Birthday);
 
@@ -156,6 +167,7 @@ namespace Shell.GoogleSync.Contacts
             GDataContactExtensions.Merge (slave.Phonenumbers, master.Phonenumbers, l => l.Value, GDataContactExtensions.UniqueFormat);
             slave.Phonenumbers.Remove (slave.Phonenumbers.Where (n => n.Value == "+4915234218133").FirstOrDefault ());
             GDataContactExtensions.Merge (slave.PostalAddresses, master.PostalAddresses, a => a.City);
+
 
             Log.Debug ("Emails:", string.Join (", ", slave.Emails.Select (e => e.Address)));
             Log.Debug ("Organizations:", string.Join (", ", slave.Organizations.Select (org => org.JobDescription + org.Title + org.Department + org.Name + org.Location)));

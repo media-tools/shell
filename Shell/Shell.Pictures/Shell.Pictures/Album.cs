@@ -14,10 +14,13 @@ namespace Shell.Pictures
 
         public bool IsDeleted { get; set; }
 
-        public Album (string albumPath)
+        public bool IsHighQuality { get; set; }
+
+        public Album (string albumPath, PictureShare share)
         {
             AlbumPath = albumPath;
             Files = new List<MediaFile> ();
+            IsHighQuality = share.HighQualityAlbums.Any (ap => ap == "*" || albumPath.ToLower ().Trim ('/', '\\').StartsWith (ap.ToLower ().Trim ('/', '\\')));
         }
 
         public void AddFile (MediaFile mediaFile)

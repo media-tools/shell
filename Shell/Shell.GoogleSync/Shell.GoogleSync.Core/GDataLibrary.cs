@@ -50,6 +50,15 @@ namespace Shell.GoogleSync.Core
 
         protected abstract void UpdateAuth ();
 
+        protected void RefreshAccount ()
+        {
+            Log.Debug ("Refresh account authorization.");
+            Log.Indent++;
+            account.Refresh ();
+            UpdateAuthInternal ();
+            Log.Indent--;
+        }
+
         // use this contuctor only for accessing the file system variables !
         public GDataLibrary ()
         {
@@ -78,11 +87,7 @@ namespace Shell.GoogleSync.Core
                         Log.Error ("GDataRequestException: ", ex.ResponseString);
                         Log.Error (ex);
                         if (ex.ResponseString.Contains ("Token invalid")) {
-                            Log.Debug ("Refresh account authorization:");
-                            Log.Indent++;
-                            account.Refresh ();
-                            UpdateAuthInternal ();
-                            Log.Indent--;
+                            RefreshAccount ();
                         }
                         // Log.Error (ex);
                     }

@@ -42,7 +42,7 @@ namespace Shell.GoogleSync.Photos
                     onlyLocal.Add (localFile);
                 }
             }
-            FilesOnlyInLocalAlbum = onlyLocal.ToArray ();
+            FilesOnlyInLocalAlbum = onlyLocal.OrderBy (f => f.Name).ToArray ();
 
             // find files that only exist in the web album
             List<WebPhoto> onlyWeb = new List<WebPhoto> ();
@@ -51,7 +51,7 @@ namespace Shell.GoogleSync.Photos
                     onlyWeb.Add (webFile);
                 }
             }
-            FilesOnlyInWebAlbum = onlyWeb.ToArray ();
+            FilesOnlyInWebAlbum = onlyWeb.OrderBy (f => f.Title).ToArray ();
         }
     }
 }

@@ -113,7 +113,7 @@ namespace Shell.GoogleSync.Photos
         private void CreateMissingWebAlbums (PictureShare share)
         {
             if (share.Albums.Count > 0) {
-                // list local albums
+                //  albums
                 Log.Message ("List local albums:");
                 Log.Indent++;
                 foreach (Album localAlbum in share.Albums) {
@@ -252,7 +252,8 @@ namespace Shell.GoogleSync.Photos
                     "All (local)",
                     "All (web)",
                     "Upload",
-                    "Download"
+                    "Download",
+                    "HQ ?"
                 },
                 s => s.WebAlbum.Title,
                 s => s.LocalPhotos.Length,
@@ -260,7 +261,8 @@ namespace Shell.GoogleSync.Photos
                 s => s.LocalFiles.Length,
                 s => s.WebFiles.Length,
                 s => s.FilesOnlyInLocalAlbum.Length,
-                s => s.FilesOnlyInWebAlbum.Length
+                s => s.FilesOnlyInWebAlbum.Length,
+                s => s.LocalAlbum.IsHighQuality ? "HQ" : ""
             ));
             Log.Indent--;
         }
@@ -291,7 +293,7 @@ namespace Shell.GoogleSync.Photos
                         }
 
                         // for jpeg and png pictures, resize them
-                        if (mimeType == "image/jpeg" || mimeType == "image/png") {
+                        if ((mimeType == "image/jpeg" || mimeType == "image/png") && !syncStatus.LocalAlbum.IsHighQuality) {
                             Log.Message ("Resize File: [", mimeType, "] ", localFile.Name);
                             string tempPath = fs.Runtime.GetTempFilename (fullPath);
                             if (ImageResizeUtilities.ResizeImage (sourcePath: fullPath, destPath: tempPath, mimeType: mimeType, maxHeight: 2048, maxWidth: 2048)) {
@@ -306,6 +308,11 @@ namespace Shell.GoogleSync.Photos
                         if (localFile.Medium is Video && localFile.Size > 1024 * 1024 * 100) {
                             Log.Message ("Video file size is over 100 MiB.");
                             continue;
+                        }
+
+                        // refresh the account access token before uploading large files
+                        if (localFile.Size > 1024 * 1024 * 50) {
+                            RefreshAccount ();
                         }
 
                         countUploadedFiles++;

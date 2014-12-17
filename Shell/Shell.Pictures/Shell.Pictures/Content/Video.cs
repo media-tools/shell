@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Shell.Common.Util;
 using Shell.Pictures.Files;
+using Shell.Common.IO;
 
 namespace Shell.Pictures.Content
 {
@@ -74,6 +75,19 @@ namespace Shell.Pictures.Content
                 if (VideoLibrary.Instance.ConvertVideoToMatroska (fullPath: fullPath, outputPath: out outputPath)) {
                     fullPath = outputPath;
                 }
+            }
+
+            try {
+                // is it a video file in mkv format that is larger than 100MB?
+                if (Path.GetExtension (fullPath) == ".mkv" && new FileInfo (fullPath).Length > 1024 * 1024 * 100) {
+                    // split the video file
+                    string outputPath;
+                    if (VideoLibrary.Instance.SplitMatroska (fullPath: fullPath, outputPath: out outputPath)) {
+                        fullPath = outputPath;
+                    }
+                }
+            } catch (Exception ex) {
+                Log.Error (ex);
             }
         }
 

@@ -7,6 +7,7 @@ using Google.GData.Extensions;
 using Shell.Common.IO;
 using Shell.Common.Util;
 using Shell.GoogleSync.Core;
+using Google.GData.Contacts;
 
 namespace Shell.GoogleSync.Contacts
 {
@@ -103,7 +104,7 @@ namespace Shell.GoogleSync.Contacts
         public static PhoneNumber UniqueFormat (this PhoneNumber number)
         {
             string value = number.Value;
-            value = value.Replace ("-", "").Replace (" ", "");
+            value = value.Replace ("-", "").Replace (" ", "").Replace ("/", "");
             if (value.StartsWith ("0")) {
                 value = "+49" + value.Substring (1);
             }
@@ -122,6 +123,11 @@ namespace Shell.GoogleSync.Contacts
             } else {
                 return string.Format ("{0}, {1} {2}", address.Street.Trim (), address.Postcode.Trim (), address.City.Trim ()).Replace ("\n", ", ");
             }
+        }
+
+        public static string Format (this Relation relation)
+        {
+            return string.Format ("{0}: {1}", relation.Rel != null ? relation.Rel : relation.Label, relation.Value);
         }
 
         public static Name Format (this Name name)

@@ -40,6 +40,7 @@ namespace Shell.GoogleSync.Contacts
         public Contacts (GoogleAccount account)
             : base (account)
         {
+            LoadGroups ();
         }
 
         protected override void UpdateAuth ()
@@ -69,6 +70,27 @@ namespace Shell.GoogleSync.Contacts
                 }
                 return _contactList;
             }
+        }
+
+        private Dictionary<string,string> Groups = new Dictionary<string,string> ();
+
+        private void LoadGroups ()
+        {
+            ContactsRequest cr = new ContactsRequest (settings);
+            Feed<Group> fg = cr.GetGroups ();
+            Groups.Clear ();
+            foreach (Group group in fg.Entries) {
+                Groups [group.Title] = group.Id;
+            }
+            Log.Message ("Groups: ", account);
+            Log.Indent++;
+            Log.Message (Groups.ToStringTable (
+                c => LogColor.Reset,
+                new[] { "Title", "ID" },
+                c => c.Key,
+                c => c.Value
+            ));
+            Log.Indent--;
         }
 
         public void PrintAllContacts ()
@@ -169,13 +191,29 @@ namespace Shell.GoogleSync.Contacts
             GDataContactExtensions.Merge (slave.PostalAddresses, master.PostalAddresses, a => a.City);
 
 
+            string[] groupsToAdd = new [] { "System Group: My Contacts" }; //, "System Group: Family" };
+            foreach (string groupToAdd in groupsToAdd) {
+                if (Groups.ContainsKey (groupToAdd)) {
+                    if (!slave.GroupMembership.Any (gm => gm.HRef == Groups [groupToAdd])) {
+                        slave.GroupMembership.Add (new GroupMembership { HRef = Groups [groupToAdd] });
+                    }
+                }
+            }
+
+            GDataContactExtensions.Merge (slave.ContactEntry.Relations, master.ContactEntry.Relations, r => r.Value);
+            slave.ContactEntry.Websites.Clear ();
+            GDataContactExtensions.Merge (slave.ContactEntry.Websites, master.ContactEntry.Websites, w => w.Href);
+            slave.ContactEntry.Nickname = master.ContactEntry.Nickname;
+            slave.ContactEntry.ShortName = master.ContactEntry.ShortName;
+
             Log.Debug ("Emails:", string.Join (", ", slave.Emails.Select (e => e.Address)));
             Log.Debug ("Organizations:", string.Join (", ", slave.Organizations.Select (org => org.JobDescription + org.Title + org.Department + org.Name + org.Location)));
             Log.Debug ("Languages:", string.Join (", ", slave.Languages.Select (l => l.Value)));
             Log.Debug ("IMs:", string.Join (", ", slave.IMs.Select (i => i.Value)));
             Log.Debug ("Phonenumbers:", string.Join (", ", slave.Phonenumbers.Select (p => p.Value + " (" + (p.Rel != null ? p.Rel : p.Label) + ")")));
             Log.Debug ("PostalAddresses:", string.Join ("; ", slave.PostalAddresses.Select (a => a.Format ())));
-
+            Log.Debug ("Relations:", string.Join ("; ", slave.ContactEntry.Relations.Select (r => r.Format ())));
+            Log.Debug ("GroupMembership:", string.Join (", ", slave.GroupMembership.Select (gm => Groups.Where (e => e.Value == gm.HRef).Select (e => e.Key).First ())));
         }
 
 

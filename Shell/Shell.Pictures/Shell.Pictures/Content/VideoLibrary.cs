@@ -33,7 +33,7 @@ namespace Shell.Pictures.Content
                     string ffmpegCommand = "ffmpeg";
                     string ffmpegParams = string.Empty;
 
-                    if (Path.GetFileNameWithoutExtension (fullPath).Contains ("VID_")) {
+                    if (Path.GetFileNameWithoutExtension (fullPath).Contains ("VID_") || Path.GetFileNameWithoutExtension (fullPath).Contains ("MOVIE")) {
                         ffmpegParams = " -vcodec copy -acodec copy ";
                     } else if (fullPath.Contains ("Music") || fullPath.Contains ("Musik")) {
                         ffmpegCommand = "x265-ffmpeg";

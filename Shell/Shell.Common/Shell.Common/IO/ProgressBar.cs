@@ -81,6 +81,8 @@ namespace Shell.Common.IO
             Console.Write (line + String.Concat (Enumerable.Repeat (" ", Math.Max (0, MAX_WIDTH - line.Length))));
             Console.CursorLeft = left;
             Console.Out.Flush ();
+            Log.IsIncompleteLine = true;
+            Log.IncompleteLineMaxWidth = MAX_WIDTH;
             currentValue = current;
         }
 

@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using Shell.Compatibility;
 using Mono.Unix;
+using Shell.Common.IO;
 
 namespace Shell.Compatibility.Linux
 {
@@ -37,6 +38,43 @@ namespace Shell.Compatibility.Linux
                 return false;
             }
         }
+
+        public override bool CreateSymLink (string target, string symLink)
+        {
+            try {
+                UnixFileInfo targetFile = new UnixFileInfo (target);
+                targetFile.CreateSymbolicLink (symLink);
+                return true;
+            } catch (Exception ex) {
+                Log.Error ("Failed to create symbolic link from '", symLink, "' to '", target, "'");
+                Log.Error (ex);
+                return false;
+            }
+        }
+
+        public override string ReadSymLink (string path)
+        {
+            UnixSymbolicLinkInfo i = new UnixSymbolicLinkInfo (path);
+            switch (i.FileType) {
+            case FileTypes.SymbolicLink:
+                try {
+                    return i.GetContents ().FullName;
+                } catch (Exception ex) {
+                    Log.Error ("Failed to read symbolic link: '", path, "'");
+                    Log.Error (ex);
+                    return null;
+                }
+            case FileTypes.Fifo:
+            case FileTypes.Socket:
+            case FileTypes.BlockDevice:
+            case FileTypes.CharacterDevice:
+            case FileTypes.Directory:
+            case FileTypes.RegularFile:
+            default:
+                return null;
+            }
+        }
+
         /*
 
         public override bool CanExecute (string path)

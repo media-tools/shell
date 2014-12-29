@@ -24,7 +24,6 @@ namespace Shell.Pictures.Content
 
         public bool ConvertVideoToMatroska (string fullPath, out string outputPath)
         {
-            Log.Message ();
             try {
                 string oldFullPath = fullPath;
                 string newFullPath = Path.GetDirectoryName (fullPath) + Path.DirectorySeparatorChar + Path.GetFileNameWithoutExtension (fullPath) + ".mkv";
@@ -89,7 +88,6 @@ namespace Shell.Pictures.Content
 
         public bool SplitMatroska (string fullPath, out string outputPath)
         {
-            Log.Message ();
             try {
                 string oldFullPath = fullPath;
                 string newFullPathTemplate = Path.GetDirectoryName (fullPath) + Path.DirectorySeparatorChar + Path.GetFileNameWithoutExtension (fullPath) + "-splitted.mkv";

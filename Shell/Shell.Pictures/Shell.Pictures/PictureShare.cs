@@ -2,14 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using Shell.Common;
 using Shell.Common.IO;
+using Shell.Common.Shares;
 using Shell.Common.Tasks;
 using Shell.Common.Util;
-using System.Security.Cryptography;
-using Shell.Pictures.Files;
+using Shell.Compatibility;
 using Shell.Pictures.Content;
-using Shell.Common.Shares;
+using Shell.Pictures.Files;
 
 namespace Shell.Pictures
 {
@@ -130,9 +131,13 @@ namespace Shell.Pictures
 
         public void Index ()
         {
+            NormalizeAlbumPaths ();
+
             // list media files
             Log.Message ("List media files...");
-            FileInfo[] pictureFiles = FileSystemLibrary.GetFileList (rootDirectory: RootDirectory, fileFilter: file => true, dirFilter: dir => true, symlinks: true).ToArray ();
+            Log.Indent++;
+            Func<DirectoryInfo, bool> dirFilter = dir => !dir.Name.StartsWith (".");
+            FileInfo[] pictureFiles = FileSystemLibrary.GetFileList (rootDirectory: RootDirectory, fileFilter: file => true, dirFilter: dirFilter, followSymlinks: true).ToArray ();
 
             // put albums into internal dictionary
             Dictionary<string, Album> albumInternalDict = Albums.ToDictionary (a => a.AlbumPath, a => a);
@@ -142,8 +147,12 @@ namespace Shell.Pictures
             int i = 0;
             int max = pictureFiles.Length;
 
+            Log.Indent--;
+
             // index all media files
             Log.Message ("Index media files...");
+            Log.Indent++;
+
             foreach (string _fullPath in from info in pictureFiles select info.FullName) {
                 string fullPath = _fullPath;
 
@@ -151,6 +160,11 @@ namespace Shell.Pictures
                 if (!fullPath.StartsWith (RootDirectory)) {
                     Log.Error ("[BUG] Invalid Path: fullPath=", fullPath, " is not in RootDirectory=", RootDirectory, "; stopped indexing.");
                     return;
+                }
+
+                if (!File.Exists (fullPath)) {
+                    Log.Error ("File disappeared: ", fullPath);
+                    continue;
                 }
 
                 // run index hooks. they may change the full path (and rename the file, obviously)
@@ -188,7 +202,7 @@ namespace Shell.Pictures
 				// if the file needs to be indexed
 				else if (MediaFile.IsValidFile (fullPath: fullPath)) {
                     progress.Print (current: i, min: 0, max: max, currentDescription: "indexing: " + relativePath, showETA: true, updateETA: true);
-                    Log.DebugLog ("Media file: ", fullPath);
+                    Log.Message ("Media file: ", fullPath);
                     MediaFile file = new MediaFile (fullPath: fullPath, share: this);
                     file.Index ();
                     album.AddFile (file);
@@ -202,19 +216,91 @@ namespace Shell.Pictures
 				// if the file is invalid or unknown
 				else {
                     progress.Print (current: i, min: 0, max: max, currentDescription: "unknown: " + relativePath, showETA: true, updateETA: false);
-                    Log.Debug ("Unknown file: ", fullPath);
+
+                    if (!MediaFile.IsIgnoredFile (fullPath: fullPath)) {
+                        Log.Message ("Unknown file: ", fullPath);
+                    }
                 }
 
                 ++i;
             }
 
             progress.Finish ();
+            Log.Indent--;
 
             // put albums into global hashset
             Albums = albumInternalDict.Values.ToHashSet ();
 
             // serialize
             Serialize (verbose: false);
+        }
+
+        private void NormalizeAlbumPaths ()
+        {
+            // list media files
+            Log.Message ("Normalize media directories...");
+            Log.Indent++;
+
+            bool allPathsNormalized;
+            do {
+                allPathsNormalized = true;
+                try {
+                    DirectoryInfo[] pictureDirectories = FileSystemLibrary.GetDirectoryList (rootDirectory: RootDirectory, dirFilter: dir => true, followSymlinks: false, returnSymlinks: true).ToArray ();
+                    foreach (string fullPath in from info in pictureDirectories select info.FullName) {
+                        // Log.Debug (fullPath);
+                        string albumPath = PictureShareUtilities.GetRelativePath (fullPath: fullPath, share: this);
+
+                        // if the album name is not normalized
+                        if (albumPath.Length > 0 && !NamingUtilities.IsNormalizedAlbumName (albumPath)) {
+                            string newAlbumPath = NamingUtilities.NormalizeAlbumName (albumPath);
+                            string newFullPath = Path.Combine (RootDirectory, newAlbumPath);
+
+                            Log.Message ("Rename Album: ", fullPath, " => ", newFullPath);
+
+                            if (Directory.Exists (newFullPath)) {
+                                Log.Error ("Can't rename album: destination name already exists! (", newFullPath, ")");
+                            } else {
+                                // if the directory is a symlink
+                                if (FileHelper.Instance.IsSymLink (fullPath)) {
+                                    string target = FileHelper.Instance.ReadSymLink (fullPath);
+                                    Log.Message ("Symlink (old): ", fullPath, " => ", target);
+                                    Log.Message ("Symlink (new): ", newFullPath, " => ", target);
+                                    FileHelper.Instance.CreateSymLink (target, newFullPath);
+                                    File.Delete (fullPath);
+                                    allPathsNormalized = false;
+                                }
+                                // or if it is a regular directory
+                                else {
+                                    Directory.Move (fullPath, newFullPath);
+                                    allPathsNormalized = false;
+                                }
+                                break;
+                            }
+                        }
+
+                        // if the album is a symlink whose target is not normalized
+                        if (albumPath.Length > 0 && FileHelper.Instance.IsSymLink (fullPath)) {
+                            string target = FileHelper.Instance.ReadSymLink (fullPath);
+                            if (albumPath.Length > 0 && !NamingUtilities.IsNormalizedAlbumName (target)) {
+                                string newTarget = NamingUtilities.NormalizeAlbumName (target);
+
+                                Log.Message ("Change target of symlinked Album: ", fullPath);
+
+                                Log.Message ("Symlink (old): ", fullPath, " => ", target);
+                                Log.Message ("Symlink (new): ", fullPath, " => ", newTarget);
+                                File.Delete (fullPath);
+                                FileHelper.Instance.CreateSymLink (newTarget, fullPath);
+                                allPathsNormalized = false;
+                                break;
+                            }
+                        }
+                    }
+                } catch (IOException ex) {
+                    Log.Error (ex);
+                }
+            } while (!allPathsNormalized);
+
+            Log.Indent--;
         }
 
         public void Clean ()
@@ -248,7 +334,7 @@ namespace Shell.Pictures
             }
 
             if (verbose) {
-                Log.Debug ("Serialize share: ", Name, " albums...");
+                Log.Debug ("Serialize share: ", Name, ": albums... ");
             }
             
 
@@ -276,7 +362,7 @@ namespace Shell.Pictures
             }
 
             if (verbose) {
-                Log.Message ("Serialize media...");
+                Log.Debug ("Serialize share: ", Name, ": media...");
             }
 
             foreach (Medium medium in Media.Values) {
@@ -297,7 +383,7 @@ namespace Shell.Pictures
             Media.Clear ();
             Albums.Clear ();
 
-            Log.Message ("Deserialize media...");
+            Log.Debug ("Deserialize share: ", Name, ": media...");
 
             foreach (string _hash in serializedMedia.Sections) {
                 HexString hash = new HexString { Hash = _hash };
@@ -321,7 +407,7 @@ namespace Shell.Pictures
                 Media [medium.Hash] = medium;
             }
 
-            Log.Message ("Deserialize albums...");
+            Log.Debug ("Deserialize share: ", Name, ": albums...");
 
             foreach (string albumPath in serializedAlbums.Sections) {
                 Album album = new Album (albumPath: albumPath, share: this);

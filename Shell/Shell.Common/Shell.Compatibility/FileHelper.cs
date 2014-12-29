@@ -45,6 +45,16 @@ namespace Shell.Compatibility
         {
             return false;
         }
+
+        public virtual bool CreateSymLink (string target, string symLink)
+        {
+            return false;
+        }
+
+        public virtual string ReadSymLink (string path)
+        {
+            return null;
+        }
     }
 }
 

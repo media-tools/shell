@@ -12,7 +12,7 @@ namespace Shell.GoogleSync.Photos
 
         public WebAlbum Album { get; private set; }
 
-        public Photo InternalPhoto { get; private set; }
+        //private Photo InternalPhoto { get; set; }
 
         public string Title { get; private set; }
 
@@ -24,15 +24,15 @@ namespace Shell.GoogleSync.Photos
         {
             AlbumCollection = albumCollection;
             Album = album;
-            InternalPhoto = internalPhoto;
-            Update ();
+            //InternalPhoto = internalPhoto;
+            Update (internalPhoto);
         }
 
-        private void Update ()
+        private void Update (Photo internalPhoto)
         {
-            Title = InternalPhoto.Title;
-            Id = InternalPhoto.Id;
-            Dimensions = new Size (InternalPhoto.Width, InternalPhoto.Height);
+            Title = internalPhoto.Title;
+            Id = internalPhoto.Id;
+            Dimensions = new Size (internalPhoto.Width, internalPhoto.Height);
         }
     }
 }

@@ -52,6 +52,7 @@
     <Compile Include="Shell.Pictures\Content\VideoLibrary.cs" />
     <Compile Include="Shell.Pictures\PictureTask.cs" />
     <Compile Include="Shell.Pictures\Files\MediaFileLibrary.cs" />
+    <Compile Include="Shell.Pictures\NamingUtilities.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

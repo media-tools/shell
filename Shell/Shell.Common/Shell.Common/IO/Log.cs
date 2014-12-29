@@ -141,8 +141,20 @@ namespace Shell.Common.IO
             printConsole (message);
         }
 
+        public static bool IsIncompleteLine = false;
+        public static int IncompleteLineMaxWidth = 0;
+
         private static void printConsole (IEnumerable<object> message)
         {
+            if (IsIncompleteLine) {
+                Console.ResetColor ();
+                //Console.WriteLine ();
+                int left = Console.CursorLeft;
+                Console.Write (String.Concat (Enumerable.Repeat (" ", Math.Max (0, IncompleteLineMaxWidth))));
+                Console.CursorLeft = left;
+                Console.Out.Flush ();
+                IsIncompleteLine = false;
+            }
             Console.ResetColor ();
             Console.Write (IndentString);
             // if there are any colored objects in the message

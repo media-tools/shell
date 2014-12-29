@@ -8,6 +8,7 @@ using Newtonsoft.Json.Linq;
 using Shell.Common.IO;
 using Shell.Pictures.Content;
 using Shell.Common.Util;
+using Shell.Common.Shares;
 
 namespace Shell.Pictures.Files
 {
@@ -149,7 +150,6 @@ namespace Shell.Pictures.Files
         public static bool RenamePath (ref string fullPath, string oldPath, string newPath)
         {
             try {
-                Log.Message ();
                 Log.Message ("Rename file: ", Path.GetFileName (oldPath), " => ", Path.GetFileName (newPath));
                 if (File.Exists (newPath) && File.Exists (oldPath)) {
                     File.Delete (newPath);
@@ -168,6 +168,11 @@ namespace Shell.Pictures.Files
             return Picture.IsValidFile (fullPath: fullPath) || Audio.IsValidFile (fullPath: fullPath) || Video.IsValidFile (fullPath: fullPath) || Document.IsValidFile (fullPath: fullPath);
         }
 
+        public static bool IsIgnoredFile (string fullPath)
+        {
+            return Path.GetFileName (fullPath) == CommonShare<PictureShare>.CONFIG_FILENAME;
+        }
+
         public static bool HasNoFileEnding (string fullPath)
         {
             bool hasNoEnding;
@@ -183,7 +188,12 @@ namespace Shell.Pictures.Files
 
                 hasNoEnding = !containsLetters || containsWhitespaces || containsPunctuation;
 
-                Log.Debug ("HasNoEnding: result=", hasNoEnding, ", fileName=", fileName, ", lastPart=", lastPart, ", containsLetters=", containsLetters, ", containsWhitespaces=", containsWhitespaces, ", containsPunctuation=", containsPunctuation);
+                if (hasNoEnding) {
+                    Log.Debug ("File has no extension: ", fileName);
+                    Log.Indent++;
+                    Log.Debug ("HasNoFileEnding: result=", hasNoEnding, ", fileName=", fileName, ", lastPart=", lastPart, ", containsLetters=", containsLetters, ", containsWhitespaces=", containsWhitespaces, ", containsPunctuation=", containsPunctuation);
+                    Log.Indent--;
+                }
             }
             return hasNoEnding;
         }

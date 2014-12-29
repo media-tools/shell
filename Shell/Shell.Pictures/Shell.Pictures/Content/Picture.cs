@@ -98,7 +98,6 @@ namespace Shell.Pictures.Content
             string newPath = Path.GetDirectoryName (oldPath) + SystemInfo.PathSeparator + Path.GetFileNameWithoutExtension (oldPath) + ".jpg";
 
             try {
-                Log.Message ();
                 Log.Message ("Convert picture to JPEG: ", Path.GetFileName (oldPath), " => ", Path.GetFileName (newPath));
                 Image original = Image.FromFile (oldPath);
                 EncoderParameters encoderParams = new EncoderParameters (1);

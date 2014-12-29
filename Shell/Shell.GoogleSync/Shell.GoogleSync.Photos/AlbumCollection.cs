@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Google.GData.Client;
 using Google.GData.Photos;
 using Shell.Common.IO;
 using Shell.Common.Tasks;
+using Shell.Common.Util;
 using Shell.GoogleSync.Core;
 using Shell.Pictures;
 using Shell.Pictures.Content;
 using Shell.Pictures.Files;
 using Picasa = Google.Picasa;
-using System.Threading.Tasks;
 
 namespace Shell.GoogleSync.Photos
 {
@@ -113,22 +114,12 @@ namespace Shell.GoogleSync.Photos
         private void CreateMissingWebAlbums (PictureShare share)
         {
             if (share.Albums.Count > 0) {
-                //  albums
-                Log.Message ("List local albums:");
-                Log.Indent++;
-                foreach (Album localAlbum in share.Albums) {
-                    if (PhotoSyncUtilities.IsIncludedInSync (localAlbum)) {
-                        string albumTitle = PhotoSyncUtilities.ToSyncedAlbumName (localAlbum);
-                        Log.Message ("- ", Log.FillOrCut (text: albumTitle, length: 60, ending: "...]"), " files: ", string.Join (", ", localAlbum.Files.Count));
-                    }
-                }
-                Log.Indent--;
-
-                WebAlbum[] webAlbums = GetAlbums ();
-
                 // create missing web albums
                 Log.Message ("Create non-existant web albums:");
                 Log.Indent++;
+
+                WebAlbum[] webAlbums = GetAlbums ();
+
                 int countNonExistantAlbums = 0;
                 foreach (Album localAlbum in share.Albums) {
                     if (PhotoSyncUtilities.IsIncludedInSync (localAlbum)) {
@@ -165,16 +156,75 @@ namespace Shell.GoogleSync.Photos
             }
         }
 
+        private void RenameWebAlbums ()
+        {
+            Log.Message ("Rename web albums to normalized names:");
+            Log.Indent++;
+
+            WebAlbum[] webAlbums = GetAlbums ();
+            Dictionary<string,string> NewAlbumTitles = new Dictionary<string, string> ();
+
+            int count = 0;
+            foreach (WebAlbum webAlbum in webAlbums) {
+                if (!NamingUtilities.IsNormalizedAlbumName (webAlbum.Title)) {
+                    NewAlbumTitles [webAlbum.Title] = NamingUtilities.NormalizeAlbumName (webAlbum.Title);
+                }
+            }
+
+            CatchErrors (() => {
+                AlbumQuery query = new AlbumQuery (PicasaQuery.CreatePicasaUri (account.Id));
+                PicasaFeed feed = service.Query (query);
+
+                foreach (PicasaEntry entry in feed.Entries) {
+                    if (NewAlbumTitles.ContainsKey (entry.Title.Text)) {
+                        string newTitle = NewAlbumTitles [entry.Title.Text];
+                        Log.Message ("Rename: ", entry.Title.Text, " => ", newTitle);
+                        entry.Title.Text = newTitle;
+                        entry.Summary.Text = newTitle;
+                        entry.Update ();
+                        count++;
+                    }
+                }
+            });
+
+            if (count == 0) {
+                Log.Message ("All web albums have normalized names.");
+            }
+
+            Log.Indent--;
+        }
+
+        public void PrintLocalAlbums (PictureShare share)
+        {
+            // print list of local albums
+            Log.Message ("List local albums:");
+            Log.Indent++;
+            foreach (Album localAlbum in share.Albums) {
+                if (PhotoSyncUtilities.IsIncludedInSync (localAlbum)) {
+                    string albumTitle = PhotoSyncUtilities.ToSyncedAlbumName (localAlbum);
+                    Log.Message ("- ", Log.FillOrCut (text: albumTitle, length: 60, ending: "...]"), " files: ", string.Join (", ", localAlbum.Files.Count));
+                }
+            }
+            Log.Indent--;
+        }
+
         private Dictionary<WebAlbum, WebPhoto[]> ListWebAlbums (PictureShare share)
         {
             // list photos in web albums
             Log.Message ("List photos in web albums: ");
             Log.Indent++;
+
             Dictionary<WebAlbum, WebPhoto[]> webAlbums = new Dictionary<WebAlbum, WebPhoto[]> ();
+            WebAlbum[] source = GetAlbums ().Where (a => PhotoSyncUtilities.IsSyncedAlbum (a)).OrderBy (a => a.Title).ToArray ();
+
+            // open progress bar
+            ProgressBar progress = Log.OpenProgressBar (identifier: "AlbumCollection:ListWebAlbums:" + share.RootDirectory, description: "List photos in web albums...");
+            int i = 0;
+            int max = source.Length;
 
             object logLock = new object ();
-            Parallel.ForEach<WebAlbum> (
-                source: GetAlbums ().Where (a => PhotoSyncUtilities.IsSyncedAlbum (a)).OrderBy (a => a.Title),
+            CustomParallel.ForEach<WebAlbum> (
+                source: source,
                 body: album => {
 
                     WebPhotoCollection result = GetPhotos (album: album);
@@ -198,18 +248,34 @@ namespace Shell.GoogleSync.Photos
                     }
 
                     if (!deleted) {
-                        lock (logLock) {
-                            Log.Message ("- ", Log.FillOrCut (text: album.Title, length: 60, ending: "...]"), " files: ", string.Join (", ", result.NumResults));
-                            Log.Indent += 2;
-                            foreach (object[] message in result.Messages) {
-                                Log.Message (message);
+                        //Log.Message ("- ", Log.FillOrCut (text: album.Title, length: 60, ending: "...]"), " files: ", string.Join (", ", result.NumResults));
+                        if (result.Messages.Length > 0) {
+                            lock (logLock) {
+                                Log.Message ("- ", album.Title, ":");
+                                Log.Indent += 2;
+                                foreach (object[] message in result.Messages) {
+                                    Log.Message (message);
+                                }
+                                Log.Indent -= 2;
                             }
-                            Log.Indent -= 2;
                         }
+                    }
+
+                    string progressDescription = "album: " + album.Title + ", " + (deleted ? "deleted." : "files: " + string.Join (", ", result.NumResults));
+
+                    lock (logLock) {
+                        progress.Print (current: i, min: 0, max: max, currentDescription: progressDescription, showETA: true, updateETA: false);
+                        ++i;
                     }
                 }
             );
+
+            progress.Finish ();
             Log.Indent--;
+
+            GC.Collect ();
+            GC.WaitForPendingFinalizers ();
+
             return webAlbums;
         }
 
@@ -357,6 +423,9 @@ namespace Shell.GoogleSync.Photos
 
         public void UploadShare (PictureShare share, Type[] selectedTypes)
         {
+            // rename web albums to normalized names
+            RenameWebAlbums ();
+
             // create missing web albums
             CreateMissingWebAlbums (share: share);
 

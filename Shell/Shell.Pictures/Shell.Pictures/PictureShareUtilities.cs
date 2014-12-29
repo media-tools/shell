@@ -13,7 +13,7 @@ namespace Shell.Pictures
 
         public static string GetRelativePath (string fullPath, PictureShare share)
         {
-            return fullPath.Substring (share.RootDirectory.Length).TrimStart ('/', '\\');
+            return fullPath.Substring (share.RootDirectory.Length).Trim ('/', '\\');
         }
 
         public static string GetAlbumPath (string fullPath, PictureShare share)

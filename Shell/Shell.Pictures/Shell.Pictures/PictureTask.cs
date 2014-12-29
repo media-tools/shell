@@ -49,7 +49,7 @@ namespace Shell.Pictures
             PictureShareManager shares = new PictureShareManager (rootDirectory: "/", filesystems: fs);
             shares.Initialize (cached: true);
             shares.Deserialize ();
-            shares.Print ();
+            // shares.Print ();
             shares.Index ();
             shares.Serialize ();
         }
@@ -59,7 +59,7 @@ namespace Shell.Pictures
             PictureShareManager shares = new PictureShareManager (rootDirectory: "/", filesystems: fs);
             shares.Initialize (cached: true);
             shares.Deserialize ();
-            shares.Print ();
+            // shares.Print ();
             shares.Clean ();
             shares.Serialize ();
         }

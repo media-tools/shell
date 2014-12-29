@@ -69,6 +69,7 @@
     <Compile Include="Shell.Common\Util\ValueObject.cs" />
     <Compile Include="Shell.Common\IO\TaggedLog.cs" />
     <Compile Include="Shell.Common\Util\TimeSpanExtension.cs" />
+    <Compile Include="Shell.Common\Util\CustomParallel.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

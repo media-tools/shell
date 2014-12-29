@@ -350,6 +350,31 @@ namespace Shell.GoogleSync.Contacts
             Log.Debug ("Phonenumbers:", string.Join (", ", contact.Phonenumbers.Select (p => p.Value + " (" + (p.Rel != null ? p.Rel : p.Label) + ")")));
             Log.Debug ("PostalAddresses:", string.Join ("; ", contact.PostalAddresses.Select (a => a.Format ())));
 
+
+            if (string.Join (", ", contact.Emails.Select (e => e.Address)).Contains ("tobias.schulz.games")) {
+                Log.Error ("Delete odd contact!!!");
+                //ContactsRequest cr = new ContactsRequest (settings);
+                //cr.Delete (contact);
+
+                contact.Name.FullName = "Unknown";
+                contact.Name.GivenName = "Unknown";
+                contact.Name.FamilyName = "";
+                contact.Name.NamePrefix = "";
+                contact.Name.NameSuffix = "";
+                contact.Name.AdditionalName = "";
+                contact.Emails.Clear ();
+                contact.Organizations.Clear ();
+                contact.Languages.Clear ();
+                contact.IMs.Clear ();
+                contact.Phonenumbers.Clear ();
+                contact.PostalAddresses.Clear ();
+                contact.ContactEntry.Relations.Clear ();
+                contact.ContactEntry.Websites.Clear ();
+                contact.ContactEntry.Nickname = "";
+                contact.ContactEntry.ShortName = "";
+            }
+
+
             CatchErrors (() => {
                 ContactsRequest cr = new ContactsRequest (settings);
                 cr.Update (contact);

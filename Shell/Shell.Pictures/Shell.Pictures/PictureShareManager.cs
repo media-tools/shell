@@ -29,7 +29,7 @@ namespace Shell.Pictures
         {
             if (!cached || !fs.Config.FileExists (path: "trees.txt")) {
                 Func<FileInfo, bool> onlyPictureConfig = fileInfo => fileInfo.Name == CommonShare<PictureShare>.CONFIG_FILENAME;
-                IEnumerable<FileInfo> configFiles = FileSystemLibrary.GetFileList (rootDirectory: "/", fileFilter: onlyPictureConfig, dirFilter: dir => true, symlinks: false);
+                IEnumerable<FileInfo> configFiles = FileSystemLibrary.GetFileList (rootDirectory: "/", fileFilter: onlyPictureConfig, dirFilter: dir => true, followSymlinks: false);
                 fs.Config.WriteAllLines (path: "trees.txt", contents: from file in configFiles
                                                                                   where file.Name == CommonShare<PictureShare>.CONFIG_FILENAME
                                                                                   select file.FullName);

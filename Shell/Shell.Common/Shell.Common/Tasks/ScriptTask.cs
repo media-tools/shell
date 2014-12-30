@@ -4,7 +4,7 @@ using Shell.Common.IO;
 
 namespace Shell.Common.Tasks
 {
-    public abstract class ScriptTask
+    public abstract class ScriptTask : IConfigurable
     {
         public string Name { protected set; get; }
 
@@ -17,7 +17,7 @@ namespace Shell.Common.Tasks
 
         public string[] Options { protected set; get; }
 
-        public string[] ParameterSyntax { protected set; get; }
+        public virtual string[] ParameterSyntax { protected set; get; }
 
         public string[] Description { protected set; get; }
 
@@ -26,6 +26,7 @@ namespace Shell.Common.Tasks
         public ScriptTask ()
         {
             ParameterSyntax = new [] { "" };
+            Description = new [] { "" };
         }
 
         protected void CheckValid ()
@@ -49,6 +50,11 @@ namespace Shell.Common.Tasks
                 }
                 ++i;
             }
+            CheckValidInternal ();
+        }
+
+        protected virtual void CheckValidInternal ()
+        {
         }
 
         public void Run (string[] args)
@@ -56,8 +62,8 @@ namespace Shell.Common.Tasks
             CheckValid ();
             
             fs = new FileSystems {
-                Config = new FileSystem (task: this, type: FileSystemType.Config),
-                Runtime = new FileSystem (task: this, type: FileSystemType.Runtime)
+                Config = new FileSystem (configurable: this, type: FileSystemType.Config),
+                Runtime = new FileSystem (configurable: this, type: FileSystemType.Runtime)
             };
             InternalRun (args);
         }

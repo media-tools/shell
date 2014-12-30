@@ -15,18 +15,10 @@ namespace Shell.Common.IO
         public string RootDirectory = "";
         private static HashSet<string> InstalledPackages = new HashSet<string> ();
 
-        public FileSystem (ScriptTask task, FileSystemType type)
+        public FileSystem (IConfigurable configurable, FileSystemType type)
             : this (type: type)
         {
-            RootDirectory += SystemInfo.PathSeparator + task.ConfigName;
-            Directory.CreateDirectory (RootDirectory);
-
-        }
-
-        public FileSystem (Library library, FileSystemType type)
-            : this (type: type)
-        {
-            RootDirectory += SystemInfo.PathSeparator + library.ConfigName;
+            RootDirectory += SystemInfo.PathSeparator + configurable.ConfigName;
             Directory.CreateDirectory (RootDirectory);
 
         }

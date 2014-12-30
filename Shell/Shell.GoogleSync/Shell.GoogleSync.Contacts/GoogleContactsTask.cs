@@ -5,6 +5,7 @@ using Shell.Common.IO;
 using Shell.Common.Tasks;
 using Shell.Common.Util;
 using Shell.GoogleSync.Core;
+using Shell.Namespaces;
 
 namespace Shell.GoogleSync.Contacts
 {
@@ -19,8 +20,8 @@ namespace Shell.GoogleSync.Contacts
                 "Synchronize the google contacts",
                 "Clean the google contacts of all users"
             };
-            Options = new [] { "google-contacts", "g-contacts" };
-            ConfigName = "Google";
+            Options = new [] { "google-contacts" };
+            ConfigName = NamespaceGoogle.CONFIG_NAME;
             ParameterSyntax = new [] { "list", "config", "sync", "clean" };
         }
 

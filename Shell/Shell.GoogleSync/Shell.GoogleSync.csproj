@@ -74,21 +74,6 @@
     <Reference Include="Zlib.Portable">
       <HintPath>..\packages\Zlib.Portable.1.10.0\lib\portable-net4+sl5+wp8+win8+wpa81+MonoTouch+MonoAndroid\Zlib.Portable.dll</HintPath>
     </Reference>
-    <Reference Include="Google.Apis.Core">
-      <HintPath>..\packages\Google.Apis.Core.1.9.0\lib\portable-net40+sl50+win+wpa81+wp80\Google.Apis.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="Google.Apis.Auth">
-      <HintPath>..\packages\Google.Apis.Auth.1.9.0\lib\net40\Google.Apis.Auth.dll</HintPath>
-    </Reference>
-    <Reference Include="Google.Apis.Auth.PlatformServices">
-      <HintPath>..\packages\Google.Apis.Auth.1.9.0\lib\net40\Google.Apis.Auth.PlatformServices.dll</HintPath>
-    </Reference>
-    <Reference Include="Google.Apis">
-      <HintPath>..\packages\Google.Apis.1.9.0\lib\net40\Google.Apis.dll</HintPath>
-    </Reference>
-    <Reference Include="Google.Apis.PlatformServices">
-      <HintPath>..\packages\Google.Apis.1.9.0\lib\net40\Google.Apis.PlatformServices.dll</HintPath>
-    </Reference>
     <Reference Include="log4net">
       <HintPath>..\packages\log4net.2.0.3\lib\net40-full\log4net.dll</HintPath>
     </Reference>
@@ -101,6 +86,21 @@
     </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\packages\Newtonsoft.Json.6.0.7\lib\net40\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="Google.Apis.Core">
+      <HintPath>..\packages\Google.Apis.Core.1.9.1\lib\portable-net40+sl50+win+wpa81+wp80\Google.Apis.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Google.Apis.Auth">
+      <HintPath>..\packages\Google.Apis.Auth.1.9.1\lib\net40\Google.Apis.Auth.dll</HintPath>
+    </Reference>
+    <Reference Include="Google.Apis.Auth.PlatformServices">
+      <HintPath>..\packages\Google.Apis.Auth.1.9.1\lib\net40\Google.Apis.Auth.PlatformServices.dll</HintPath>
+    </Reference>
+    <Reference Include="Google.Apis">
+      <HintPath>..\packages\Google.Apis.1.9.1\lib\net40\Google.Apis.dll</HintPath>
+    </Reference>
+    <Reference Include="Google.Apis.PlatformServices">
+      <HintPath>..\packages\Google.Apis.1.9.1\lib\net40\Google.Apis.PlatformServices.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -122,6 +122,8 @@
     <Compile Include="Shell.GoogleSync.Photos\AlbumSyncStatus.cs" />
     <Compile Include="Shell.GoogleSync.Photos\ImageResizeUtilities.cs" />
     <Compile Include="Shell.GoogleSync.Photos\WebPhotoCollection.cs" />
+    <Compile Include="Shell.GoogleSync.Photos\GoogleShareManager.cs" />
+    <Compile Include="Shell.GoogleSync.Core\NamespaceGoogle.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" />
@@ -137,13 +139,13 @@
       <Project>{CBB5DE48-A305-4F9C-88F3-F0F071AC3298}</Project>
       <Name>Shell.Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Shell.Pictures\Shell.Pictures.csproj">
-      <Project>{F2C117FF-E1E9-4512-BECB-CBEBBA7FAB05}</Project>
-      <Name>Shell.Pictures</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Shell.Common.Shares\Shell.Common.Shares.csproj">
       <Project>{C58D63FE-50CC-4EA7-98AA-AE7EBC5B8330}</Project>
       <Name>Shell.Common.Shares</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Shell.Media\Shell.Media.csproj">
+      <Project>{F2C117FF-E1E9-4512-BECB-CBEBBA7FAB05}</Project>
+      <Name>Shell.Media</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>

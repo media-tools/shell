@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace Shell.Common.Shares
 {
-    public abstract class CommonShare<Derived> : ValueObject<Derived>
+    public abstract class CommonShare<Derived> : ValueObject<Derived>, IFilterable
         where Derived : CommonShare<Derived>
     {
         public static string CONFIG_FILENAME = "control.ini";
@@ -141,6 +141,11 @@ namespace Shell.Common.Shares
         public string WritePathsExclude {
             get { return config [ConfigSection, "write-paths-exclude", ""]; }
             set { config [ConfigSection, "write-paths-exclude", ""] = value; }
+        }
+
+        public string[] FilterKeys ()
+        {
+            return new [] { Name, RootDirectory };
         }
     }
 }

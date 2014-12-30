@@ -23,7 +23,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shell.GoogleSync", "Shell.G
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shell.Old", "Shell.Old\Shell.Old.csproj", "{434A00B7-00D4-43D8-A2C6-308D8A294D26}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shell.Pictures", "Shell.Pictures\Shell.Pictures.csproj", "{F2C117FF-E1E9-4512-BECB-CBEBBA7FAB05}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shell.Media", "Shell.Media\Shell.Media.csproj", "{F2C117FF-E1E9-4512-BECB-CBEBBA7FAB05}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shell.Common.Shares", "Shell.Common.Shares\Shell.Common.Shares.csproj", "{C58D63FE-50CC-4EA7-98AA-AE7EBC5B8330}"
 EndProject

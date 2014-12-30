@@ -6,11 +6,11 @@ using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Shell.Common.IO;
-using Shell.Pictures.Content;
+using Shell.Media.Content;
 using Shell.Common.Util;
 using Shell.Common.Shares;
 
-namespace Shell.Pictures.Files
+namespace Shell.Media.Files
 {
     public class MediaFile : ValueObject<MediaFile>
     {
@@ -26,24 +26,24 @@ namespace Shell.Pictures.Files
 
         public Medium Medium { get; private set; }
 
-        public PictureShare Share { get; private set; }
+        public MediaShare Share { get; private set; }
 
         private static MediaFileLibrary lib = new MediaFileLibrary ();
 
         public bool IsDeleted { get; set; }
 
-        public MediaFile (string fullPath, PictureShare share)
+        public MediaFile (string fullPath, MediaShare share)
         {
             Debug.Assert (fullPath.StartsWith (share.RootDirectory), "file path is not in root directory (FullName=" + fullPath + ",root=" + share.RootDirectory + ")");
             Share = share;
             FullPath = fullPath;
             Name = Path.GetFileName (fullPath);
             Extension = Path.GetExtension (fullPath);
-            RelativePath = PictureShareUtilities.GetRelativePath (fullPath: fullPath, share: share);
-            AlbumPath = PictureShareUtilities.GetAlbumPath (fullPath: fullPath, share: share);
+            RelativePath = MediaShareUtilities.GetRelativePath (fullPath: fullPath, share: share);
+            AlbumPath = MediaShareUtilities.GetAlbumPath (fullPath: fullPath, share: share);
         }
 
-        public MediaFile (string fullPath, HexString hash, PictureShare share)
+        public MediaFile (string fullPath, HexString hash, MediaShare share)
             : this (fullPath: fullPath, share: share)
         {
             Medium medium;
@@ -170,7 +170,7 @@ namespace Shell.Pictures.Files
 
         public static bool IsIgnoredFile (string fullPath)
         {
-            return Path.GetFileName (fullPath) == CommonShare<PictureShare>.CONFIG_FILENAME;
+            return Path.GetFileName (fullPath) == CommonShare<MediaShare>.CONFIG_FILENAME;
         }
 
         public static bool HasNoFileEnding (string fullPath)

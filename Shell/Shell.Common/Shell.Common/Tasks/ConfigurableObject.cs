@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -9,7 +9,7 @@ using Shell.Common.Util;
 
 namespace Shell.Common.Tasks
 {
-    public abstract class Library : IConfigurable
+    public abstract class ConfigurableObject : ValueObject<ConfigurableObject>, IConfigurable
     {
         private string _configName;
 

@@ -1,8 +1,9 @@
 ﻿using System;
 using Google.GData.Client;
+using Shell.Common.IO;
 using Shell.Common.Tasks;
 using Shell.GoogleSync.Core;
-using Shell.Common.IO;
+using Shell.Namespaces;
 
 namespace Shell.GoogleSync.Core
 {
@@ -22,7 +23,7 @@ namespace Shell.GoogleSync.Core
 
         public GDataLibrary (GoogleAccount account)
         {
-            ConfigName = "Google";
+            ConfigName = NamespaceGoogle.CONFIG_NAME;
             this.account = account;
 
             NetworkHelper.DisableCertificateChecks ();
@@ -62,7 +63,7 @@ namespace Shell.GoogleSync.Core
         // use this contuctor only for accessing the file system variables !
         public GDataLibrary ()
         {
-            ConfigName = "Google";
+            ConfigName = NamespaceGoogle.CONFIG_NAME;
         }
 
         public void CatchErrors (Action todo)

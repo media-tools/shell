@@ -2,10 +2,10 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Shell.Common.Util;
-using Shell.Pictures.Files;
+using Shell.Media.Files;
 using System.Collections.Generic;
 
-namespace Shell.Pictures.Content
+namespace Shell.Media.Content
 {
     public abstract class Medium : ValueObject<Medium>
     {

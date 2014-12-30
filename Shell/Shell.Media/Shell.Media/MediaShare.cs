@@ -9,14 +9,14 @@ using Shell.Common.Shares;
 using Shell.Common.Tasks;
 using Shell.Common.Util;
 using Shell.Compatibility;
-using Shell.Pictures.Content;
-using Shell.Pictures.Files;
+using Shell.Media.Content;
+using Shell.Media.Files;
 
-namespace Shell.Pictures
+namespace Shell.Media
 {
-    public sealed class PictureShare : CommonShare<PictureShare>
+    public sealed class MediaShare : CommonShare<MediaShare>
     {
-        private static Dictionary<string, PictureShare> Instances = new Dictionary<string, PictureShare> ();
+        private static Dictionary<string, MediaShare> Instances = new Dictionary<string, MediaShare> ();
 
         private static string CONFIG_SECTION = "Pictures";
 
@@ -40,16 +40,16 @@ namespace Shell.Pictures
             }
         }
 
-        public static PictureShare CreateInstance (string configPath, FileSystems filesystems)
+        public static MediaShare CreateInstance (string configPath, FileSystems filesystems)
         {
             if (Instances.ContainsKey (configPath)) {
                 return Instances [configPath];
             } else {
-                return Instances [configPath] = new PictureShare (path: configPath, filesystems: filesystems);
+                return Instances [configPath] = new MediaShare (path: configPath, filesystems: filesystems);
             }
         }
 
-        private PictureShare (string path, FileSystems filesystems)
+        private MediaShare (string path, FileSystems filesystems)
             : base (path: path, configSection: CONFIG_SECTION)
         {
             fs = filesystems;
@@ -111,7 +111,7 @@ namespace Shell.Pictures
 
         public override bool Equals (object obj)
         {
-            return ValueObject<PictureShare>.Equals (myself: this, obj: obj);
+            return ValueObject<MediaShare>.Equals (myself: this, obj: obj);
         }
 
         public override int GetHashCode ()
@@ -119,14 +119,14 @@ namespace Shell.Pictures
             return base.GetHashCode ();
         }
 
-        public static bool operator == (PictureShare a, PictureShare b)
+        public static bool operator == (MediaShare a, MediaShare b)
         {
-            return ValueObject<PictureShare>.Equality (a, b);
+            return ValueObject<MediaShare>.Equality (a, b);
         }
 
-        public static bool operator != (PictureShare a, PictureShare b)
+        public static bool operator != (MediaShare a, MediaShare b)
         {
-            return ValueObject<PictureShare>.Inequality (a, b);
+            return ValueObject<MediaShare>.Inequality (a, b);
         }
 
         public void Index ()
@@ -175,10 +175,10 @@ namespace Shell.Pictures
                 Document.RunIndexHooks (fullPath: ref fullPath);
 
                 // create album, if necessery
-                string albumPath = PictureShareUtilities.GetAlbumPath (fullPath: fullPath, share: this);
+                string albumPath = MediaShareUtilities.GetAlbumPath (fullPath: fullPath, share: this);
                 Album album = albumInternalDict.TryCreateEntry (key: albumPath, defaultValue: () => new Album (albumPath: albumPath, share: this), onValueCreated: a => Albums.Add (a));
 
-                string relativePath = PictureShareUtilities.GetRelativePath (fullPath: fullPath, share: this);
+                string relativePath = MediaShareUtilities.GetRelativePath (fullPath: fullPath, share: this);
 
                 Func<MediaFile, bool> searchFile = file => file.FullPath == fullPath;
                 // if the file has already been indexed
@@ -248,7 +248,7 @@ namespace Shell.Pictures
                     DirectoryInfo[] pictureDirectories = FileSystemLibrary.GetDirectoryList (rootDirectory: RootDirectory, dirFilter: dir => true, followSymlinks: false, returnSymlinks: true).ToArray ();
                     foreach (string fullPath in from info in pictureDirectories select info.FullName) {
                         // Log.Debug (fullPath);
-                        string albumPath = PictureShareUtilities.GetRelativePath (fullPath: fullPath, share: this);
+                        string albumPath = MediaShareUtilities.GetRelativePath (fullPath: fullPath, share: this);
 
                         // if the album name is not normalized
                         if (albumPath.Length > 0 && !NamingUtilities.IsNormalizedAlbumName (albumPath)) {
@@ -364,6 +364,7 @@ namespace Shell.Pictures
             if (verbose) {
                 Log.Debug ("Serialize share: ", Name, ": media...");
             }
+            
 
             foreach (Medium medium in Media.Values) {
                 serializedMedia [section: medium.Hash.Hash, option: "type", defaultValue: ""] = medium.Type;
@@ -378,12 +379,14 @@ namespace Shell.Pictures
             Commons.PendingOperations--;
         }
 
-        public void Deserialize ()
+        public void Deserialize (bool verbose)
         {
             Media.Clear ();
             Albums.Clear ();
 
-            Log.Debug ("Deserialize share: ", Name, ": media...");
+            if (verbose) {
+                Log.Debug ("Deserialize share: ", Name, ": media...");
+            }
 
             foreach (string _hash in serializedMedia.Sections) {
                 HexString hash = new HexString { Hash = _hash };
@@ -398,6 +401,7 @@ namespace Shell.Pictures
                 } else if (type == Document.TYPE) {
                     medium = new Document (hash: hash);
                 } else {
+                    Log.Error ("Error while deserializing share: ", Name, " (media)");
                     Log.Error ("Unknown type: " + type + " (hash: " + hash + ")");
                     continue;
                 }
@@ -407,7 +411,9 @@ namespace Shell.Pictures
                 Media [medium.Hash] = medium;
             }
 
-            Log.Debug ("Deserialize share: ", Name, ": albums...");
+            if (verbose) {
+                Log.Debug ("Deserialize share: ", Name, ": albums...");
+            }
 
             foreach (string albumPath in serializedAlbums.Sections) {
                 Album album = new Album (albumPath: albumPath, share: this);
@@ -426,9 +432,25 @@ namespace Shell.Pictures
             serializedMedia.Save ();
         }
 
-        public void Sort ()
+        public void PrintAlbums (Filter albumFilter)
         {
-            throw new NotImplementedException ();
+            Log.Message (Name, " (in ", RootDirectory, "):");
+            Log.Indent++;
+            Log.Message (Albums.Filter (albumFilter).ToStringTable (
+                a => LogColor.Reset,
+                new[] { "Album", "Picture Files", "Audio Files", "Video Files", "Document Files" },
+                a => a.AlbumPath,
+                a => printCount (count: a.Files.Count (f => f.Medium is Picture), ifZero: "-"),
+                a => printCount (count: a.Files.Count (f => f.Medium is Audio), ifZero: "-"),
+                a => printCount (count: a.Files.Count (f => f.Medium is Video), ifZero: "-"),
+                a => printCount (count: a.Files.Count (f => f.Medium is Document), ifZero: "-")
+            ));
+            Log.Indent--;
+        }
+
+        private string printCount (int count, string ifZero)
+        {
+            return count > 0 ? count + "" : ifZero;
         }
     }
 }

@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using Shell.Pictures.Files;
 using System.Linq;
 using Shell.Common.IO;
+using Shell.Common.Util;
+using Shell.Media.Files;
 
-namespace Shell.Pictures
+namespace Shell.Media
 {
-    public class Album
+    public class Album : IFilterable
     {
         public string AlbumPath { get; private set; }
 
@@ -16,7 +17,7 @@ namespace Shell.Pictures
 
         public bool IsHighQuality { get; set; }
 
-        public Album (string albumPath, PictureShare share)
+        public Album (string albumPath, MediaShare share)
         {
             AlbumPath = albumPath;
             Files = new List<MediaFile> ();
@@ -55,6 +56,11 @@ namespace Shell.Pictures
                 result = null;
                 return false;
             }
+        }
+
+        public string[] FilterKeys ()
+        {
+            return new [] { AlbumPath };
         }
     }
 }

@@ -1,8 +1,9 @@
 using System;
-using Shell.Common.Tasks;
-using Shell.Common.IO;
 using System.Collections.Generic;
 using System.Linq;
+using Shell.Common.IO;
+using Shell.Common.Tasks;
+using Shell.Namespaces;
 
 namespace Shell.GoogleSync.Core
 {
@@ -16,8 +17,8 @@ namespace Shell.GoogleSync.Core
                 "List all google accounts",
                 "Try to authenticate all google acounts"
             };
-            Options = new [] { "google-users", "g-users" };
-            ConfigName = "Google";
+            Options = new [] { "google-users" };
+            ConfigName = NamespaceGoogle.CONFIG_NAME;
             ParameterSyntax = new [] { "add", "list", "auth" };
         }
 

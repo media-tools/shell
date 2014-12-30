@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
@@ -7,16 +8,16 @@ using Newtonsoft.Json.Linq;
 using Shell.Common.IO;
 using Shell.Common.Tasks;
 using Shell.Common.Util;
-using Shell.Pictures.Files;
-using System.Drawing.Imaging;
+using Shell.Namespaces;
+using Shell.Media.Files;
 
-namespace Shell.Pictures.Content
+namespace Shell.Media.Content
 {
     public sealed class PictureLibrary : Library
     {
         public PictureLibrary ()
         {
-            ConfigName = "Pictures";
+            ConfigName = NamespacePictures.CONFIG_NAME;
         }
 
         public List<ExifTag> GetExifTags (string fullPath)

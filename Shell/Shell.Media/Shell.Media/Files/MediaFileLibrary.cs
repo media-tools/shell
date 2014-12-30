@@ -3,15 +3,17 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Shell.Common.Tasks;
-using Shell.Pictures.Content;
+using Shell.Common.Util;
+using Shell.Namespaces;
+using Shell.Media.Content;
 
-namespace Shell.Pictures.Files
+namespace Shell.Media.Files
 {
     public sealed class MediaFileLibrary : Library
     {
         public MediaFileLibrary ()
         {
-            ConfigName = "Pictures";
+            ConfigName = NamespacePictures.CONFIG_NAME;
         }
 
         public bool IsUnknownMimeType (string mimeType)

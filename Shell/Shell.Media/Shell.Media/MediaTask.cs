@@ -2,23 +2,25 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Shell.Common;
-using Shell.Common.Tasks;
 using Shell.Common.IO;
+using Shell.Common.Tasks;
+using Shell.Common.Util;
+using Shell.Namespaces;
 
-namespace Shell.Pictures
+namespace Shell.Media
 {
-    public class PictureTask : ScriptTask, MainScriptTask
+    public class MediaTask : ScriptTask, MainScriptTask
     {
-        public PictureTask ()
+        public MediaTask ()
         {
-            Name = "Pictures";
-            ConfigName = "Pictures";
+            Name = "Media";
+            ConfigName = NamespacePictures.CONFIG_NAME;
             Description = new [] {
                 "Update the picture index of all shares",
                 "Update the picture index of all shares, and delete non-existant entries",
                 "Find all picture shares"
             };
-            Options = new [] { "pictures" };
+            Options = new [] { "media" };
             ParameterSyntax = new [] { "index", "clean", "find-shares" };
         }
 
@@ -46,29 +48,30 @@ namespace Shell.Pictures
 
         void index ()
         {
-            PictureShareManager shares = new PictureShareManager (rootDirectory: "/", filesystems: fs);
+            MediaShareManager shares = new MediaShareManager (rootDirectory: "/");
             shares.Initialize (cached: true);
             shares.Deserialize ();
             // shares.Print ();
-            shares.Index ();
+            shares.Index (shareFilter: Filter.None);
             shares.Serialize ();
         }
 
         void clean ()
         {
-            PictureShareManager shares = new PictureShareManager (rootDirectory: "/", filesystems: fs);
+            MediaShareManager shares = new MediaShareManager (rootDirectory: "/");
             shares.Initialize (cached: true);
             shares.Deserialize ();
             // shares.Print ();
-            shares.Clean ();
+            shares.Clean (shareFilter: Filter.None);
             shares.Serialize ();
         }
 
         void findShares ()
         {
-            PictureShareManager shares = new PictureShareManager (rootDirectory: "/", filesystems: fs);
+            MediaShareManager shares = new MediaShareManager (rootDirectory: "/");
             shares.Initialize (cached: false);
-            shares.Print ();
+            shares.Deserialize ();
+            shares.PrintShares (Filter.None);
         }
     }
 }

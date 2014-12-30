@@ -70,6 +70,11 @@
     <Compile Include="Shell.Common\IO\TaggedLog.cs" />
     <Compile Include="Shell.Common\Util\TimeSpanExtension.cs" />
     <Compile Include="Shell.Common\Util\CustomParallel.cs" />
+    <Compile Include="Mono.Options\Options.cs" />
+    <Compile Include="Shell.Common\Tasks\MonoOptionsScriptTask.cs" />
+    <Compile Include="Shell.Common\Util\Filter.cs" />
+    <Compile Include="Shell.Common\Tasks\IConfigurable.cs" />
+    <Compile Include="Shell.Common\Tasks\ConfigurableObject.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

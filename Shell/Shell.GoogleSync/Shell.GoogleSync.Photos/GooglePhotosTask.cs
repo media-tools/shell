@@ -1,149 +1,150 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Mono.Options;
 using Shell.Common.IO;
 using Shell.Common.Tasks;
+using Shell.Common.Util;
 using Shell.GoogleSync.Core;
-using Shell.Pictures;
-using Shell.Pictures.Content;
+using Shell.Namespaces;
+using Shell.Media;
+using Shell.Media.Content;
 
 namespace Shell.GoogleSync.Photos
 {
-    public class GooglePhotosTask : ScriptTask, MainScriptTask
+    public class GooglePhotosTask : MonoOptionsScriptTask, MainScriptTask
     {
         public GooglePhotosTask ()
         {
             Name = "GooglePhotos";
+            Options = new [] { "google-photos" };
+            ConfigName = NamespaceGoogle.CONFIG_NAME;
+
             Description = new [] {
-                "List the albums of all users",
-                "List the photos of a specified album",
-                "Configure google albums",
-                "Upload local photos and videos to google albums",
-                "Upload local photos to google albums",
-                "Upload local videos to google albums",
-                "Find all picture directories"
+                "Find all picture shares on your hard disk",
+                "Print the picture shares",
+                "Print the local albums of the specified user",
+                "Print the web albums of the specified user",
+                "Print the photos in the specified web album.",
+                "Upload local photos and videos",
             };
-            Options = new [] { "google-photos", "g-photos" };
-            ConfigName = "Google";
-            ParameterSyntax = new [] {
-                "list-albums",
-                "list-photos",
-                "config",
+            Parameters = new [] {
+                "find-shares",
+                "list-shares",
+                "list-local-albums",
+                "list-web-albums",
+                "list-web-photos",
                 "upload",
-                "upload-photos",
-                "upload-videos",
-                "find-shares"
+            };
+            Methods = new Action[] {
+                () => findShares (),
+                () => listShares (),
+                () => listLocalAlbums (),
+                () => listWebAlbums (),
+                () => listWebPhotos (),
+                () => upload (),
             };
         }
 
-        protected override void InternalRun (string[] args)
+        Type[] validTypes = new Type[] { typeof(Picture), typeof(Video) };
+        Filter googleUserFilter = Filter.None;
+        Filter shareFilter = Filter.None;
+        Filter albumFilter = Filter.None;
+
+        protected override void SetupOptions (ref OptionSet optionSet)
         {
-            if (args.Length >= 1) {
-                switch (args [0].ToLower ()) {
-                case "config":
-                    config ();
-                    break;
-                case "list-albums":
-                    listAlbums ();
-                    break;
-                case "list-photos":
-                    listPhotos ();
-                    break;
-                case "upload":
-                    upload (typeof(Picture), typeof(Video));
-                    break;
-                case "upload-photos":
-                    upload (typeof(Picture));
-                    break;
-                case "upload-videos":
-                    upload (typeof(Video));
-                    break;
-                case "find-shares":
-                    findShares ();
-                    break;
-                default:
-                    error ();
-                    break;
-                }
-            } else {
-                error ();
-            }
+            optionSet = optionSet
+                .Add ("only-photos",
+                "Upload only photos",
+                option => validTypes = new Type[] { typeof(Picture) })
+                .Add ("only-videos",
+                "Upload only videos",
+                option => validTypes = new Type[] { typeof(Video) })
+                .Add ("user=",
+                "Upload the share of the specified google user(s). Multiple users are seperated by ',' or ';'.",
+                option => googleUserFilter = Filter.ContainFilter (Filter.Split (option)))
+                .Add ("share=",
+                "Upload the share with the specified name(s). Multiple names are seperated by ',' or ';'.",
+                option => shareFilter = Filter.ContainFilter (Filter.Split (option)))
+                .Add ("album=",
+                "Upload only albums that begin with the specified prefix(es). Multiple prefixes are seperated by ',' or ';'.",
+                option => albumFilter = Filter.ContainFilter (Filter.Split (option)))
+                .Add ("debug-shares",
+                "Show debug messages and errors regarding disabled shares",
+                option => MediaShareManager.DEBUG_SHARES = true);
+
         }
 
-        void config ()
-        {
-        }
-
-        void listAlbums ()
+        void listWebAlbums ()
         {
             foreach (GoogleAccount acc in GoogleAccount.List()) {
-                Log.Message ("Google Account: ", acc);
-                Log.Indent++;
-                acc.Refresh ();
-                AlbumCollection albums = new AlbumCollection (account: acc);
-                albums.PrintAlbums ();
-                Log.Indent--;
-            }
-        }
-
-        void listPhotos ()
-        {
-            foreach (GoogleAccount acc in GoogleAccount.List()) {
-                Log.Message ("Google Account: ", acc);
-                Log.Indent++;
-                Log.Message ();
-                acc.Refresh ();
-
-                AlbumCollection albums = new AlbumCollection (account: acc);
-                foreach (WebAlbum album in albums.GetAlbums()) {
-                    Log.Message ("Album: ", album.Title);
+                if (googleUserFilter.Matches (acc)) {
+                    Log.Message ("Google Account: ", acc);
                     Log.Indent++;
-                    album.PrintPhotos ();
+                    acc.Refresh ();
+                    AlbumCollection albums = new AlbumCollection (account: acc);
+                    albums.PrintAlbums (albumFilter: albumFilter);
                     Log.Indent--;
                 }
-                Log.Indent--;
             }
         }
 
-        void upload (params Type[] validTypes)
+        void listWebPhotos ()
         {
-            PictureShareManager shares = new PictureShareManager (rootDirectory: "/", filesystems: new PictureDummyLibrary ().FileSystems);
-            shares.Initialize (cached: true);
-            shares.Deserialize ();
-
-            GoogleAccount[] googleAccounts = GoogleAccount.List ().ToArray ();
-
-            if (shares.PictureDirectories.Count != 0) {
-                // for all shares. ~/.bashrc
-                
-                foreach (PictureShare share in from share in shares.PictureDirectories.Values orderby share.RootDirectory select share) {
-                    Log.Message ();
-                    Log.Message ("Share: ", share);
+            foreach (GoogleAccount acc in GoogleAccount.List()) {
+                if (googleUserFilter.Matches (acc)) {
+                    Log.Message ("Google Account: ", acc);
                     Log.Indent++;
                     Log.Message ();
+                    acc.Refresh ();
 
-                    // if there is a valid google account config value
-                    if (!string.IsNullOrWhiteSpace (share.GoogleAccount)) {
-                        GoogleAccount[] matches = googleAccounts.Where (a => a.Emails.Replace (".", "").ToLower ().Contains (share.GoogleAccount.Replace (".", "").ToLower ())).ToArray ();
-
-                        // if there are no google accounts matching the value
-                        if (matches.Length == 0) {
-                            Log.Message ("No google accounts match this share.");
-                        }
-                        // if there are more than one matching google accounts 
-                        else if (matches.Length >= 2) {
-                            Log.Message ("More than one google account match this share: ", string.Join (", ", matches.Select (a => a.DisplayName + " <" + a.Emails + ">")));
-                        }
-                        // if there is exactly one matching google account!
-                        else {
-                            GoogleAccount account = matches [0];
-
-                            Log.Message ("One google account matches the share: ", account);
-                            account.Refresh ();
-                            AlbumCollection webAlbumCollection = new AlbumCollection (account: account);
-                            webAlbumCollection.UploadShare (share: share, selectedTypes: validTypes);
+                    AlbumCollection albums = new AlbumCollection (account: acc);
+                    foreach (WebAlbum album in albums.GetAlbums()) {
+                        if (albumFilter.Matches (album)) {
+                            Log.Message ("Album: ", album.Title);
+                            Log.Indent++;
+                            album.PrintPhotos ();
+                            Log.Indent--;
                         }
                     }
+                    Log.Indent--;
+                }
+            }
+        }
+
+        void upload ()
+        {
+            MediaShareManager shareManager = new MediaShareManager (rootDirectory: "/");
+            shareManager.Initialize (cached: true);
+            shareManager.Deserialize ();
+
+            GoogleShareManager googleShares = new GoogleShareManager (shareManager: shareManager);
+            googleShares.PrintShares (shareFilter: shareFilter, googleUserFilter: googleUserFilter);
+            MediaShare[] shares = googleShares.Shares;
+
+            if (shares.Length != 0) {
+                foreach (MediaShare share in shares.OrderBy (share => share.RootDirectory)) {
+                    GoogleAccount account = googleShares [share];
+
+                    // filter by google user!
+                    if (!googleUserFilter.Matches (account)) {
+                        Log.Debug ("Skip. (filtered by user filter: ", account, ")");
+                        continue;
+                    }
+                    // filter by share name!
+                    if (!shareFilter.Matches (share)) {
+                        Log.Debug ("Skip. (filtered by share filter: ", share, ")");
+                        continue;
+                    }
+
+                    Log.Message ("Share: ", share.Name, " (in ", share.RootDirectory, ")");
+                    Log.Indent++;
+
+                    Log.Message ("Google account: ", account);
+
+                    account.Refresh ();
+                    AlbumCollection webAlbumCollection = new AlbumCollection (account: account);
+                    webAlbumCollection.UploadShare (share: share, selectedTypes: validTypes, albumFilter: albumFilter);
 
                     Log.Indent--;
                     Log.Message ();
@@ -151,23 +152,36 @@ namespace Shell.GoogleSync.Photos
             } else {
                 Log.Message ("No shares are available for uploading.");
             }
-
-            shares.Serialize ();
         }
 
         void findShares ()
         {
-            PictureShareManager shares = new PictureShareManager (rootDirectory: "/", filesystems: new PictureDummyLibrary ().FileSystems);
-            shares.Initialize (cached: false);
-            shares.Print ();
+            MediaShareManager shareManager = new MediaShareManager (rootDirectory: "/");
+            shareManager.Initialize (cached: false);
+            shareManager.Deserialize ();
+
+            GoogleShareManager googleShares = new GoogleShareManager (shareManager: shareManager);
+            googleShares.PrintShares (shareFilter: shareFilter, googleUserFilter: googleUserFilter);
         }
 
-        protected class PictureDummyLibrary : Library
+        void listShares ()
         {
-            public PictureDummyLibrary ()
-            {
-                ConfigName = "Pictures";
-            }
+            MediaShareManager shareManager = new MediaShareManager (rootDirectory: "/");
+            shareManager.Initialize (cached: true);
+            shareManager.Deserialize ();
+
+            GoogleShareManager googleShares = new GoogleShareManager (shareManager: shareManager);
+            googleShares.PrintShares (shareFilter: shareFilter, googleUserFilter: googleUserFilter);
+        }
+
+        void listLocalAlbums ()
+        {
+            MediaShareManager shareManager = new MediaShareManager (rootDirectory: "/");
+            shareManager.Initialize (cached: true);
+            shareManager.Deserialize ();
+
+            GoogleShareManager googleShares = new GoogleShareManager (shareManager: shareManager);
+            googleShares.PrintAlbums (shareFilter: shareFilter, googleUserFilter: googleUserFilter, albumFilter: albumFilter);
         }
     }
 }

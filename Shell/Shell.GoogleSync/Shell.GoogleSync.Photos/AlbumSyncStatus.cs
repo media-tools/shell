@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Shell.Pictures;
-using Shell.Pictures.Content;
-using Shell.Pictures.Files;
+using Shell.Media;
+using Shell.Media.Content;
+using Shell.Media.Files;
 
 namespace Shell.GoogleSync.Photos
 {

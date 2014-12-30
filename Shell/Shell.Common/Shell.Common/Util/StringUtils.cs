@@ -46,6 +46,11 @@ namespace Shell.Common.Util
             var result = new string (Enumerable.Repeat (chars, 8).Select (s => s [random.Next (s.Length)]).ToArray ());
             return result;
         }
+
+        public static bool Contains (this string source, string toCheck, StringComparison comp)
+        {
+            return source.IndexOf (toCheck, comp) >= 0;
+        }
     }
 }
 

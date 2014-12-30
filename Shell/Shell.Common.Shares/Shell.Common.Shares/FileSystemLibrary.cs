@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Shell.Common.IO;
 using Shell.Common.Tasks;
 using Shell.Compatibility;
+using Shell.Common.Util;
 
 namespace Shell.Common.Shares
 {

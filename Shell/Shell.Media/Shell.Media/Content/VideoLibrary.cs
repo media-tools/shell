@@ -7,15 +7,16 @@ using Newtonsoft.Json.Linq;
 using Shell.Common.IO;
 using Shell.Common.Tasks;
 using Shell.Common.Util;
-using Shell.Pictures.Files;
+using Shell.Namespaces;
+using Shell.Media.Files;
 
-namespace Shell.Pictures.Content
+namespace Shell.Media.Content
 {
     public sealed class VideoLibrary : Library
     {
         public VideoLibrary ()
         {
-            ConfigName = "Pictures";
+            ConfigName = NamespacePictures.CONFIG_NAME;
         }
 
         private static VideoLibrary _instance;

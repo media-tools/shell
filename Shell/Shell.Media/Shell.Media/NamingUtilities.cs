@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 
-namespace Shell.Pictures
+namespace Shell.Media
 {
     public static class NamingUtilities
     {

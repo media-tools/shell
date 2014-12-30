@@ -88,13 +88,13 @@
       <Project>{B5516B19-633A-4601-8698-61AC2CBD6865}</Project>
       <Name>Shell.GoogleSync</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Shell.Pictures\Shell.Pictures.csproj">
-      <Project>{F2C117FF-E1E9-4512-BECB-CBEBBA7FAB05}</Project>
-      <Name>Shell.Pictures</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Shell.Common.Shares\Shell.Common.Shares.csproj">
       <Project>{C58D63FE-50CC-4EA7-98AA-AE7EBC5B8330}</Project>
       <Name>Shell.Common.Shares</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Shell.Media\Shell.Media.csproj">
+      <Project>{F2C117FF-E1E9-4512-BECB-CBEBBA7FAB05}</Project>
+      <Name>Shell.Media</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

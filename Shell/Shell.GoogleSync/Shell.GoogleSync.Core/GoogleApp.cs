@@ -10,6 +10,8 @@ using Google.Apis.Services;
 using Shell.Common;
 using Shell.Common.IO;
 using Shell.Common.Tasks;
+using Shell.Common.Util;
+using Shell.Namespaces;
 
 namespace Shell.GoogleSync.Core
 {
@@ -36,7 +38,7 @@ namespace Shell.GoogleSync.Core
 
         public GoogleApp ()
         {
-            ConfigName = "Google";
+            ConfigName = NamespaceGoogle.CONFIG_NAME;
             ConfigFile appConfig = fs.Config.OpenConfigFile ("app.ini");
             Secrets = new ClientSecrets () {
                 ClientId = appConfig ["GoogleApp", "client_id", "574696664370-fjvhqijeokikvqblaqmf30hpk9g280r4.apps.googleusercontent.com"],

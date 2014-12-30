@@ -3,7 +3,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Drawing.Drawing2D;
 using Shell.Common.IO;
-using Shell.Pictures.Content;
+using Shell.Media.Content;
 
 namespace Shell.GoogleSync.Photos
 {

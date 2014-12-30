@@ -8,9 +8,9 @@ using Shell.Common.IO;
 using Shell.Common.Tasks;
 using Shell.Common.Util;
 using Shell.GoogleSync.Core;
-using Shell.Pictures;
-using Shell.Pictures.Content;
-using Shell.Pictures.Files;
+using Shell.Media;
+using Shell.Media.Content;
+using Shell.Media.Files;
 using Picasa = Google.Picasa;
 
 namespace Shell.GoogleSync.Photos
@@ -56,11 +56,11 @@ namespace Shell.GoogleSync.Photos
             return albumList.ToArray ();
         }
 
-        public void PrintAlbums ()
+        public void PrintAlbums (Filter albumFilter)
         {
             WebAlbum[] albums = GetAlbums ();
 
-            Log.Message (albums.ToStringTable (
+            Log.Message (albums.Filter (albumFilter).ToStringTable (
                 a => LogColor.Reset,
                 new[] { "Title", "Id", "NumPhotos" },
                 a => a.Title,
@@ -111,7 +111,7 @@ namespace Shell.GoogleSync.Photos
             return result;
         }
 
-        private void CreateMissingWebAlbums (PictureShare share)
+        private void CreateMissingWebAlbums (MediaShare share)
         {
             if (share.Albums.Count > 0) {
                 // create missing web albums
@@ -194,7 +194,7 @@ namespace Shell.GoogleSync.Photos
             Log.Indent--;
         }
 
-        public void PrintLocalAlbums (PictureShare share)
+        public void PrintLocalAlbums (MediaShare share)
         {
             // print list of local albums
             Log.Message ("List local albums:");
@@ -208,7 +208,7 @@ namespace Shell.GoogleSync.Photos
             Log.Indent--;
         }
 
-        private Dictionary<WebAlbum, WebPhoto[]> ListWebAlbums (PictureShare share)
+        private Dictionary<WebAlbum, WebPhoto[]> ListWebAlbums (MediaShare share)
         {
             // list photos in web albums
             Log.Message ("List photos in web albums: ");
@@ -279,7 +279,7 @@ namespace Shell.GoogleSync.Photos
             return webAlbums;
         }
 
-        private AlbumSyncStatus[] CompareLocalAndWebAlbums (PictureShare share, Dictionary<WebAlbum, WebPhoto[]> webAlbums)
+        private AlbumSyncStatus[] CompareLocalAndWebAlbums (MediaShare share, Dictionary<WebAlbum, WebPhoto[]> webAlbums, Filter albumFilter)
         {
             // compare local and web albums...
             Log.Message ("Compare local and web albums:");
@@ -289,6 +289,12 @@ namespace Shell.GoogleSync.Photos
             foreach (Album localAlbum in share.Albums) {
                 if (PhotoSyncUtilities.IsIncludedInSync (localAlbum)) {
                     string webAlbumName = PhotoSyncUtilities.ToSyncedAlbumName (localAlbum);
+
+                    // check if the current album's name is accepted by the filter
+                    if (albumFilter.Matches (localAlbum)) {
+                        // skip the current album if it is not
+                        continue;
+                    }
 
                     if (webAlbums.Keys.Any (wa => wa.Title == webAlbumName)) {
                         WebAlbum webAlbum = webAlbums.Keys.First (wa => wa.Title == webAlbumName);
@@ -309,27 +315,31 @@ namespace Shell.GoogleSync.Photos
             // print the differences between local and web albums
             Log.Message ("Differences between local and web albums: ");
             Log.Indent++;
-            Log.Message (syncStatusList.ToStringTable (
-                s => LogColor.Reset,
-                new[] {
-                    "Album",
-                    "Photos (local)",
-                    "Videos (local)",
-                    "All (local)",
-                    "All (web)",
-                    "Upload",
-                    "Download",
-                    "HQ ?"
-                },
-                s => s.WebAlbum.Title,
-                s => s.LocalPhotos.Length,
-                s => s.LocalVideos.Length,
-                s => s.LocalFiles.Length,
-                s => s.WebFiles.Length,
-                s => s.FilesOnlyInLocalAlbum.Length,
-                s => s.FilesOnlyInWebAlbum.Length,
-                s => s.LocalAlbum.IsHighQuality ? "HQ" : ""
-            ));
+            if (syncStatusList.Length > 0) {
+                Log.Message (syncStatusList.ToStringTable (
+                    s => LogColor.Reset,
+                    new[] {
+                        "Album",
+                        "Photos (local)",
+                        "Videos (local)",
+                        "All (local)",
+                        "All (web)",
+                        "Upload",
+                        "Download",
+                        "HQ ?"
+                    },
+                    s => s.WebAlbum.Title,
+                    s => s.LocalPhotos.Length,
+                    s => s.LocalVideos.Length,
+                    s => s.LocalFiles.Length,
+                    s => s.WebFiles.Length,
+                    s => s.FilesOnlyInLocalAlbum.Length,
+                    s => s.FilesOnlyInWebAlbum.Length,
+                    s => s.LocalAlbum.IsHighQuality ? "HQ" : ""
+                ));
+            } else {
+                Log.Message ("No albums selected.");
+            }
             Log.Indent--;
         }
 
@@ -421,7 +431,7 @@ namespace Shell.GoogleSync.Photos
             Log.Indent--;
         }
 
-        public void UploadShare (PictureShare share, Type[] selectedTypes)
+        public void UploadShare (MediaShare share, Type[] selectedTypes, Filter albumFilter)
         {
             // rename web albums to normalized names
             RenameWebAlbums ();
@@ -433,7 +443,7 @@ namespace Shell.GoogleSync.Photos
             Dictionary<WebAlbum, WebPhoto[]> webAlbums = ListWebAlbums (share: share);
 
             // compare local and web albums...
-            AlbumSyncStatus[] syncStatusList = CompareLocalAndWebAlbums (share: share, webAlbums: webAlbums);
+            AlbumSyncStatus[] syncStatusList = CompareLocalAndWebAlbums (share: share, webAlbums: webAlbums, albumFilter: albumFilter);
 
             // print the differences between local and web albums
             PrintSyncStatus (syncStatusList: syncStatusList);

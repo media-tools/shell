@@ -4,10 +4,10 @@ using System.IO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Shell.Common.Util;
-using Shell.Pictures.Files;
+using Shell.Media.Files;
 using Shell.Common.IO;
 
-namespace Shell.Pictures.Content
+namespace Shell.Media.Content
 {
     public class Video : Medium
     {
@@ -53,7 +53,7 @@ namespace Shell.Pictures.Content
 
         public static bool IsValidFile (string fullPath)
         {
-            return PictureShareUtilities.IsValidFile (fullPath: fullPath, fileEndings: FILE_ENDINGS);
+            return MediaShareUtilities.IsValidFile (fullPath: fullPath, fileEndings: FILE_ENDINGS);
         }
 
         public override void Index (string fullPath)

@@ -121,7 +121,6 @@ namespace Shell.Common.Util
         {
             return ConcatItem (sequence, item).ToArray ();
         }
-
     }
 }
 

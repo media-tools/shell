@@ -5,11 +5,11 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Shell.Common.IO;
 using Shell.Common.Util;
-using Shell.Pictures.Files;
+using Shell.Media.Files;
 using System.Drawing.Imaging;
 using System.Drawing;
 
-namespace Shell.Pictures.Content
+namespace Shell.Media.Content
 {
     public class Picture : Medium
     {
@@ -58,7 +58,7 @@ namespace Shell.Pictures.Content
 
         public static bool IsValidFile (string fullPath)
         {
-            return PictureShareUtilities.IsValidFile (fullPath: fullPath, fileEndings: FILE_ENDINGS);
+            return MediaShareUtilities.IsValidFile (fullPath: fullPath, fileEndings: FILE_ENDINGS);
         }
 
         public override void Index (string fullPath)

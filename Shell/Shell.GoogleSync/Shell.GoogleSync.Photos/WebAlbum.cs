@@ -2,10 +2,11 @@
 using Google.GData.Photos;
 using Google.Picasa;
 using Shell.Common.IO;
+using Shell.Common.Util;
 
 namespace Shell.GoogleSync.Photos
 {
-    public class WebAlbum
+    public class WebAlbum : IFilterable
     {
         public AlbumCollection AlbumCollection { get; private set; }
 
@@ -52,6 +53,11 @@ namespace Shell.GoogleSync.Photos
             AlbumCollection.CatchErrors (() => {
                 InternalAlbum.AtomEntry.Delete ();
             });
+        }
+
+        public string[] FilterKeys ()
+        {
+            return new [] { Title };
         }
     }
 }

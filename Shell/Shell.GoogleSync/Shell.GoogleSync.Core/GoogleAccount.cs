@@ -11,10 +11,11 @@ using Google.Apis.Services;
 using Shell.Common.IO;
 using Shell.Common.Tasks;
 using Shell.Common.Util;
+using Shell.Namespaces;
 
 namespace Shell.GoogleSync.Core
 {
-    public class GoogleAccount : Library
+    public class GoogleAccount : ConfigurableObject, IFilterable
     {
         private ConfigFile accountConfig;
 
@@ -42,7 +43,7 @@ namespace Shell.GoogleSync.Core
 
         private GoogleAccount ()
         {
-            ConfigName = "Google";
+            ConfigName = NamespaceGoogle.CONFIG_NAME;
             accountConfig = fs.Config.OpenConfigFile ("accounts.ini");
         }
 
@@ -136,9 +137,40 @@ namespace Shell.GoogleSync.Core
             return new GoogleApp ().Authenticate ();
         }
 
+        public string[] FilterKeys ()
+        {
+            return new [] { DisplayName, Emails };
+        }
+
         public override string ToString ()
         {
             return string.Format ("{0} <{1}> ({2})", DisplayName, Emails, Id);
+        }
+
+
+        protected override IEnumerable<object> Reflect ()
+        {
+            return new object[] { Id };
+        }
+
+        public override bool Equals (object obj)
+        {
+            return ValueObject<ConfigurableObject>.Equals (myself: this, obj: obj);
+        }
+
+        public override int GetHashCode ()
+        {
+            return base.GetHashCode ();
+        }
+
+        public static bool operator == (GoogleAccount a, GoogleAccount b)
+        {
+            return ValueObject<ConfigurableObject>.Equality (a, b);
+        }
+
+        public static bool operator != (GoogleAccount a, GoogleAccount b)
+        {
+            return ValueObject<ConfigurableObject>.Inequality (a, b);
         }
     }
 }

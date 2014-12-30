@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Shell.Common.IO;
 using Shell.Common.Tasks;
@@ -32,7 +33,7 @@ namespace Shell.Common.IO
             
 
             if (progressCache == null) {
-                FileSystem fsCache = new FileSystem (library: this, type: FileSystemType.Runtime);
+                FileSystem fsCache = new FileSystem (configurable: this, type: FileSystemType.Runtime);
                 progressCache = fsCache.OpenConfigFile (name: "progress_cache.ini");
             }
             estimatedMaxValue = progressCache ["MaxValue", Identifier, 1];

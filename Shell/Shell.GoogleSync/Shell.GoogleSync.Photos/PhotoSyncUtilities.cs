@@ -1,5 +1,5 @@
 ﻿using System;
-using Shell.Pictures;
+using Shell.Media;
 using System.Text.RegularExpressions;
 
 namespace Shell.GoogleSync.Photos

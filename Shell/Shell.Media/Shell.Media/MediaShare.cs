@@ -129,7 +129,7 @@ namespace Shell.Media
             return ValueObject<MediaShare>.Inequality (a, b);
         }
 
-        public void Index ()
+        public void UpdateIndex ()
         {
             NormalizeAlbumPaths ();
 
@@ -303,7 +303,7 @@ namespace Shell.Media
             Log.Indent--;
         }
 
-        public void Clean ()
+        public void CleanIndex ()
         {
             // clean up album list
             Log.Message ("Clean up index...");
@@ -321,6 +321,29 @@ namespace Shell.Media
                     Log.Message ("Album does not exist: ", album.AlbumPath);
                     album.IsDeleted = true;
                 }
+            }
+            Serialize (verbose: false);
+            Log.Indent--;
+        }
+
+        public void RebuildIndex (Filter albumFilter)
+        {
+            // clean up album list
+            Log.Message ("Rebuild index...");
+            Log.Indent++;
+            RemoveFromIndex (albumFilter: albumFilter);
+            UpdateIndex ();
+            Log.Indent--;
+        }
+
+        public void RemoveFromIndex (Filter albumFilter)
+        {
+            // clean up album list
+            Log.Message ("Remove from index...");
+            Log.Indent++;
+            foreach (Album album in Albums.Filter(albumFilter)) {
+                Log.Message ("- ", album.AlbumPath);
+                album.IsDeleted = true;
             }
             Serialize (verbose: false);
             Log.Indent--;

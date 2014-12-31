@@ -14,7 +14,7 @@ namespace Shell.Media
 {
     public sealed class MediaShareManager : Library
     {
-        public static bool DEBUG_SHARES = false;
+        public static bool DEBUG_DISABLED_SHARES = false;
 
         public string RootDirectory { get; private set; }
 
@@ -48,7 +48,7 @@ namespace Shell.Media
                 } catch (IOException) {
                     Log.Error ("Can't open tree config file: ", file);
                 } catch (ShareUnavailableException ex) {
-                    if (DEBUG_SHARES) {
+                    if (DEBUG_DISABLED_SHARES) {
                         Log.Error (ex.Message);
                     } else {
                         Log.DebugLog (ex.Message);
@@ -95,7 +95,7 @@ namespace Shell.Media
             }
         }
 
-        public void Index (Filter shareFilter)
+        public void UpdateIndex (Filter shareFilter)
         {
             MediaShare[] filteredShares = Shares.Filter (shareFilter);
 
@@ -103,7 +103,7 @@ namespace Shell.Media
                 foreach (MediaShare share in filteredShares.OrderBy (share => share.RootDirectory)) {
                     Log.Message ("Share: ", share.Name);
                     Log.Indent++;
-                    share.Index ();
+                    share.UpdateIndex ();
                     Log.Indent--;
                 }
             } else {
@@ -111,7 +111,7 @@ namespace Shell.Media
             }
         }
 
-        public void Clean (Filter shareFilter)
+        public void CleanIndex (Filter shareFilter)
         {
             MediaShare[] filteredShares = Shares.Filter (shareFilter);
 
@@ -119,11 +119,27 @@ namespace Shell.Media
                 foreach (MediaShare share in filteredShares.OrderBy (share => share.RootDirectory)) {
                     Log.Message ("Share: ", share.Name);
                     Log.Indent++;
-                    share.Clean ();
+                    share.CleanIndex ();
                     Log.Indent--;
                 }
             } else {
                 Log.Message ("No shares are available for cleaning.");
+            }
+        }
+
+        public void RebuildIndex (Filter shareFilter, Filter albumFilter)
+        {
+            MediaShare[] filteredShares = Shares.Filter (shareFilter);
+
+            if (filteredShares.Length != 0) {
+                foreach (MediaShare share in filteredShares.OrderBy (share => share.RootDirectory)) {
+                    Log.Message ("Share: ", share.Name);
+                    Log.Indent++;
+                    share.RebuildIndex (albumFilter: albumFilter);
+                    Log.Indent--;
+                }
+            } else {
+                Log.Message ("No shares are available for indexing.");
             }
         }
 

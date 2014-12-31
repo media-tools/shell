@@ -291,7 +291,7 @@ namespace Shell.GoogleSync.Photos
                     string webAlbumName = PhotoSyncUtilities.ToSyncedAlbumName (localAlbum);
 
                     // check if the current album's name is accepted by the filter
-                    if (albumFilter.Matches (localAlbum)) {
+                    if (!albumFilter.Matches (localAlbum)) {
                         // skip the current album if it is not
                         continue;
                     }

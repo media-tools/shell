@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Mono.Options;
 using Shell.Common;
 using Shell.Common.IO;
 using Shell.Common.Tasks;
@@ -9,41 +10,49 @@ using Shell.Namespaces;
 
 namespace Shell.Media
 {
-    public class MediaTask : ScriptTask, MainScriptTask
+    public class MediaTask : MonoOptionsScriptTask, MainScriptTask
     {
         public MediaTask ()
         {
             Name = "Media";
-            ConfigName = NamespacePictures.CONFIG_NAME;
-            Description = new [] {
-                "Update the picture index of all shares",
-                "Update the picture index of all shares, and delete non-existant entries",
-                "Find all picture shares"
-            };
             Options = new [] { "media" };
-            ParameterSyntax = new [] { "index", "clean", "find-shares" };
+            ConfigName = NamespacePictures.CONFIG_NAME;
+
+            Description = new [] {
+                "Find all shares",
+                "Update the media index.",
+                "Delete non-existant media files in the index.",
+                "Rebuild the media index for the specified album(s).",
+            };
+            Parameters = new [] {
+                "find-shares",
+                "index",
+                "clean",
+                "reindex",
+            };
+            Methods = new Action[] {
+                () => findShares (),
+                () => index (),
+                () => clean (),
+                () => reindex (),
+            };
         }
 
-        protected override void InternalRun (string[] args)
+        Filter shareFilter = Filter.None;
+        Filter albumFilter = Filter.None;
+
+        protected override void SetupOptions (ref OptionSet optionSet)
         {
-            if (args.Length >= 1) {
-                switch (args [0].ToLower ()) {
-                case "index":
-                    index ();
-                    break;
-                case "clean":
-                    clean ();
-                    break;
-                case "find-shares":
-                    findShares ();
-                    break;
-                default:
-                    error ();
-                    break;
-                }
-            } else {
-                error ();
-            }
+            optionSet = optionSet
+                .Add ("share=",
+                "Only modify the specified share(s). Multiple names are seperated by ',' or ';'.",
+                option => shareFilter = Filter.ContainFilter (Filter.Split (option)))
+                .Add ("album=",
+                "Only modify the specified album(s). Multiple values are seperated by comma.",
+                option => albumFilter = Filter.ContainFilter (Filter.Split (option)))
+                .Add ("debug-shares",
+                "Show debug messages and errors regarding disabled shares",
+                option => MediaShareManager.DEBUG_DISABLED_SHARES = true);
         }
 
         void index ()
@@ -52,7 +61,7 @@ namespace Shell.Media
             shares.Initialize (cached: true);
             shares.Deserialize ();
             // shares.Print ();
-            shares.Index (shareFilter: Filter.None);
+            shares.UpdateIndex (shareFilter: shareFilter);
             shares.Serialize ();
         }
 
@@ -62,7 +71,22 @@ namespace Shell.Media
             shares.Initialize (cached: true);
             shares.Deserialize ();
             // shares.Print ();
-            shares.Clean (shareFilter: Filter.None);
+            shares.CleanIndex (shareFilter: shareFilter);
+            shares.Serialize ();
+        }
+
+        void reindex ()
+        {
+            if (albumFilter.AcceptsEverything) {
+                Log.Error ("You have to specify an album filter!");
+                return;
+            }
+
+            MediaShareManager shares = new MediaShareManager (rootDirectory: "/");
+            shares.Initialize (cached: true);
+            shares.Deserialize ();
+            // shares.Print ();
+            shares.RebuildIndex (shareFilter: shareFilter, albumFilter: albumFilter);
             shares.Serialize ();
         }
 
@@ -71,7 +95,7 @@ namespace Shell.Media
             MediaShareManager shares = new MediaShareManager (rootDirectory: "/");
             shares.Initialize (cached: false);
             shares.Deserialize ();
-            shares.PrintShares (Filter.None);
+            shares.PrintShares (shareFilter);
         }
     }
 }

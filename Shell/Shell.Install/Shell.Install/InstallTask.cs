@@ -4,6 +4,7 @@ using Shell.Common;
 using System.Linq;
 using Shell.Common.Tasks;
 using Shell.Common.Util;
+using Mono.Options;
 
 namespace Shell.Git
 {
@@ -30,15 +31,20 @@ namespace Shell.Git
                 "",
                 "    COMPREPLY=( $(compgen -W \"" + string.Join (" ", options) + "\" -- $cur) );",
                 "",
-                "    case \"${prev}\" in",
+                "    case \"${frst}\" in",
                 ""
             });
             foreach (ScriptTask task in Program.Tasks) {
                 string taskOptions = string.Join (" | ", from o in task.Options
                                                                      select "'" + o + "'");
-                string taskParams = string.Join (" ", from p in task.ParameterSyntax
+                string taskParams;
+                if (task is MonoOptionsScriptTask) {
+                    taskParams = string.Join (" ", (task as MonoOptionsScriptTask).OptionSetParameters);
+                } else {
+                    taskParams = string.Join (" ", from p in task.ParameterSyntax
                                                                   where !p.StartsWith ("[")
                                                                   select p.Split (' ') [0]);
+                }
                 bash_completion += "    " + taskOptions + " )\n        COMPREPLY=( $(compgen -W \"" + taskParams + "\" -- ${cur}) )\n        return 0;;\n";
             }
             bash_completion += string.Join ("\n", new [] {

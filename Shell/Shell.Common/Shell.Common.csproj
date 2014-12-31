@@ -75,6 +75,7 @@
     <Compile Include="Shell.Common\Util\Filter.cs" />
     <Compile Include="Shell.Common\Tasks\IConfigurable.cs" />
     <Compile Include="Shell.Common\Tasks\ConfigurableObject.cs" />
+    <Compile Include="Shell.Common\Util\Actions.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

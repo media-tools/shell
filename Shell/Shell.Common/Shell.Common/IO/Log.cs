@@ -10,6 +10,8 @@ namespace Shell.Common.IO
 {
     public static class Log
     {
+        public static bool DEBUG_ENABLED = false;
+
         public static string CURRENT_LOGFILE { get; private set; }
 
         private static StreamWriter logFile;
@@ -122,7 +124,9 @@ namespace Shell.Common.IO
 
         public static void DebugConsole (params object[] message)
         {
-            printConsole (new object[] { LogColor.DarkGray }.Concat (message));
+            if (DEBUG_ENABLED) {
+                printConsole (new object[] { LogColor.DarkGray }.Concat (message));
+            }
         }
 
         public static void Message (params object[] message)

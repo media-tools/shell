@@ -8,7 +8,7 @@
     <ProjectGuid>{F2C117FF-E1E9-4512-BECB-CBEBBA7FAB05}</ProjectGuid>
     <OutputType>Library</OutputType>
     <RootNamespace>Shell.Media</RootNamespace>
-    <AssemblyName>Shell.Tasks.Pictures</AssemblyName>
+    <AssemblyName>Shell.Tasks.Media</AssemblyName>
     <ReleaseVersion>0.3</ReleaseVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">

@@ -2,6 +2,8 @@
 using System.Linq;
 using Mono.Options;
 using Shell.Common.IO;
+using Shell.Common.Util;
+using System.Collections.Generic;
 
 namespace Shell.Common.Tasks
 {
@@ -39,15 +41,7 @@ namespace Shell.Common.Tasks
             string command = null;
             bool help = false;
 
-            OptionSet optionSet = new OptionSet ();
-
-            optionSet.Add ("?|help|h",
-                "Prints out the options.",
-                option => help = option != null);
-
-            optionSet.AddTaskParameters (task: this, setCommand: param => command = param);
-
-            SetupOptions (ref optionSet);
+            OptionSet optionSet = CreateOptionSet (setCommand: param => command = param, setHelp: b => help = b);
 
             try {
                 optionSet.Parse (args);
@@ -90,6 +84,43 @@ namespace Shell.Common.Tasks
             error ();
             Log.Message ();
             printOptions (optionSet);
+        }
+
+        private OptionSet CreateOptionSet (Action<string> setCommand, Action<bool> setHelp)
+        {
+            OptionSet optionSet = new OptionSet ();
+
+            optionSet.Add ("h|help|?", "Prints out the options.", option => setHelp (option != null));
+            optionSet.Add ("d|debug", "Show debugging messages.", option => Log.DEBUG_ENABLED = option != null);
+            optionSet.Add ("<>", option => {
+                Log.Error ("Invalid parameter: ", option);
+                Log.Message ();
+                setHelp (true);
+            });
+
+            optionSet.AddTaskParameters (task: this, setCommand: setCommand);
+
+            SetupOptions (ref optionSet);
+
+            return optionSet;
+        }
+
+        public string[] OptionSetParameters {
+            get {
+                OptionSet optionSet = CreateOptionSet (setCommand: Actions.Empty, setHelp: Actions.Empty);
+                List<string> parameters = new List<string> ();
+
+                foreach (Option option in optionSet) {
+                    foreach (string name in option.GetNames()) {
+                        if (name.Length == 1) {
+                            parameters.Add ("-" + name);
+                        } else {
+                            parameters.Add ("--" + name);
+                        }
+                    }
+                }
+                return parameters.ToArray ();
+            }
         }
 
         protected abstract void SetupOptions (ref OptionSet optionSet);

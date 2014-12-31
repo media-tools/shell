@@ -6,9 +6,9 @@ using Shell.Common.IO;
 using Shell.Common.Tasks;
 using Shell.Common.Util;
 using Shell.GoogleSync.Core;
-using Shell.Namespaces;
 using Shell.Media;
 using Shell.Media.Content;
+using Shell.Namespaces;
 
 namespace Shell.GoogleSync.Photos
 {
@@ -61,18 +61,17 @@ namespace Shell.GoogleSync.Photos
                 "Upload only videos",
                 option => validTypes = new Type[] { typeof(Video) })
                 .Add ("user=",
-                "Upload the share of the specified google user(s). Multiple users are seperated by ',' or ';'.",
+                "Upload the share of the specified google user(s). Multiple values are seperated by comma.",
                 option => googleUserFilter = Filter.ContainFilter (Filter.Split (option)))
                 .Add ("share=",
-                "Upload the share with the specified name(s). Multiple names are seperated by ',' or ';'.",
+                "Upload the share with the specified name(s). Multiple values are seperated by comma.",
                 option => shareFilter = Filter.ContainFilter (Filter.Split (option)))
                 .Add ("album=",
-                "Upload only albums that begin with the specified prefix(es). Multiple prefixes are seperated by ',' or ';'.",
+                "Upload only albums that begin with the specified prefix(es). Multiple values are seperated by comma.",
                 option => albumFilter = Filter.ContainFilter (Filter.Split (option)))
                 .Add ("debug-shares",
                 "Show debug messages and errors regarding disabled shares",
-                option => MediaShareManager.DEBUG_SHARES = true);
-
+                option => MediaShareManager.DEBUG_DISABLED_SHARES = true);
         }
 
         void listWebAlbums ()

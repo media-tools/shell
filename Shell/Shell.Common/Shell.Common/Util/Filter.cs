@@ -17,18 +17,26 @@ namespace Shell.Common.Util
 
         public static Filter ContainFilter (params string[] filter)
         {
-            return new Filter () {
-                Type = FilterType.CONTAINS,
-                Elements = filter
-            };
+            if (filter.Length > 0) {
+                return new Filter () {
+                    Type = FilterType.CONTAINS,
+                    Elements = filter
+                };
+            } else {
+                return Filter.None;
+            }
         }
 
         public static Filter ExactFilter (params string[] filter)
         {
-            return new Filter () {
-                Type = FilterType.EXACT_MATCH,
-                Elements = filter
-            };
+            if (filter.Length > 0) {
+                return new Filter () {
+                    Type = FilterType.EXACT_MATCH,
+                    Elements = filter
+                };
+            } else {
+                return Filter.None;
+            }
         }
 
         public bool Matches (IFilterable filterable)
@@ -67,6 +75,8 @@ namespace Shell.Common.Util
         {
             return serialized.Split (new char[]{ ',', ';', '|' }, StringSplitOptions.RemoveEmptyEntries);
         }
+
+        public bool AcceptsEverything { get { return Type == FilterType.ACCEPT_EVERYTHING; } }
 
         protected enum FilterType
         {

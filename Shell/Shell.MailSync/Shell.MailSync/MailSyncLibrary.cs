@@ -1,12 +1,13 @@
 ﻿using System;
-using MailKit.Net.Imap;
-using MailKit;
-using Shell.Common.IO;
 using System.Collections.Generic;
-using MailKit.Search;
 using System.Linq;
-using Shell.Common.Util;
 using System.Threading.Tasks;
+using MailKit;
+using MailKit.Net.Imap;
+using MailKit.Search;
+using Shell.Common.IO;
+using Shell.Common.Util;
+using Shell.Namespaces;
 
 namespace Shell.MailSync
 {
@@ -19,8 +20,8 @@ namespace Shell.MailSync
         {
             lib = mailLibrary;
 
-            Log.SetupTaggedLog (logNamespace: "mailsync", maxWidth: 20);
-            taggedLog = Log.TaggedNamespace (logNamespace: "mailsync");
+            Log.SetupTaggedLog (logNamespace: NamespaceMail.LOG_NAMESPACE, maxWidth: 20);
+            taggedLog = Log.TaggedNamespace (logNamespace: NamespaceMail.LOG_NAMESPACE);
         }
 
         public void ListAccounts ()

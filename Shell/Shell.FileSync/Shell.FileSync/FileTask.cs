@@ -1,55 +1,46 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Shell.Common;
-using Shell.Common.Tasks;
-using Shell.Common.IO;
 using System.Linq;
+using Mono.Options;
+using Shell.Common;
+using Shell.Common.IO;
+using Shell.Common.Tasks;
+using Shell.Namespaces;
 
 namespace Shell.FileSync
 {
-    public class FileTask : ScriptTask, MainScriptTask
+    public class FileTask : MonoOptionsScriptTask, MainScriptTask
     {
         public FileTask ()
         {
             Name = "FileSync";
-            ConfigName = "FileSync";
-            Description = new [] {
-                "Synchronize the known local shares",
-                "Find all local shares",
-                "List known local shares"
-            };
             Options = new [] { "files" };
-            ParameterSyntax = new [] { "sync", "find-shares", "list-shares" };
+            ConfigName = NamespaceFileSync.CONFIG_NAME;
+
+            Description = new [] {
+                "Find all local shares",
+                "List the known local shares",
+                "Synchronize the known local shares",
+            };
+            Parameters = new [] {
+                "find-shares",
+                "list-shares",
+                "sync",
+            };
+            Methods = new Action[] {
+                () => findShares (),
+                () => listShares (),
+                () => sync (),
+            };
         }
 
-        protected override void InternalRun (string[] args)
+        protected override void SetupOptions (ref OptionSet optionSet)
         {
-            if (args.Contains ("--deep")) {
-                DataFile.DEEP_COMPARE = true;
-                args = args.Where (arg => arg != "--deep").ToArray ();
-            } else {
-                DataFile.DEEP_COMPARE = false;
-            }
-
-            if (args.Length >= 1) {
-                switch (args [0].ToLower ()) {
-                case "sync":
-                    sync ();
-                    break;
-                case "find-shares":
-                    findShares ();
-                    break;
-                case "list-shares":
-                    listShares ();
-                    break;
-                default:
-                    error ();
-                    break;
-                }
-            } else {
-                error ();
-            }
+            optionSet = optionSet
+                .Add ("deep",
+                "Deep sync (use hashs of file content instead of file size)",
+                option => DataFile.DEEP_COMPARE = option != null);
         }
 
         void sync ()

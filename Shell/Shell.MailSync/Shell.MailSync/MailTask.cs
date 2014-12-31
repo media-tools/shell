@@ -1,41 +1,36 @@
 using System;
 using System.Linq;
+using Mono.Options;
 using Shell.Common;
 using Shell.Common.Tasks;
+using Shell.Namespaces;
 
 namespace Shell.MailSync
 {
-    public class MailTask : ScriptTask, MainScriptTask
+    public class MailTask : MonoOptionsScriptTask, MainScriptTask
     {
         public MailTask ()
         {
             Name = "MailAll";
+            Options = new [] { "mail" };
+            ConfigName = NamespaceMail.CONFIG_NAME;
+
             Description = new [] {
                 "Synchronize e-mails",
                 "Show status of all e-mail folders"
             };
-            Options = new [] { "mail" };
-            ConfigName = "MailSync";
-            ParameterSyntax = new [] { "sync", "status" };
+            Parameters = new [] {
+                "sync",
+                "status"
+            };
+            Methods = new Action[] {
+                () => sync (),
+                () => status (),
+            };
         }
 
-        protected override void InternalRun (string[] args)
+        protected override void SetupOptions (ref OptionSet optionSet)
         {
-            if (args.Length >= 1) {
-                switch (args [0].ToLower ()) {
-                case "sync":
-                    sync ();
-                    break;
-                case "status":
-                    status ();
-                    break;
-                default:
-                    error ();
-                    break;
-                }
-            } else {
-                error ();
-            }
         }
 
         void status ()

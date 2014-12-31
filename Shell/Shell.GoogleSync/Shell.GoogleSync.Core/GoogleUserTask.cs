@@ -1,48 +1,43 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Mono.Options;
 using Shell.Common.IO;
 using Shell.Common.Tasks;
 using Shell.Namespaces;
 
 namespace Shell.GoogleSync.Core
 {
-    public class GoogleUserTask : ScriptTask, MainScriptTask
+    public class GoogleUserTask : MonoOptionsScriptTask, MainScriptTask
     {
         public GoogleUserTask ()
         {
             Name = "GoogleUser";
+            Options = new [] { "google-users" };
+            ConfigName = NamespaceGoogle.CONFIG_NAME;
+
             Description = new [] {
                 "Add a google account",
                 "List all google accounts",
                 "Try to authenticate all google acounts"
             };
-            Options = new [] { "google-users" };
-            ConfigName = NamespaceGoogle.CONFIG_NAME;
-            ParameterSyntax = new [] { "add", "list", "auth" };
-        }
-
-        protected override void InternalRun (string[] args)
-        {
-            if (args.Length >= 1) {
-                switch (args [0].ToLower ()) {
-                case "add":
+            Parameters = new [] {
+                "add",
+                "list",
+                "auth"
+            };
+            Methods = new Action[] {
+                () => {
                     addAccount ();
                     list ();
-                    break;
-                case "list":
-                    list ();
-                    break;
-                case "auth":
-                    auth ();
-                    break;
-                default:
-                    error ();
-                    break;
-                }
-            } else {
-                error ();
-            }
+                },
+                () => list (),
+                () => auth (),
+            };
+        }
+
+        protected override void SetupOptions (ref OptionSet optionSet)
+        {
         }
 
         void addAccount ()

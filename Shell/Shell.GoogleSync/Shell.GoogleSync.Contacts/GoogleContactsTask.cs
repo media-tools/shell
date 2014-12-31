@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Mono.Options;
 using Shell.Common.IO;
 using Shell.Common.Tasks;
 using Shell.Common.Util;
@@ -9,45 +10,36 @@ using Shell.Namespaces;
 
 namespace Shell.GoogleSync.Contacts
 {
-    public class GoogleContactsTask : ScriptTask, MainScriptTask
+    public class GoogleContactsTask : MonoOptionsScriptTask, MainScriptTask
     {
         public GoogleContactsTask ()
         {
             Name = "GoogleContacts";
+            Options = new [] { "google-contacts" };
+            ConfigName = NamespaceGoogle.CONFIG_NAME;
+
             Description = new [] {
                 "List the google contacts of all users",
                 "Configure the google contacts",
                 "Synchronize the google contacts",
                 "Clean the google contacts of all users"
             };
-            Options = new [] { "google-contacts" };
-            ConfigName = NamespaceGoogle.CONFIG_NAME;
-            ParameterSyntax = new [] { "list", "config", "sync", "clean" };
+            Parameters = new [] {
+                "list",
+                "config",
+                "sync",
+                "clean"
+            };
+            Methods = new Action[] {
+                () => listContacts (),
+                () => config (),
+                () => sync (),
+                () => clean (),
+            };
         }
 
-        protected override void InternalRun (string[] args)
+        protected override void SetupOptions (ref OptionSet optionSet)
         {
-            if (args.Length >= 1) {
-                switch (args [0].ToLower ()) {
-                case "config":
-                    config ();
-                    break;
-                case "list":
-                    listContacts ();
-                    break;
-                case "sync":
-                    sync ();
-                    break;
-                case "clean":
-                    clean ();
-                    break;
-                default:
-                    error ();
-                    break;
-                }
-            } else {
-                error ();
-            }
         }
 
         void listContacts ()

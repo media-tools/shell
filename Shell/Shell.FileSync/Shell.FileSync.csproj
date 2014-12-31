@@ -42,6 +42,7 @@
     <Compile Include="Shell.FileSync\DataFile.cs" />
     <Compile Include="Shell.FileSync\TimeSpanExtensions.cs" />
     <Compile Include="Shell.FileSync\FileTask.cs" />
+    <Compile Include="Shell.FileSync\NamespaceFileSync.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

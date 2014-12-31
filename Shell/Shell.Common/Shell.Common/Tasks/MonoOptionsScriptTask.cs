@@ -36,8 +36,14 @@ namespace Shell.Common.Tasks
             }
         }
 
+        protected virtual void HookBeforeOptionParsing ()
+        {
+        }
+
         protected sealed override void InternalRun (string[] args)
         {
+            HookBeforeOptionParsing ();
+
             string command = null;
             bool help = false;
 
@@ -112,7 +118,9 @@ namespace Shell.Common.Tasks
 
                 foreach (Option option in optionSet) {
                     foreach (string name in option.GetNames()) {
-                        if (name.Length == 1) {
+                        if (name == "<>") {
+                            // ignore
+                        } else if (name.Length == 1) {
                             parameters.Add ("-" + name);
                         } else {
                             parameters.Add ("--" + name);

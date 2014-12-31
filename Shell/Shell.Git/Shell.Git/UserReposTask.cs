@@ -4,24 +4,52 @@ using Shell.Common;
 using Shell.Common.Tasks;
 using Shell.Common.IO;
 using System.Collections.Generic;
+using Mono.Options;
 
 namespace Shell.Git
 {
-    public class UserReposTask : ScriptTask, MainScriptTask
+    public class UserReposTask : MonoOptionsScriptTask, MainScriptTask
     {
         private ConfigFile config;
 
         public UserReposTask ()
         {
             Name = "UserRepos";
+            Options = new [] { "user-repos" };
+            ConfigName = "UserRepos";
+
             Description = new [] {
                 "Commit changes in the user's selected repositories",
                 "Add a repository to the list",
                 "List the repositories",
                 "Remove an repository from the list"
             };
-            Options = new [] { "user-repos" };
-            ParameterSyntax = new [] { "commit", "add", "list", "remove" };
+            Parameters = new [] {
+                "commit",
+                "add",
+                "list",
+                "remove"
+            };
+            Methods = new Action[] {
+                () => commit (),
+                () => add (),
+                () => list (),
+                () => remove (),
+            };
+        }
+
+        protected override void HookBeforeOptionParsing ()
+        {
+            base.HookBeforeOptionParsing ();
+
+            config = fs.Config.OpenConfigFile ("userrepos.ini");
+        }
+
+        private string paramPath = null;
+
+        protected override void SetupOptions (ref OptionSet optionSet)
+        {
+            optionSet = optionSet.Add ("path=", "The path to add or remove.", option => paramPath = option);
         }
 
         private HashSet<string> _repoPaths;
@@ -45,49 +73,11 @@ namespace Shell.Git
             config ["UserRepos", "paths", ""] = string.Join (":", RepoPaths);
         }
 
-        protected override void InternalRun (string[] args)
-        {
-            fs.Runtime.RequirePackages ("git");
-            config = fs.Config.OpenConfigFile ("userrepos.ini");
-
-            if (args.Length >= 1) {
-                switch (args [0].ToLower ()) {
-                case "commit":
-                    commit ();
-                    break;
-                case "add":
-                    if (args.Length == 2) {
-                        addRepo (args [1]);
-                        Log.Message ("Added repository: " + args [1]);
-                        list ();
-                    } else {
-                        Log.Error ("Invalid parameters. The second parameter has to be a path.");
-                    }
-                    break;
-                case "remove":
-                    if (args.Length == 2) {
-                        removeRepo (args [1]);
-                        Log.Message ("Added repository: " + args [1]);
-                        list ();
-                    } else {
-                        Log.Error ("Invalid parameters. The second parameter has to be a path.");
-                    }
-                    break;
-                case "list":
-
-                    list ();
-                    break;
-                default:
-                    error ();
-                    break;
-                }
-            } else {
-                error ();
-            }
-        }
 
         private void commit ()
         {
+            fs.Runtime.RequirePackages ("git");
+
             if (RepoPaths.Count >= 1) {
                 string msg = "committed by: " + string.Join (" ", Environment.GetCommandLineArgs ()).Replace ("\"", "");
                 string[][] commands = new [] {
@@ -104,6 +94,30 @@ namespace Shell.Git
             } else {
                 Log.Message ("No repositories.");
             }
+        }
+
+        private void add ()
+        {
+            if (paramPath == null) {
+                Log.Error ("Invalid parameters. The option '--path' has to be specified.");
+                return;
+            }
+
+            addRepo (paramPath);
+            Log.Message ("Added repository: ", paramPath);
+            list ();
+        }
+
+        private void remove ()
+        {
+            if (paramPath == null) {
+                Log.Error ("Invalid parameters. The option '--path' has to be specified.");
+                return;
+            }
+
+            removeRepo (paramPath);
+            Log.Message ("Removed repository: ", paramPath);
+            list ();
         }
 
         private void addRepo (string path)

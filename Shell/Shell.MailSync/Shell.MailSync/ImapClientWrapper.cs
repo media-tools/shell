@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using MailKit;
 using MailKit.Net.Imap;
 using Shell.Common.IO;
-using System.Linq;
-using System.IO;
+using Shell.Namespaces;
 
 namespace Shell.MailSync
 {
@@ -41,7 +42,7 @@ namespace Shell.MailSync
             this.account = account;
             this.token = token;
             this.key = account.Accountname + token;
-            taggedLog = Log.TaggedNamespace (logNamespace: "mailsync");
+            taggedLog = Log.TaggedNamespace (logNamespace: NamespaceMail.LOG_NAMESPACE);
         }
 
         private ImapClient GetClient ()

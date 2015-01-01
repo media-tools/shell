@@ -14,11 +14,11 @@ namespace Shell.Git
             Description = new [] { "Execute git in the config directory", "Commit changes in the config directory" };
             Options = new [] { "config" };
             ParameterSyntax = new [] { "--git [GIT OPTIONS]", "--commit" };
-            Log.DEBUG_ENABLED = true;
         }
 
         protected override void InternalRun (string[] args)
         {
+            Log.DEBUG_ENABLED = true;
             if (args.Length >= 1) {
                 switch (args [0].ToLower ()) {
                 case "--git":

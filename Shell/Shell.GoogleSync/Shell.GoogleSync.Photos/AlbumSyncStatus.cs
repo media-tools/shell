@@ -38,7 +38,7 @@ namespace Shell.GoogleSync.Photos
             // find files that only exist locally
             List<MediaFile> onlyLocal = new List<MediaFile> ();
             foreach (MediaFile localFile in LocalFiles) {
-                if (!WebFiles.Any (wp => wp.Title == localFile.Name)) {
+                if (!WebFiles.Any (wp => wp.Filename == localFile.Name)) {
                     onlyLocal.Add (localFile);
                 }
             }
@@ -47,7 +47,7 @@ namespace Shell.GoogleSync.Photos
             // find files that only exist in the web album
             List<WebPhoto> onlyWeb = new List<WebPhoto> ();
             foreach (WebPhoto webFile in WebFiles) {
-                if (!LocalFiles.Any (lf => lf.Name == webFile.Title)) {
+                if (!LocalFiles.Any (lf => lf.Name == webFile.Filename)) {
                     onlyWeb.Add (webFile);
                 }
             }

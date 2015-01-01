@@ -1,8 +1,9 @@
 ﻿using System;
+using System.Drawing;
 using Google.GData.Photos;
 using Google.Picasa;
 using Shell.Common.IO;
-using System.Drawing;
+using Shell.Common.Util;
 
 namespace Shell.GoogleSync.Photos
 {
@@ -20,18 +21,22 @@ namespace Shell.GoogleSync.Photos
 
         public Size Dimensions { get; private set; }
 
+        public bool HasUniqueName { get; set; }
+
+        public ulong TimestampUnix { get; private set; }
+
+        public DateTime Timestamp { get { return DateTimeExtensions.MillisecondsTimeStampToDateTime (TimestampUnix); } }
+
+        public string Filename { get { return HasUniqueName ? Title : Timestamp.ToString ("yyyyMMdd_HHmmss_") + Title; } }
+
         public WebPhoto (AlbumCollection albumCollection, WebAlbum album, Photo internalPhoto)
         {
             AlbumCollection = albumCollection;
             Album = album;
-            //InternalPhoto = internalPhoto;
-            Update (internalPhoto);
-        }
-
-        private void Update (Photo internalPhoto)
-        {
+            HasUniqueName = true;
             Title = internalPhoto.Title;
             Id = internalPhoto.Id;
+            TimestampUnix = internalPhoto.Timestamp;
             Dimensions = new Size (internalPhoto.Width, internalPhoto.Height);
         }
     }

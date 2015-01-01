@@ -34,14 +34,15 @@ namespace Shell.GoogleSync.Photos
 
         public void PrintPhotos ()
         {
-            WebPhotoCollection result = AlbumCollection.GetPhotos (album: this);
+            WebPhotoCollection result = AlbumCollection.GetPhotos (album: this, deleteDuplicates: false);
 
             Log.Message (result.WebFiles.ToStringTable (
                 p => LogColor.Reset,
-                new[] { "Title", "Id", "Dimensions" },
+                new[] { "Title", "Id", "Dimensions", "Unique Name?" },
                 p => p.Title,
                 p => p.Id,
-                p => p.Dimensions.Width + "x" + p.Dimensions.Height
+                p => p.Dimensions.Width + "x" + p.Dimensions.Height,
+                p => p.HasUniqueName ? "x" : ""
             ));
         }
 

@@ -14,6 +14,8 @@ namespace Shell.GoogleSync.Photos
             return album.Title.StartsWith (SYNCED_ALBUM_PREFIX) && album.Title.EndsWith (SYNCED_ALBUM_SUFFIX);
         }
 
+        public static string SPECIAL_ALBUM_AUTO_BACKUP = "Auto Backup";
+
         public static string ToSyncedAlbumName (Album album)
         {
             return SYNCED_ALBUM_PREFIX + album.AlbumPath + SYNCED_ALBUM_SUFFIX;

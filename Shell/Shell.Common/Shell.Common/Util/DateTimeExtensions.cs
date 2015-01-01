@@ -18,5 +18,21 @@ namespace Shell.Common.Util
         {
             return (dateTime - new DateTime (1970, 1, 1).ToLocalTime ()).TotalSeconds;
         }
+
+        public static DateTime UnixTimeStampToDateTime (double unixTimeStamp)
+        {
+            // Unix timestamp is seconds past epoch
+            System.DateTime dtDateTime = new DateTime (1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
+            dtDateTime = dtDateTime.AddSeconds (unixTimeStamp).ToLocalTime ();
+            return dtDateTime;
+        }
+
+        public static DateTime MillisecondsTimeStampToDateTime (double milliTimeStamp)
+        {
+            // milliseconds past epoch
+            System.DateTime dtDateTime = new DateTime (1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
+            dtDateTime = dtDateTime.AddMilliseconds (milliTimeStamp).ToLocalTime ();
+            return dtDateTime;
+        }
     }
 }

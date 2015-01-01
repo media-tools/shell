@@ -27,6 +27,7 @@ namespace Shell.GoogleSync.Photos
                 "Print the web albums of the specified user",
                 "Print the photos in the specified web album.",
                 "Upload local photos and videos",
+                "Download photos und videos from auto backup that are not in any local album"
             };
             Parameters = new [] {
                 "find-shares",
@@ -35,6 +36,7 @@ namespace Shell.GoogleSync.Photos
                 "list-web-albums",
                 "list-web-photos",
                 "upload",
+                "download-auto-backup",
             };
             Methods = new Action[] {
                 () => findShares (),
@@ -43,6 +45,7 @@ namespace Shell.GoogleSync.Photos
                 () => listWebAlbums (),
                 () => listWebPhotos (),
                 () => upload (),
+                () => downloadAutoBackup (),
             };
         }
 
@@ -113,6 +116,20 @@ namespace Shell.GoogleSync.Photos
 
         void upload ()
         {
+            forMatchingShares ((share, webAlbumCollection) => {
+                webAlbumCollection.UploadShare (share: share, selectedTypes: validTypes, albumFilter: albumFilter);
+            });
+        }
+
+        void downloadAutoBackup ()
+        {
+            forMatchingShares ((share, webAlbumCollection) => {
+                webAlbumCollection.DownloadAutoBackup (share: share, selectedTypes: validTypes);
+            });
+        }
+
+        private void forMatchingShares (Action<MediaShare, AlbumCollection> todo)
+        {
             MediaShareManager shareManager = new MediaShareManager (rootDirectory: "/");
             shareManager.Initialize (cached: true);
             shareManager.Deserialize ();
@@ -143,7 +160,8 @@ namespace Shell.GoogleSync.Photos
 
                     account.Refresh ();
                     AlbumCollection webAlbumCollection = new AlbumCollection (account: account);
-                    webAlbumCollection.UploadShare (share: share, selectedTypes: validTypes, albumFilter: albumFilter);
+
+                    todo (share, webAlbumCollection);
 
                     Log.Indent--;
                     Log.Message ();

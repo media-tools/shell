@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Shell.Common.Util;
 using Shell.GoogleSync.Photos;
 
@@ -27,6 +28,11 @@ namespace Shell.GoogleSync
         public void AddWebFile (WebPhoto file)
         {
             webFiles.Add (file);
+        }
+
+        public void RemoveWebFile (string name)
+        {
+            webFiles = webFiles.Where (f => f.Title != name).ToList ();
         }
 
         public void Log (params object[] message)

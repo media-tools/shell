@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Google.GData.Client;
@@ -69,7 +70,7 @@ namespace Shell.GoogleSync.Photos
             ));
         }
 
-        public WebPhotoCollection GetPhotos (WebAlbum album)
+        public WebPhotoCollection GetPhotos (WebAlbum album, bool deleteDuplicates)
         {
             HashSet<string> uniqueFilenames = new HashSet<string> ();
             WebPhotoCollection result = new WebPhotoCollection ();
@@ -82,6 +83,8 @@ namespace Shell.GoogleSync.Photos
                     startIndex += numResults;
                     numResults = 0;
 
+                    Log.Debug ("PhotoQuery: album.Id=", album.Id, ", startIndex=", startIndex);
+
                     PhotoQuery query = new PhotoQuery (PicasaQuery.CreatePicasaUri (account.Id, album.Id));
                     query.NumberToRetrieve = 1000;
                     query.StartIndex = startIndex;
@@ -90,15 +93,24 @@ namespace Shell.GoogleSync.Photos
                     foreach (PicasaEntry entry in feed.Entries) {
                         Picasa.Photo internalPhoto = new Picasa.Photo ();
                         internalPhoto.AtomEntry = entry;
+
                         string uniqueFilename = internalPhoto.Title;
-                        if (uniqueFilenames.Contains (uniqueFilename)) {
-                            result.Log ("Delete duplicate: " + uniqueFilename);
-                            CatchErrors (() => entry.Delete ());
+
+                        if (deleteDuplicates) {
+                            if (uniqueFilenames.Contains (uniqueFilename)) {
+                                result.Log ("Delete duplicate: " + uniqueFilename);
+                                CatchErrors (() => entry.Delete ());
+                            } else {
+                                WebPhoto photo = new WebPhoto (albumCollection: this, album: album, internalPhoto: internalPhoto);
+                                result.AddWebFile (photo);
+                                uniqueFilenames.Add (uniqueFilename);
+                            }
                         } else {
                             WebPhoto photo = new WebPhoto (albumCollection: this, album: album, internalPhoto: internalPhoto);
                             result.AddWebFile (photo);
                             uniqueFilenames.Add (uniqueFilename);
                         }
+
                         numResults++;
                     }
 
@@ -107,6 +119,15 @@ namespace Shell.GoogleSync.Photos
 
                 } while (numResults > 999);
             }, errorMessage: out errorMessage, catchAllExceptions: true, retryTimes: 3);
+
+            if (!deleteDuplicates) {
+                foreach (WebPhoto photo in result.WebFiles) {
+                    photo.HasUniqueName = result.WebFiles.Count (f => f.Title == photo.Title) == 1;
+                    if (!photo.HasUniqueName) {
+                        Log.Message ("Not unique file: ", photo.Title, ", Timestamp: ", photo.Timestamp, ", Filename: ", photo.Filename);
+                    }
+                }
+            }
 
             return result;
         }
@@ -208,69 +229,80 @@ namespace Shell.GoogleSync.Photos
             Log.Indent--;
         }
 
-        private Dictionary<WebAlbum, WebPhoto[]> ListWebAlbums (MediaShare share)
+        private Dictionary<WebAlbum, WebPhoto[]> ListWebAlbums (MediaShare share, Filter albumFilter, bool onlySyncedAlbums)
         {
             // list photos in web albums
             Log.Message ("List photos in web albums: ");
             Log.Indent++;
 
             Dictionary<WebAlbum, WebPhoto[]> webAlbums = new Dictionary<WebAlbum, WebPhoto[]> ();
-            WebAlbum[] source = GetAlbums ().Where (a => PhotoSyncUtilities.IsSyncedAlbum (a)).OrderBy (a => a.Title).ToArray ();
+            WebAlbum[] source = GetAlbums ()
+                .Where (a => PhotoSyncUtilities.IsSyncedAlbum (a) || !onlySyncedAlbums)
+                .Filter (albumFilter)
+                .OrderBy (a => a.Title).ToArray ();
 
-            // open progress bar
-            ProgressBar progress = Log.OpenProgressBar (identifier: "AlbumCollection:ListWebAlbums:" + share.RootDirectory, description: "List photos in web albums...");
-            int i = 0;
-            int max = source.Length;
+            if (source.Length > 0) {
+                Log.Debug ("count of selected web albums: ", source.Length);
 
-            object logLock = new object ();
-            CustomParallel.ForEach<WebAlbum> (
-                source: source,
-                body: album => {
+                // open progress bar
+                ProgressBar progress = Log.OpenProgressBar (identifier: "AlbumCollection:ListWebAlbums:" + share.RootDirectory, description: "List photos in web albums...");
+                int i = 0;
+                int max = source.Length;
 
-                    WebPhotoCollection result = GetPhotos (album: album);
-                    lock (webAlbums) {
-                        webAlbums [album] = result.WebFiles;
-                    }
+                object logLock = new object ();
+                CustomParallel.ForEach<WebAlbum> (
+                    source: source,
+                    body: album => {
+                        Log.Debug ("- ", album.Title);
 
-                    bool deleted = false;
-                    // if the album doesn't exist locally...
-                    if (!share.Albums.Any (a => album.Title == PhotoSyncUtilities.ToSyncedAlbumName (a))) {
-                        // ... and doesn't contain any photos, delete it!
-                        if (result.WebFiles.Length == 0) {
-                            album.Delete (verbose: false);
-                            result.Log ("Delete album.");
-                            deleted = true;
+                        WebPhotoCollection result = GetPhotos (album: album, deleteDuplicates: onlySyncedAlbums);
+                        lock (webAlbums) {
+                            webAlbums [album] = result.WebFiles;
                         }
-                        // .. if it contains something, print it! it may be obsolete.
-                        else {
-                            result.Log ("Album does not exist locally.");
-                        }
-                    }
 
-                    if (!deleted) {
-                        //Log.Message ("- ", Log.FillOrCut (text: album.Title, length: 60, ending: "...]"), " files: ", string.Join (", ", result.NumResults));
-                        if (result.Messages.Length > 0) {
-                            lock (logLock) {
-                                Log.Message ("- ", album.Title, ":");
-                                Log.Indent += 2;
-                                foreach (object[] message in result.Messages) {
-                                    Log.Message (message);
-                                }
-                                Log.Indent -= 2;
+                        bool deleted = false;
+                        // if the album doesn't exist locally...
+                        if (!share.Albums.Any (a => album.Title == PhotoSyncUtilities.ToSyncedAlbumName (a))) {
+                            // ... and doesn't contain any photos, delete it!
+                            if (result.WebFiles.Length == 0) {
+                                album.Delete (verbose: false);
+                                result.Log ("Delete album.");
+                                deleted = true;
+                            }
+                            // .. if it contains something, print it! it may be obsolete.
+                            else {
+                                result.Log ("Album does not exist locally.");
                             }
                         }
+
+                        if (!deleted) {
+                            //Log.Message ("- ", Log.FillOrCut (text: album.Title, length: 60, ending: "...]"), " files: ", string.Join (", ", result.NumResults));
+                            if (result.Messages.Length > 0) {
+                                lock (logLock) {
+                                    Log.Message ("- ", album.Title, ":");
+                                    Log.Indent += 2;
+                                    foreach (object[] message in result.Messages) {
+                                        Log.Message (message);
+                                    }
+                                    Log.Indent -= 2;
+                                }
+                            }
+                        }
+
+                        string progressDescription = "album: " + album.Title + ", " + (deleted ? "deleted." : "files: " + string.Join (", ", result.NumResults));
+
+                        lock (logLock) {
+                            progress.Print (current: i, min: 0, max: max, currentDescription: progressDescription, showETA: true, updateETA: false);
+                            ++i;
+                        }
                     }
+                );
 
-                    string progressDescription = "album: " + album.Title + ", " + (deleted ? "deleted." : "files: " + string.Join (", ", result.NumResults));
+                progress.Finish ();
+            } else {
+                Log.Message ("No web albums are available or have been selected.");
+            }
 
-                    lock (logLock) {
-                        progress.Print (current: i, min: 0, max: max, currentDescription: progressDescription, showETA: true, updateETA: false);
-                        ++i;
-                    }
-                }
-            );
-
-            progress.Finish ();
             Log.Indent--;
 
             GC.Collect ();
@@ -440,7 +472,7 @@ namespace Shell.GoogleSync.Photos
             CreateMissingWebAlbums (share: share);
 
             // list photos in web albums
-            Dictionary<WebAlbum, WebPhoto[]> webAlbums = ListWebAlbums (share: share);
+            Dictionary<WebAlbum, WebPhoto[]> webAlbums = ListWebAlbums (share: share, albumFilter: albumFilter, onlySyncedAlbums: true);
 
             // compare local and web albums...
             AlbumSyncStatus[] syncStatusList = CompareLocalAndWebAlbums (share: share, webAlbums: webAlbums, albumFilter: albumFilter);
@@ -452,6 +484,61 @@ namespace Shell.GoogleSync.Photos
                 // upload missing photos
                 UploadDifferences (syncStatusList: syncStatusList, selectedTypes: new [] { selectedType });
             }
+        }
+
+        private Dictionary<WebAlbum, WebPhoto[]> FilterLocallyUnindexedFiles (MediaShare share, Dictionary<WebAlbum, WebPhoto[]> webAlbums)
+        {
+            // compare local and web albums...
+            Log.Message ("Filter locally unindexed files:");
+            Log.Indent++;
+
+            Dictionary<WebAlbum, WebPhoto[]> webAlbumsUnindexed = webAlbums.ToDictionary (entry => entry.Key, entry => entry.Value);
+
+            foreach (Album localAlbum in share.Albums) {
+                if (PhotoSyncUtilities.IsIncludedInSync (localAlbum)) {
+
+                    foreach (WebAlbum webAlbum in webAlbumsUnindexed.Keys.ToArray()) {
+                        WebPhoto[] allWebFiles = webAlbumsUnindexed [webAlbum];
+
+                        // only those files which are not in the local album are unindexed!
+                        AlbumSyncStatus syncStatus = new AlbumSyncStatus (localAlbum: localAlbum, webAlbum: webAlbum, webFiles: allWebFiles);
+                        WebPhoto[] unindexedWebFiles = syncStatus.FilesOnlyInWebAlbum;
+
+                        webAlbumsUnindexed [webAlbum] = unindexedWebFiles;
+
+                        foreach (WebPhoto webFile in allWebFiles.Except(unindexedWebFiles)) {
+                            Log.Message ("- ", webFile.Title, " is in local album: ", localAlbum.AlbumPath);
+                        }
+                    }
+                }
+            }
+            Log.Indent--;
+
+            Log.Message (webAlbums.Keys.ToStringTable (
+                a => LogColor.Reset,
+                new[] {
+                    "Web Album",
+                    "Files",
+                    "Indexed Files",
+                    "Unindexed Files",
+                },
+                a => a.Title,
+                a => webAlbums [a].Length,
+                a => webAlbums [a].Length - webAlbumsUnindexed [a].Length,
+                a => webAlbumsUnindexed [a].Length
+            ));
+
+            return webAlbums;
+        }
+
+        public void DownloadAutoBackup (MediaShare share, Type[] selectedTypes)
+        {
+            Filter albumFilter = Filter.ExactFilter (PhotoSyncUtilities.SPECIAL_ALBUM_AUTO_BACKUP);
+
+            // list photos in web albums
+            Dictionary<WebAlbum, WebPhoto[]> webAlbums = ListWebAlbums (share: share, albumFilter: albumFilter, onlySyncedAlbums: false);
+
+            FilterLocallyUnindexedFiles (share: share, webAlbums: webAlbums);
         }
     }
 }

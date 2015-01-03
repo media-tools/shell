@@ -7,8 +7,6 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
-using ExifUtils.Exif;
-using ExifUtils.Exif.IO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Shell.Common.IO;
@@ -40,29 +38,17 @@ namespace Shell.Media.Content
                 ExifTag tag;
                 if (ExifTag.ReadFromExiftoolConsoleOutput (line, out tag)) {
                     tags.Add (tag);
+                    Log.Message ("- ", Log.Fill (tag.Name, 20), ": ", tag.Value);
                 }
             };
 
             fs.Runtime.WriteAllText (path: "run1.sh", contents: script);
-            fs.Runtime.ExecuteScript (path: "run1.sh", receiveOutput: receiveOutput, ignoreEmptyLines: true);
-
-            return tags;
-        }
-
-        public List<ExifTag> GetExifTags (Bitmap bitmap)
-        {
-            List<ExifTag> tags = new List<ExifTag> ();
 
 
-            ExifPropertyCollection exifProperties = ExifReader.GetExifData (bitmap: bitmap);
-            foreach (ExifProperty property in exifProperties) {
-                ExifTag tag;
-                if (ExifTag.FromExifProperty (property, out tag)) {
-                    Log.Debug ("property: Tag=", tag.Name, ", Value=", tag.Value);
-
-                    tags.Add (tag);
-                }
-            }
+            Log.Message ("EXIF tags:");
+            Log.Indent++;
+            fs.Runtime.ExecuteScript (path: "run1.sh", receiveOutput: receiveOutput, ignoreEmptyLines: true, verbose: false);
+            Log.Indent--;
 
             return tags;
         }
@@ -275,12 +261,6 @@ namespace Shell.Media.Content
         {
             Name = name;
             Value = value;
-        }
-
-        public static bool FromExifProperty (ExifProperty property, out ExifTag tag)
-        {
-            tag = new ExifTag (property.Tag.ToString (), property.Value.ToString ());
-            return true;
         }
 
         public static bool ReadFromExiftoolConsoleOutput (string line, out ExifTag tag)

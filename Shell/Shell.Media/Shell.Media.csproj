@@ -60,23 +60,6 @@
     <Compile Include="Shell.Media\PhotoSyncUtilities.cs" />
     <Compile Include="Shell.Media\IWebAlbum.cs" />
     <Compile Include="Shell.Media\PictureDeduplication.cs" />
-    <Compile Include="ExifUtils\GpsCoordinate.cs" />
-    <Compile Include="ExifUtils\Rational.cs" />
-    <Compile Include="ExifUtils\Utility.cs" />
-    <Compile Include="ExifUtils\Exif\ExifProperty.cs" />
-    <Compile Include="ExifUtils\Exif\ExifPropertyCollection.cs" />
-    <Compile Include="ExifUtils\Exif\ExifTag.cs" />
-    <Compile Include="ExifUtils\Exif\ExifType.cs" />
-    <Compile Include="ExifUtils\Exif\ExifTypeAttribute.cs" />
-    <Compile Include="ExifUtils\Exif\ImageMetaData.cs" />
-    <Compile Include="ExifUtils\Exif\IO\ExifDecoder.cs" />
-    <Compile Include="ExifUtils\Exif\IO\ExifEncoder.cs" />
-    <Compile Include="ExifUtils\Exif\IO\ExifReader.cs" />
-    <Compile Include="ExifUtils\Exif\IO\ExifWriter.cs" />
-    <Compile Include="ExifUtils\Exif\IO\IfdReader.cs" />
-    <Compile Include="ExifUtils\Exif\TagValues\TagValues.cs" />
-    <Compile Include="ExifUtils\Exif\TypeConverters\ExifCollectionConverter.cs" />
-    <Compile Include="ExifUtils\Exif\TypeConverters\ExifConverter.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

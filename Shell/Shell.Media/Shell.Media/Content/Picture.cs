@@ -76,12 +76,6 @@ namespace Shell.Media.Content
             IsDateless = false;
         }
 
-        public Picture (string fullPath)
-            : base (fullPath: fullPath)
-        {
-            IsDateless = false;
-        }
-
         public static bool IsValidFile (string fullPath)
         {
             return MediaShareUtilities.IsValidFile (fullPath: fullPath, fileEndings: FILE_ENDINGS);
@@ -89,27 +83,25 @@ namespace Shell.Media.Content
 
         public override void Index (string fullPath)
         {
-            if (ExifTags.Count == 0 || PixelHash.Hash == null) {
+            if (ExifTags.Count == 0) {
+                ExifTags = lib.GetExifTags (fullPath: fullPath);
+                if (ExifTimestampCreated == null) {
+                    string fileName = Path.GetFileName (fullPath);
+                    DateTime date;
+                    if (lib.GetFileNameDate (fileName: fileName, date: out date)) {
+                        Log.Message ("Index: Set exif date for picture: ", fullPath, " => ", string.Format ("{0:yyyy:MM:dd HH:mm:ss}", date));
+                        lib.SetExifDate (fullPath: fullPath, date: date);
+                        ExifTags = lib.GetExifTags (fullPath: fullPath);
+                        IsDateless = false;
+                    } else {
+                        IsDateless = true;
+                    }
+                }
+            }
+            if (PixelHash.Hash == null) {
                 Bitmap bitmap = lib.ReadBitmap (fileName: fullPath);
                 if (bitmap != null) {
                     using (bitmap) {
-                        ExifTags = lib.GetExifTags (bitmap: bitmap);
-                        if (ExifTimestampCreated == null) {
-                            string fileName = Path.GetFileName (fullPath);
-                            DateTime date;
-                            if (lib.GetFileNameDate (fileName: fileName, date: out date)) {
-                                Log.Message ("Index: Set exif date for picture: ", fullPath, " => ", string.Format ("{0:yyyy:MM:dd HH:mm:ss}", date));
-                                lib.SetExifDate (fullPath: fullPath, date: date);
-                                Bitmap newBitmap = lib.ReadBitmap (fileName: fullPath);
-                                using (newBitmap) {
-                                    ExifTags = lib.GetExifTags (bitmap: newBitmap);
-                                }
-                                IsDateless = false;
-                            } else {
-                                IsDateless = true;
-                            }
-                        }
-
                         if (PixelHash.Hash == null) {
                             var result = lib.GetPixelHash (bitmap: bitmap);
                             if (result.HasValue) {
@@ -117,7 +109,7 @@ namespace Shell.Media.Content
                             } else {
                                 Log.Error ("Index: Unable to get pixel hash! fullPath=", fullPath);
                             }
-                            Log.Debug ("Index: PixelHash: ", PixelHash);
+                            Log.Message ("PixelHash: ", PixelHash);
                         }
                     }
                 } else {

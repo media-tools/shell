@@ -69,7 +69,7 @@ namespace Shell.Media
                     new[] { "Name", "Root Directory", "Album Count" },
                     s => s.Name,
                     s => s.RootDirectory,
-                    s => s.Albums.Count
+                    s => s.Albums.Length
                 ));
                 Log.Indent--;
             } else {

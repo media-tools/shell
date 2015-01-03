@@ -13,21 +13,9 @@ namespace Shell.Media.Content
 
         public abstract string Type { get; }
 
-        public HashSet<MediaFile> Files = new HashSet<MediaFile> ();
-
         public Medium (HexString hash)
         {
             Hash = hash;
-        }
-
-        public Medium (string fullPath)
-        {
-            Hash = FileSystemUtilities.HashOfFile (path: fullPath);
-        }
-
-        public void AddFile (MediaFile mediaFile)
-        {
-            Files.Add (mediaFile);
         }
 
         public abstract void Index (string fullPath);

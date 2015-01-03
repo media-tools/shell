@@ -34,26 +34,27 @@ namespace Shell.Media.Files
 
         public MediaFile (string fullPath, MediaShare share)
         {
-            Debug.Assert (fullPath.StartsWith (share.RootDirectory), "file path is not in root directory (FullName=" + fullPath + ",root=" + share.RootDirectory + ")");
             Share = share;
             FullPath = fullPath;
-            Filename = Path.GetFileName (fullPath);
-            Extension = Path.GetExtension (fullPath);
-            RelativePath = MediaShareUtilities.GetRelativePath (fullPath: fullPath, share: share);
-            AlbumPath = MediaShareUtilities.GetAlbumPath (fullPath: fullPath, share: share);
+            initialize ();
+            Index ();
         }
 
         public MediaFile (string fullPath, HexString hash, MediaShare share)
-            : this (fullPath: fullPath, share: share)
         {
-            Medium medium;
-            if (share.GetMediumByHash (hash: hash, medium: out medium)) {
-                medium.AddFile (mediaFile: this);
-                Medium = medium;
-            } else {
-                Log.Debug ("not cached: medium by hash: ", fullPath);
-                Index ();
-            }
+            Share = share;
+            FullPath = fullPath;
+            initialize ();
+            Index (hash);
+        }
+
+        private void initialize ()
+        {
+            Debug.Assert (FullPath.StartsWith (Share.RootDirectory), "file path is not in root directory (FullName=" + FullPath + ",root=" + Share.RootDirectory + ")");
+            Filename = Path.GetFileName (FullPath);
+            Extension = Path.GetExtension (FullPath);
+            RelativePath = MediaShareUtilities.GetRelativePath (fullPath: FullPath, share: Share);
+            AlbumPath = MediaShareUtilities.GetAlbumPath (fullPath: FullPath, share: Share);
         }
 
         public long Size {
@@ -69,30 +70,41 @@ namespace Shell.Media.Files
 
         public void Index ()
         {
-            Medium medium;
-            if (Picture.IsValidFile (fullPath: FullPath)) {
-                medium = new Picture (fullPath: FullPath);
-            } else if (Video.IsValidFile (fullPath: FullPath)) {
-                medium = new Video (fullPath: FullPath);
-            } else if (Audio.IsValidFile (fullPath: FullPath)) {
-                medium = new Audio (fullPath: FullPath);
-            } else if (Document.IsValidFile (fullPath: FullPath)) {
-                medium = new Document (fullPath: FullPath);
-            } else {
-                throw new ArgumentException ("[MediaFile] Unknown file: " + FullPath);
-            }
+            // compute the file's hash
+            HexString hash = FileSystemUtilities.HashOfFile (path: FullPath);
 
+            Index (hash);
+        }
+
+        private void Index (HexString hash)
+        {
+            // check whether the medium is already indexed, by looking for it's hash
             Medium cachedMedium;
-            if (Share.GetMediumByHash (hash: medium.Hash, medium: out cachedMedium)) {
-                medium = cachedMedium;
-            } else {
-                Share.AddMedium (media: medium);
+            if (Share.GetMediumByHash (hash: hash, medium: out cachedMedium)) {
+                Medium = cachedMedium;
+            }
+            // create a new medium object
+            else {
+                if (Picture.IsValidFile (fullPath: FullPath)) {
+                    Medium = new Picture (hash: hash);
+                } else if (Video.IsValidFile (fullPath: FullPath)) {
+                    Medium = new Video (hash: hash);
+                } else if (Audio.IsValidFile (fullPath: FullPath)) {
+                    Medium = new Audio (hash: hash);
+                } else if (Document.IsValidFile (fullPath: FullPath)) {
+                    Medium = new Document (hash: hash);
+                } else {
+                    throw new ArgumentException ("[MediaFile] Unknown file: " + FullPath);
+                }
+
+                // put the medium in the share's database
+                Share.AddMedium (media: Medium);
             }
 
-            medium.Index (fullPath: FullPath);
-
-            medium.AddFile (mediaFile: this);
-            Medium = medium;
+            if (!IsCompletelyIndexed) {
+                // run the medium's index routine to find out file type specific stuff
+                Medium.Index (fullPath: FullPath);
+            }
         }
 
         public bool IsCompletelyIndexed {

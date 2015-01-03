@@ -137,7 +137,7 @@ namespace Shell.GoogleSync.Photos
 
         private void CreateMissingWebAlbums (MediaShare share)
         {
-            if (share.Albums.Count > 0) {
+            if (share.Albums.Length > 0) {
                 // create missing web albums
                 Log.Message ("Create non-existant web albums:");
                 Log.Indent++;

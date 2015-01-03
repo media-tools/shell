@@ -40,11 +40,6 @@ namespace Shell.Media.Content
         {
         }
 
-        public Document (string fullPath)
-            : base (fullPath: fullPath)
-        {
-        }
-
         public static bool IsValidFile (string fullPath)
         {
             return MediaShareUtilities.IsValidFile (fullPath: fullPath, fileEndings: FILE_ENDINGS);

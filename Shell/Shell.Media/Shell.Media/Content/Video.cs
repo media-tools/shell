@@ -46,11 +46,6 @@ namespace Shell.Media.Content
         {
         }
 
-        public Video (string fullPath)
-            : base (fullPath: fullPath)
-        {
-        }
-
         public static bool IsValidFile (string fullPath)
         {
             return MediaShareUtilities.IsValidFile (fullPath: fullPath, fileEndings: FILE_ENDINGS);

@@ -76,6 +76,7 @@
     <Compile Include="Shell.Common\Tasks\ConfigurableObject.cs" />
     <Compile Include="Shell.Common\Util\Actions.cs" />
     <Compile Include="Mono.Options\Options.cs" />
+    <Compile Include="Shell.Common\IO\Downloader.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

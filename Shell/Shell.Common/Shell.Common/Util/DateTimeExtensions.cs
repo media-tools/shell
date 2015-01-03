@@ -19,6 +19,11 @@ namespace Shell.Common.Util
             return (dateTime - new DateTime (1970, 1, 1).ToLocalTime ()).TotalSeconds;
         }
 
+        public static double ToMillisecondsTimestamp (this DateTime dateTime)
+        {
+            return (dateTime - new DateTime (1970, 1, 1).ToLocalTime ()).TotalMilliseconds;
+        }
+
         public static DateTime UnixTimeStampToDateTime (double unixTimeStamp)
         {
             // Unix timestamp is seconds past epoch
@@ -33,6 +38,29 @@ namespace Shell.Common.Util
             System.DateTime dtDateTime = new DateTime (1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
             dtDateTime = dtDateTime.AddMilliseconds (milliTimeStamp).ToLocalTime ();
             return dtDateTime;
+        }
+
+        public static DateTime StartOfYear (int year)
+        {
+            return new DateTime (year, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
+        }
+
+        public static DateTime EndOfYear (int year)
+        {
+            System.DateTime dt = StartOfYear (year + 1);
+            dt = dt.AddSeconds (-1);
+            return dt;
+        }
+
+        // works for DateTime's and any other class that implements IComparable!
+        public static bool Between (this IComparable a, IComparable b, IComparable c)
+        {
+            return a.CompareTo (b) >= 0 && a.CompareTo (c) <= 0;
+        }
+
+        public static bool IsInYear (this DateTime dateTime, int year)
+        {
+            return dateTime.Between (StartOfYear (year), EndOfYear (year));
         }
     }
 }

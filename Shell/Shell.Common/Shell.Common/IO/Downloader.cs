@@ -1,66 +1,116 @@
 ﻿using System;
-using System.Net;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Threading;
 
-namespace Shell.GoogleSync
+namespace Shell.Common.IO
 {
     public class Downloader
     {
-        WebClient webClient;
         Stopwatch sw = new Stopwatch ();
+        bool success;
+        AutoResetEvent notifier;
+        int lastProgress;
 
         public Downloader ()
         {
         }
 
-        public void DownloadFile (string localPath, string url)
+        public bool DownloadFile (string localPath, string url)
         {
-            using (WebClient webClient = new WebClient ()) {
-                webClient.DownloadFileCompleted += new AsyncCompletedEventHandler (Completed);
-                webClient.DownloadProgressChanged += new DownloadProgressChangedEventHandler (ProgressChanged);
+            try {
+                success = true;
+                using (WebClient webClient = new WebClient ()) {
+                    webClient.DownloadFileCompleted += new AsyncCompletedEventHandler (Completed);
+                    webClient.DownloadProgressChanged += new DownloadProgressChangedEventHandler (ProgressChanged);
 
-                Uri uri = new Uri (url);
+                    Uri uri = new Uri (url);
+                    lastProgress = -1;
 
-                sw.Start ();
+                    sw.Start ();
 
-                try {
-                    webClient.DownloadFileAsync (uri, localPath);
-                } catch (Exception ex) {
-                    Log.Error (ex);
+                    notifier = new AutoResetEvent (false);
+                    string tempPath = localPath + ".tmp";
+                    webClient.DownloadFileAsync (uri, tempPath);
+                    notifier.WaitOne ();
+                    File.Move (tempPath, localPath);
                 }
+            } catch (Exception ex) {
+                Log.Message ();
+                Log.Debug ("Error: Download: ", localPath, " <= ", url);
+                Log.Error (ex);
+                success = false;
             }
+            sw.Reset ();
+            return success;
+        }
+
+        public bool SetTimestamp (string localPath, DateTime timestamp)
+        {
+            bool success;
+            try {
+                if (File.Exists (localPath)) {
+                    File.SetCreationTimeUtc (localPath, timestamp);
+                    File.SetLastWriteTimeUtc (localPath, timestamp);
+                } else {
+                    Log.Error ("Error: SetTimestamp: File does not exist: ", localPath);
+                }
+                success = true;
+            } catch (Exception ex) {
+                Log.Error (ex);
+                success = false;
+            }
+            return success;
         }
 
         // The event that will fire whenever the progress of the WebClient is changed
         private void ProgressChanged (object sender, DownloadProgressChangedEventArgs e)
         {
-            string speed = string.Format ("{0} kB/s", (e.BytesReceived / 1024d / sw.Elapsed.TotalSeconds).ToString ("0.00"));
-
             int percentage = e.ProgressPercentage;
 
-            int size = string.Format ("{0} MB's / {1} MB's",
-                           (e.BytesReceived / 1024d / 1024d).ToString ("0.00"),
-                           (e.TotalBytesToReceive / 1024d / 1024d).ToString ("0.00"));
+            if (percentage > lastProgress) {
+                lastProgress = percentage;
 
-            Console.Write (percentage);
+                string speed = string.Format ("{0} kB/s", (e.BytesReceived / 1024d / sw.Elapsed.TotalSeconds).ToString ("0.00"));
 
-            int left = Console.CursorLeft;
-            string line = string.Format ("{0} {1:P2} {2}{3}", Description, progress, currentDescription, etaString);
-            if (line.Length > MAX_WIDTH) {
-                line = line.Substring (0, MAX_WIDTH);
+                string size = string.Format ("{0} MB's / {1} MB's",
+                                  (e.BytesReceived / 1024d / 1024d).ToString ("0.00"),
+                                  (e.TotalBytesToReceive / 1024d / 1024d).ToString ("0.00"));
+
+                int left = Console.CursorLeft;
+                Console.Write (String.Concat (Enumerable.Repeat (" ", Log.MAX_WIDTH)));
+                Console.CursorLeft = left;
+                Console.Write ("Download: " + percentage + "%    " + speed + "    " + size);
+                Console.CursorLeft = left;
+                Console.Out.Flush ();
             }
-            Console.Write (line + String.Concat (Enumerable.Repeat (" ", Math.Max (0, MAX_WIDTH - line.Length))));
-            Console.CursorLeft = left;
-            Console.Out.Flush ();
         }
 
         // The event that will trigger when the WebClient is completed
         private void Completed (object sender, AsyncCompletedEventArgs e)
         {
-            sw.Reset ();
+            Finish ();
 
-            // if (e.Cancelled == true) {
+            if (e.Cancelled == true) {
+                success = false;
+                Log.Error ("Download: Cancelled!");
+            }
+
+            notifier.Set ();
+        }
+
+        private void Finish ()
+        {
+            sw.Reset ();
+            lastProgress = -1;
+
+            int left = Console.CursorLeft;
+            Console.Write (String.Concat (Enumerable.Repeat (" ", Log.MAX_WIDTH)));
+            Console.CursorLeft = left;
+            Console.Out.Flush ();
         }
     }
 }

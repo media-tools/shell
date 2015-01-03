@@ -116,19 +116,19 @@ namespace Shell.GoogleSync.Photos
 
         void upload ()
         {
-            forMatchingShares ((share, webAlbumCollection) => {
+            forMatchingShares ((share, webAlbumCollection, otherShares) => {
                 webAlbumCollection.UploadShare (share: share, selectedTypes: validTypes, albumFilter: albumFilter);
             });
         }
 
         void downloadAutoBackup ()
         {
-            forMatchingShares ((share, webAlbumCollection) => {
-                webAlbumCollection.DownloadAutoBackup (share: share, selectedTypes: validTypes);
+            forMatchingShares ((share, webAlbumCollection, otherShares) => {
+                webAlbumCollection.DownloadAutoBackup (share: share, selectedTypes: validTypes, otherShares: otherShares);
             });
         }
 
-        private void forMatchingShares (Action<MediaShare, AlbumCollection> todo)
+        private void forMatchingShares (Action<MediaShare, AlbumCollection, MediaShare[]> todo)
         {
             MediaShareManager shareManager = new MediaShareManager (rootDirectory: "/");
             shareManager.Initialize (cached: true);
@@ -161,7 +161,7 @@ namespace Shell.GoogleSync.Photos
                     account.Refresh ();
                     AlbumCollection webAlbumCollection = new AlbumCollection (account: account);
 
-                    todo (share, webAlbumCollection);
+                    todo (share, webAlbumCollection, shareManager.Shares);
 
                     Log.Indent--;
                     Log.Message ();

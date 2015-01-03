@@ -18,8 +18,6 @@ namespace Shell.Common.IO
         private static ConfigFile progressCache;
         private int skipStepsForPrinting;
 
-        public static int MAX_WIDTH = 150;
-
         // ETA
         private DateTime? etaStartTime;
         private float etaStartProgress;
@@ -44,7 +42,7 @@ namespace Shell.Common.IO
         public void Finish ()
         {
             int left = Console.CursorLeft;
-            Console.Write (String.Concat (Enumerable.Repeat (" ", MAX_WIDTH)));
+            Console.Write (String.Concat (Enumerable.Repeat (" ", Log.MAX_WIDTH)));
             Console.CursorLeft = left;
             Console.CursorVisible = true;
             progressCache ["MaxValue", Identifier, 1] = currentValue;
@@ -76,14 +74,14 @@ namespace Shell.Common.IO
             // print it
             int left = Console.CursorLeft;
             string line = string.Format ("{0} {1:P2} {2}{3}", Description, progress, currentDescription, etaString);
-            if (line.Length > MAX_WIDTH) {
-                line = line.Substring (0, MAX_WIDTH);
+            if (line.Length > Log.MAX_WIDTH) {
+                line = line.Substring (0, Log.MAX_WIDTH);
             }
-            Console.Write (line + String.Concat (Enumerable.Repeat (" ", Math.Max (0, MAX_WIDTH - line.Length))));
+            Console.Write (line + String.Concat (Enumerable.Repeat (" ", Math.Max (0, Log.MAX_WIDTH - line.Length))));
             Console.CursorLeft = left;
             Console.Out.Flush ();
             Log.IsIncompleteLine = true;
-            Log.IncompleteLineMaxWidth = MAX_WIDTH;
+            Log.IncompleteLineMaxWidth = Log.MAX_WIDTH;
             currentValue = current;
         }
 

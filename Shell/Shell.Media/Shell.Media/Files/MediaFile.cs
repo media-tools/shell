@@ -16,7 +16,7 @@ namespace Shell.Media.Files
     {
         public string FullPath { get; private set; }
 
-        public string Name { get; private set; }
+        public string Filename { get; private set; }
 
         public string Extension { get; private set; }
 
@@ -37,7 +37,7 @@ namespace Shell.Media.Files
             Debug.Assert (fullPath.StartsWith (share.RootDirectory), "file path is not in root directory (FullName=" + fullPath + ",root=" + share.RootDirectory + ")");
             Share = share;
             FullPath = fullPath;
-            Name = Path.GetFileName (fullPath);
+            Filename = Path.GetFileName (fullPath);
             Extension = Path.GetExtension (fullPath);
             RelativePath = MediaShareUtilities.GetRelativePath (fullPath: fullPath, share: share);
             AlbumPath = MediaShareUtilities.GetAlbumPath (fullPath: fullPath, share: share);
@@ -221,7 +221,7 @@ namespace Shell.Media.Files
 
         public override string ToString ()
         {
-            return string.Format ("[MediaFile: Name={0}, Extension={1}, AlbumPath={2}]", Name, Extension, AlbumPath);
+            return string.Format ("[MediaFile: Name={0}, Extension={1}, AlbumPath={2}]", Filename, Extension, AlbumPath);
         }
 
         protected override IEnumerable<object> Reflect ()

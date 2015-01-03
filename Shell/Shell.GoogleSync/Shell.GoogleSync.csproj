@@ -118,9 +118,7 @@
     <Compile Include="Shell.GoogleSync.Photos\WebAlbum.cs" />
     <Compile Include="Shell.GoogleSync.Photos\AlbumCollection.cs" />
     <Compile Include="Shell.GoogleSync.Photos\WebPhoto.cs" />
-    <Compile Include="Shell.GoogleSync.Photos\PhotoSyncUtilities.cs" />
     <Compile Include="Shell.GoogleSync.Photos\AlbumSyncStatus.cs" />
-    <Compile Include="Shell.GoogleSync.Photos\ImageResizeUtilities.cs" />
     <Compile Include="Shell.GoogleSync.Photos\WebPhotoCollection.cs" />
     <Compile Include="Shell.GoogleSync.Photos\GoogleShareManager.cs" />
     <Compile Include="Shell.GoogleSync.Core\NamespaceGoogle.cs" />

@@ -21,7 +21,7 @@ namespace Shell.GoogleSync
 
         private void init (MediaShareManager shareManager, GoogleAccount[] accounts)
         {
-            foreach (MediaShare share in from share in shareManager.SharesByConfigFile.Values orderby share.RootDirectory select share) {
+            foreach (MediaShare share in from share in shareManager.Shares orderby share.RootDirectory select share) {
                 // if there is a valid google account config value
                 if (!string.IsNullOrWhiteSpace (share.GoogleAccount)) {
                     GoogleAccount[] matches = accounts.Where (a => a.Emails.Replace (".", "").ToLower ().Contains (share.GoogleAccount.Replace (".", "").ToLower ())).ToArray ();

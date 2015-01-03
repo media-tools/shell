@@ -30,11 +30,6 @@ namespace Shell.GoogleSync
             webFiles.Add (file);
         }
 
-        public void RemoveWebFile (string name)
-        {
-            webFiles = webFiles.Where (f => f.Title != name).ToList ();
-        }
-
         public void Log (params object[] message)
         {
             messages.Add (message);

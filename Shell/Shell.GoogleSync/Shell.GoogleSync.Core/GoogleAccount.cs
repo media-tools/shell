@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Auth.OAuth2.Flows;
@@ -24,6 +25,12 @@ namespace Shell.GoogleSync.Core
         public string Id { get { return accountConfig [section, "Id", ""]; } }
 
         public string DisplayName { get { return accountConfig [section, "DisplayName", ""]; } }
+
+        private static Regex filterShortDisplayName = new Regex ("[^a-z]");
+
+        public string ShortDisplayName { get { return filterShortDisplayName.Replace (FirstName.ToLower (), ""); } }
+
+        public string FirstName { get { return DisplayName.Contains (" ") ? DisplayName.Substring (0, DisplayName.IndexOf (" ")) : DisplayName; } }
 
         public string Emails { get { return accountConfig [section, "Emails", ""]; } }
 

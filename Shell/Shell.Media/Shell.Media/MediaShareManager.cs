@@ -143,6 +143,22 @@ namespace Shell.Media
             }
         }
 
+        public void Deduplicate (Filter shareFilter, Filter albumFilter)
+        {
+            MediaShare[] filteredShares = Shares.Filter (shareFilter);
+
+            if (filteredShares.Length != 0) {
+                foreach (MediaShare share in filteredShares.OrderBy (share => share.RootDirectory)) {
+                    Log.Message ("Share: ", share.Name);
+                    Log.Indent++;
+                    share.Deduplicate (albumFilter: albumFilter);
+                    Log.Indent--;
+                }
+            } else {
+                Log.Message ("No shares are available for deduplicating.");
+            }
+        }
+
         public void Serialize ()
         {
             if (SharesByConfigFile.Count != 0) {

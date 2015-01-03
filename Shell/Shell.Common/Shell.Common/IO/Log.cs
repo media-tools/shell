@@ -16,6 +16,8 @@ namespace Shell.Common.IO
 
         private static StreamWriter logFile;
 
+        public static int MAX_WIDTH = 150;
+
         public static void Init (string program = "game", string version = "")
         {
             try {

@@ -6,7 +6,7 @@ using Shell.Common.Util;
 
 namespace Shell.GoogleSync.Photos
 {
-    public class WebAlbum : IFilterable
+    public class WebAlbum : Shell.Media.IWebAlbum, IFilterable
     {
         public AlbumCollection AlbumCollection { get; private set; }
 
@@ -34,15 +34,14 @@ namespace Shell.GoogleSync.Photos
 
         public void PrintPhotos ()
         {
-            WebPhotoCollection result = AlbumCollection.GetPhotos (album: this, deleteDuplicates: false);
+            WebPhotoCollection result = AlbumCollection.GetPhotos (album: this, deleteDuplicates: false, holdInternals: false);
 
             Log.Message (result.WebFiles.ToStringTable (
                 p => LogColor.Reset,
-                new[] { "Title", "Id", "Dimensions", "Unique Name?" },
-                p => p.Title,
+                new[] { "Filename", "Id", "Dimensions" },
+                p => p.Filename,
                 p => p.Id,
-                p => p.Dimensions.Width + "x" + p.Dimensions.Height,
-                p => p.HasUniqueName ? "x" : ""
+                p => p.Dimensions.Width + "x" + p.Dimensions.Height
             ));
         }
 

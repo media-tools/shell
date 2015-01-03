@@ -9,7 +9,9 @@ namespace Shell.Media
 
         public static bool IsNormalizedAlbumName (string name)
         {
-            if (name.Length == 0) {
+            if (name.Contains ("Kamera 20")) {
+                return false;
+            } else if (name.Length == 0) {
                 return false;
             } else if (Regex.IsMatch (name, patternGermanDateFormat)) {
                 return false;
@@ -22,7 +24,10 @@ namespace Shell.Media
         {
             bool done;
             do {
-                if (name.Length == 0) {
+                if (name.Contains ("Kamera 20")) {
+                    name = Regex.Replace (name, "Kamera", "Auto Backup");
+                    done = false;
+                } else if (name.Length == 0) {
                     name = "Unknown";
                     done = false;
                 } else if (Regex.IsMatch (name, patternGermanDateFormat)) {
@@ -33,6 +38,15 @@ namespace Shell.Media
                 }
             } while (!done);
             return name;
+        }
+
+        private static string patternDate = "((?:19|20)[0-9]{2})([0-1][0-9])([0-3][0-9])";
+        private static string patternTime = "([0-2][0-9])([0-6][0-9])([0-6][0-9])";
+        private static string patternShortUserName = "([a-z]+)";
+
+        public static bool IsPreferredFileName (string fileName)
+        {
+            return Regex.IsMatch (fileName, "^" + patternShortUserName + "_" + patternDate + "_" + patternTime);
         }
     }
 }

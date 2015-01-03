@@ -2,14 +2,14 @@
 using Shell.Media;
 using System.Text.RegularExpressions;
 
-namespace Shell.GoogleSync.Photos
+namespace Shell.Media
 {
     public static class PhotoSyncUtilities
     {
         public static string SYNCED_ALBUM_PREFIX = "[";
         public static string SYNCED_ALBUM_SUFFIX = "]";
 
-        public static bool IsSyncedAlbum (WebAlbum album)
+        public static bool IsSyncedAlbum (IWebAlbum album)
         {
             return album.Title.StartsWith (SYNCED_ALBUM_PREFIX) && album.Title.EndsWith (SYNCED_ALBUM_SUFFIX);
         }

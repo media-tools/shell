@@ -11,6 +11,7 @@ using Shell.Common.Util;
 using Shell.Compatibility;
 using Shell.Media.Content;
 using Shell.Media.Files;
+using System.Text.RegularExpressions;
 
 namespace Shell.Media
 {
@@ -40,6 +41,11 @@ namespace Shell.Media
             }
         }
 
+        public string SpecialAlbumPrefix {
+            get { return config [CONFIG_SECTION, "album-prefix-special", ""]; }
+            set { config [CONFIG_SECTION, "album-prefix-special", ""] = value; }
+        }
+
         public static MediaShare CreateInstance (string configPath, FileSystems filesystems)
         {
             if (Instances.ContainsKey (configPath)) {
@@ -54,7 +60,7 @@ namespace Shell.Media
         {
             fs = filesystems;
 
-            int fuuuck = (GoogleAccount).GetHashCode ();
+            int fuuuck = (GoogleAccount + SpecialAlbumPrefix).GetHashCode ();
             fuuuck++;
 
             Albums = new HashSet<Album> ();
@@ -185,6 +191,7 @@ namespace Shell.Media
                 if (album.ContainsFile (search: searchFile)) {
                     progress.Print (current: i, min: 0, max: max, currentDescription: "cached: " + relativePath, showETA: true, updateETA: false);
                     Log.DebugLog ("Media file (cached): ", fullPath);
+                    Log.Indent++;
 
                     // check if some attributes may be missing
                     MediaFile cached;
@@ -198,11 +205,16 @@ namespace Shell.Media
                             Serialize (verbose: false);
                         }
                     }
+
+                    Log.Indent--;
                 }
 				// if the file needs to be indexed
 				else if (MediaFile.IsValidFile (fullPath: fullPath)) {
                     progress.Print (current: i, min: 0, max: max, currentDescription: "indexing: " + relativePath, showETA: true, updateETA: true);
                     Log.Message ("Media file: ", fullPath);
+                    Log.Indent++;
+
+                    // create the file record and index it
                     MediaFile file = new MediaFile (fullPath: fullPath, share: this);
                     file.Index ();
                     album.AddFile (file);
@@ -212,6 +224,8 @@ namespace Shell.Media
                     if (i % 50 == 0 || i >= max - 5) {
                         Serialize (verbose: false);
                     }
+
+                    Log.Indent--;
                 }
 				// if the file is invalid or unknown
 				else {
@@ -312,7 +326,7 @@ namespace Shell.Media
             foreach (Album album in Albums) {
                 // iterate over a copy to be able to delete stuff
                 foreach (MediaFile file in album.Files) {
-                    if (!File.Exists (Path.Combine (RootDirectory, album.AlbumPath, file.Name))) {
+                    if (!File.Exists (Path.Combine (RootDirectory, album.AlbumPath, file.Filename))) {
                         Log.Message ("File does not exist: ", file.RelativePath);
                         file.IsDeleted = true;
                     }
@@ -349,6 +363,13 @@ namespace Shell.Media
             Log.Indent--;
         }
 
+        public void Deduplicate (Filter albumFilter)
+        {
+            PictureDeduplication dedup = new PictureDeduplication ();
+            dedup.Deduplicate (share: this, albumFilter: albumFilter);
+        }
+
+
         public void Serialize (bool verbose)
         {
             if (!Commons.CanStartPendingOperation) {
@@ -366,14 +387,14 @@ namespace Shell.Media
                 foreach (MediaFile file in album.Files.ToArray()) {
                     try {
                         if (file.IsDeleted) {
-                            serializedAlbums.RemoveValue (section: album.AlbumPath, key: file.Name);
+                            serializedAlbums.RemoveValue (section: album.AlbumPath, key: file.Filename);
                             album.RemoveFile (file);
                         } else {
-                            serializedAlbums [section: album.AlbumPath, option: file.Name, defaultValue: ""] = file.Medium.Hash.Hash;
+                            serializedAlbums [section: album.AlbumPath, option: file.Filename, defaultValue: ""] = file.Medium.Hash.Hash;
                         }
                     } catch (Exception ex) {
                         Log.Error ("Error while serializing share: ", Name);
-                        Log.Error ("In the albums loop, with album.AlbumPath=", album.AlbumPath, ", file.Name=", file.Name, ", file.Medium=" + file.Medium);
+                        Log.Error ("In the albums loop, with album.AlbumPath=", album.AlbumPath, ", file.Name=", file.Filename, ", file.Medium=" + file.Medium);
                         Log.Error (ex);
                         album.RemoveFile (file);
                     }

@@ -23,18 +23,24 @@ namespace Shell.Media
                 "Update the media index.",
                 "Delete non-existant media files in the index.",
                 "Rebuild the media index for the specified album(s).",
+                "Find duplicate media files.",
+                "Install third-party executables",
             };
             Parameters = new [] {
                 "find-shares",
                 "index",
                 "clean",
                 "reindex",
+                "deduplicate",
+                "install",
             };
             Methods = new Action[] {
                 () => findShares (),
                 () => index (),
                 () => clean (),
                 () => reindex (),
+                () => deduplicate (),
+                () => install (),
             };
         }
 
@@ -96,6 +102,20 @@ namespace Shell.Media
             shares.Initialize (cached: false);
             shares.Deserialize ();
             shares.PrintShares (shareFilter);
+        }
+
+        void deduplicate ()
+        {
+            MediaShareManager shares = new MediaShareManager (rootDirectory: "/");
+            shares.Initialize (cached: true);
+            shares.Deserialize ();
+            shares.Deduplicate (shareFilter: shareFilter, albumFilter: albumFilter);
+            shares.Serialize ();
+        }
+
+        void install ()
+        {
+            fs.Runtime.RequirePackages ("libimage-exiftool-perl");
         }
     }
 }

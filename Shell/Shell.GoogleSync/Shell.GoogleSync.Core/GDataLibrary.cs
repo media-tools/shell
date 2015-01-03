@@ -31,6 +31,8 @@ namespace Shell.GoogleSync.Core
             UpdateAuthInternal ();
         }
 
+        public GoogleAccount GoogleAccount { get { return account; } }
+
         private void UpdateAuthInternal ()
         {
             lock (internalLockAuth) {

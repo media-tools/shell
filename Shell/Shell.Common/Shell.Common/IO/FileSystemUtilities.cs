@@ -10,7 +10,9 @@ namespace Shell.Common.Util
 
         public static HexString HashOfFile (string path)
         {
-            return HexString.FromByteArray (crypt.ComputeHash (File.Open (path: path, mode: FileMode.Open, access: FileAccess.Read, share: FileShare.ReadWrite)));
+            using (Stream stream = File.Open (path: path, mode: FileMode.Open, access: FileAccess.Read, share: FileShare.ReadWrite)) {
+                return HexString.FromByteArray (crypt.ComputeHash (stream));
+            }
         }
     }
 

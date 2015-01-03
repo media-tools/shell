@@ -5,7 +5,7 @@ using System.Drawing.Drawing2D;
 using Shell.Common.IO;
 using Shell.Media.Content;
 
-namespace Shell.GoogleSync.Photos
+namespace Shell.Media
 {
     public static class ImageResizeUtilities
     {

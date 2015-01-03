@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Shell.Media;
 using Shell.Media.Content;
@@ -19,39 +20,53 @@ namespace Shell.GoogleSync.Photos
         public MediaFile[] FilesOnlyInLocalAlbum;
         public WebPhoto[] FilesOnlyInWebAlbum;
 
-        public AlbumSyncStatus (Album localAlbum, WebAlbum webAlbum, WebPhoto[] webFiles)
+        public AlbumSyncStatus (Album localAlbum, WebAlbum webAlbum, WebPhoto[] webFiles, bool requireStrictFilenames, bool acceptDifferentVideoExtensions)
         {
             LocalAlbum = localAlbum;
             WebAlbum = webAlbum;
-            WebFiles = webFiles.OrderBy (f => f.Title).ToArray ();
+            WebFiles = webFiles.OrderBy (f => f.Filename).ToArray ();
 
             // filter all photos from the list of local files
-            LocalPhotos = LocalAlbum.Files.Where (f => f.Medium is Picture).OrderBy (f => f.Name).ToArray ();
-            LocalVideos = LocalAlbum.Files.Where (f => f.Medium is Video).OrderBy (f => f.Name).ToArray ();
+            LocalPhotos = LocalAlbum.Files.Where (f => f.Medium is Picture).OrderBy (f => f.Filename).ToArray ();
+            LocalVideos = LocalAlbum.Files.Where (f => f.Medium is Video).OrderBy (f => f.Filename).ToArray ();
             LocalFiles = LocalPhotos.Concat (LocalVideos).ToArray ();
 
-            Compare ();
-        }
-
-        private void Compare ()
-        {
             // find files that only exist locally
             List<MediaFile> onlyLocal = new List<MediaFile> ();
             foreach (MediaFile localFile in LocalFiles) {
-                if (!WebFiles.Any (wp => wp.Filename == localFile.Name)) {
-                    onlyLocal.Add (localFile);
+                if (WebFiles.Any (wp => wp.FilenameForDownload.ToLower () == localFile.Filename.ToLower ())) {
+                    continue;
                 }
+                if (!requireStrictFilenames && WebFiles.Any (wp => wp.Filename.ToLower () == localFile.Filename.ToLower ())) {
+                    continue;
+                }
+                if (acceptDifferentVideoExtensions && Video.IsValidFile (localFile.Filename)
+                    && WebFiles.Any (wp => Path.GetFileNameWithoutExtension (wp.Filename) == Path.GetFileNameWithoutExtension (localFile.Filename) && Video.IsValidFile (wp.Filename))) {
+                    continue;
+                }
+
+                onlyLocal.Add (localFile);
             }
-            FilesOnlyInLocalAlbum = onlyLocal.OrderBy (f => f.Name).ToArray ();
+            FilesOnlyInLocalAlbum = onlyLocal.OrderBy (f => f.Filename).ToArray ();
 
             // find files that only exist in the web album
             List<WebPhoto> onlyWeb = new List<WebPhoto> ();
             foreach (WebPhoto webFile in WebFiles) {
-                if (!LocalFiles.Any (lf => lf.Name == webFile.Filename)) {
-                    onlyWeb.Add (webFile);
+                if (LocalFiles.Any (lf => lf.Filename.ToLower () == webFile.FilenameForDownload.ToLower ())) {
+                    continue;
                 }
+                if (!requireStrictFilenames && LocalFiles.Any (lf => lf.Filename.ToLower () == webFile.Filename.ToLower ())) {
+                    continue;
+                }
+                if (acceptDifferentVideoExtensions && Video.IsValidFile (webFile.Filename)
+                    && LocalFiles.Any (lf => Path.GetFileNameWithoutExtension (lf.Filename) == Path.GetFileNameWithoutExtension (webFile.Filename) && Video.IsValidFile (lf.Filename))) {
+                    continue;
+                }
+
+
+                onlyWeb.Add (webFile);
             }
-            FilesOnlyInWebAlbum = onlyWeb.OrderBy (f => f.Title).ToArray ();
+            FilesOnlyInWebAlbum = onlyWeb.OrderBy (f => f.Filename).ToArray ();
         }
     }
 }

@@ -21,7 +21,8 @@ namespace Shell.Media
         {
             AlbumPath = albumPath;
             Files = new List<MediaFile> ();
-            IsHighQuality = share.HighQualityAlbums.Any (ap => ap == "*" || albumPath.ToLower ().Trim ('/', '\\').StartsWith (ap.ToLower ().Trim ('/', '\\')));
+            IsHighQuality = share.HighQualityAlbums.Any (ap => ap == "*" || albumPath.ToLower ().Trim ('/', '\\').StartsWith (ap.ToLower ().Trim ('/', '\\')))
+            || AlbumPath.StartsWith (share.SpecialAlbumPrefix + PhotoSyncUtilities.SPECIAL_ALBUM_AUTO_BACKUP);
         }
 
         public void AddFile (MediaFile mediaFile)

@@ -8,6 +8,8 @@ using Shell.Common.Util;
 using Shell.Media.Files;
 using System.Drawing.Imaging;
 using System.Drawing;
+using System.Linq;
+using System.Globalization;
 
 namespace Shell.Media.Content
 {
@@ -42,7 +44,31 @@ namespace Shell.Media.Content
 
         public List<ExifTag> ExifTags = new List<ExifTag> ();
 
+        public DateTime? ExifTimestampCreated {
+            get {
+                string[] possibleTagNames = new [] {
+                    "DateTimeOriginal",
+                    "CreateDate",
+                    "GPSDateTime",
+                    "ModifyDate",
+                    "DateTime"
+                };
+                return lib.TryParseExifTimestamp (exifTags: ExifTags, possibleTagNames: possibleTagNames);
+            }
+        }
+
+        public DateTime? ExifTimestampAcquired {
+            get {
+                string[] possibleTagNames = new [] {
+                    "DateAcquired"
+                };
+                return lib.TryParseExifTimestamp (exifTags: ExifTags, possibleTagNames: possibleTagNames);
+            }
+        }
+
         public bool IsDateless { get; private set; }
+
+        public HexString PixelHash { get; private set; }
 
         public Picture (HexString hash)
             : base (hash)
@@ -63,16 +89,39 @@ namespace Shell.Media.Content
 
         public override void Index (string fullPath)
         {
-            ExifTags = lib.GetExifTags (fullPath: fullPath);
-            if (ExifTags.Count == 0) {
-                string fileName = Path.GetFileName (fullPath);
-                DateTime date;
-                if (lib.GetFileNameDate (fileName: fileName, date: out date)) {
-                    Log.Message ("Set exif date for picture: ", fullPath, " => ", string.Format ("{0:yyyy:MM:dd HH:mm:ss}", date));
-                    lib.SetExifDate (fullPath: fullPath, date: date);
-                    ExifTags = lib.GetExifTags (fullPath: fullPath);
-                    IsDateless = false;
+            if (ExifTags.Count == 0 || PixelHash.Hash == null) {
+                Bitmap bitmap = lib.ReadBitmap (fileName: fullPath);
+                if (bitmap != null) {
+                    using (bitmap) {
+                        ExifTags = lib.GetExifTags (bitmap: bitmap);
+                        if (ExifTimestampCreated == null) {
+                            string fileName = Path.GetFileName (fullPath);
+                            DateTime date;
+                            if (lib.GetFileNameDate (fileName: fileName, date: out date)) {
+                                Log.Message ("Index: Set exif date for picture: ", fullPath, " => ", string.Format ("{0:yyyy:MM:dd HH:mm:ss}", date));
+                                lib.SetExifDate (fullPath: fullPath, date: date);
+                                Bitmap newBitmap = lib.ReadBitmap (fileName: fullPath);
+                                using (newBitmap) {
+                                    ExifTags = lib.GetExifTags (bitmap: newBitmap);
+                                }
+                                IsDateless = false;
+                            } else {
+                                IsDateless = true;
+                            }
+                        }
+
+                        if (PixelHash.Hash == null) {
+                            var result = lib.GetPixelHash (bitmap: bitmap);
+                            if (result.HasValue) {
+                                PixelHash = result.Value;
+                            } else {
+                                Log.Error ("Index: Unable to get pixel hash! fullPath=", fullPath);
+                            }
+                            Log.Debug ("Index: PixelHash: ", PixelHash);
+                        }
+                    }
                 } else {
+                    Log.Error ("Error! Index Picture: Can't read bitmap: ", fullPath);
                     IsDateless = true;
                 }
             }
@@ -80,7 +129,7 @@ namespace Shell.Media.Content
 
         public override bool IsCompletelyIndexed {
             get {
-                return ExifTags.Count > 0 || IsDateless;
+                return (ExifTags.Count > 0 || IsDateless) && !string.IsNullOrWhiteSpace (PixelHash.Hash);
             }
         }
 
@@ -134,6 +183,9 @@ namespace Shell.Media.Content
                 dict.Remove ("flag:IsDateless");
             }
 
+            // save the pixel hash
+            dict ["picture:PixelHash"] = PixelHash.Hash;
+
             return dict;
         }
 
@@ -151,6 +203,9 @@ namespace Shell.Media.Content
 
             // is dateless?
             IsDateless = dict.ContainsKey ("flag:IsDateless") && dict ["flag:IsDateless"] == "true";
+
+            // load the pixel hash
+            PixelHash = new HexString { Hash = dict ["picture:PixelHash"] };
         }
     }
 }

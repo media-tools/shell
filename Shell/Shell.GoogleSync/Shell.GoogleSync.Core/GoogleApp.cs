@@ -32,7 +32,17 @@ namespace Shell.GoogleSync.Core
             PlusService.Scope.UserinfoProfile,
             PlusService.Scope.UserinfoEmail,
             "https://www.google.com/m8/feeds",
-            "https://picasaweb.google.com/data/"
+            "https://picasaweb.google.com/data/",
+
+            "https://www.googleapis.com/auth/youtube",
+            "https://www.googleapis.com/auth/youtube.upload",
+            "https://www.googleapis.com/auth/plus.circles.read",
+            "https://www.googleapis.com/auth/plus.circles.write",
+            "https://www.googleapis.com/auth/plus.stream.read",
+            "https://www.googleapis.com/auth/plus.stream.write",
+            "https://www.googleapis.com/auth/plus.media.upload",
+            "https://mail.google.com/",
+            "https://www.googleapis.com/auth/drive",
         };
         public List<GoogleAccount> Accounts = new List<GoogleAccount> ();
 

@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace Shell.Common.Shares
 {
-    public abstract class CommonShare<Derived> : ValueObject<Derived>, IFilterable
+    public abstract class CommonShare<Derived> : ValueObject<Derived>, IFilterable, IRootDirectory
         where Derived : CommonShare<Derived>
     {
         public static string CONFIG_FILENAME = "control.ini";
@@ -39,8 +39,7 @@ namespace Shell.Common.Shares
                 config.RemoveValue (ConfigSection, "root-paths-exclude");
             }
 
-            int fuuuck = (Name + IsEnabled + IsReadable + IsWriteable + IsDeletable + IsExperimental).GetHashCode ();
-            fuuuck++;
+            RequireFields (Name, IsEnabled, IsReadable, IsWriteable, IsDeletable, IsExperimental);
 
             string shareType = this.GetType ().Name;
 
@@ -78,6 +77,13 @@ namespace Shell.Common.Shares
             }
         }
 
+        protected void RequireFields (params object[] fields)
+        {
+            // make sure that the given properties are "read",
+            // so that their default value is really written to the config file if they don't exist yet
+            int fuuuck = string.Join ("", fields.Select (f => f.ToString ())).GetHashCode ();
+            fuuuck++;
+        }
 
         public string Name {
             get { return config [ConfigSection, "name", StringUtils.RandomShareName ()]; }

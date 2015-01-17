@@ -37,11 +37,11 @@ namespace Shell.Media.Content
                         ffmpegParams = " -vcodec copy -acodec copy ";
                     } else if (fullPath.Contains ("Music") || fullPath.Contains ("Musik")) {
                         ffmpegCommand = "x265-ffmpeg";
-                        ffmpegParams = " -c:v hevc -c:a libfaac -preset slower ";
+                        ffmpegParams = " -c:v hevc -c:a libfaac -preset slower -strict experimental -pix_fmt yuv420p ";
                     } else {
                         long oldFileSize = new FileInfo (oldFullPath).Length;
                         int crf = oldFileSize < 50 * 1000000 ? 18 : oldFileSize > 200 * 1000000 ? 21 : 20;
-                        ffmpegParams = " -c:v libx264 -preset slower -crf " + crf + " ";
+                        ffmpegParams = " -c:v libx264 -preset slower -crf " + crf + " -strict experimental -pix_fmt yuv420p ";
                     }
 
                     string script = "export tempfile=$(mktemp --suffix .mkv) ;" +
@@ -93,9 +93,10 @@ namespace Shell.Media.Content
                 string oldFullPath = fullPath;
                 string newFullPathTemplate = Path.GetDirectoryName (fullPath) + Path.DirectorySeparatorChar + Path.GetFileNameWithoutExtension (fullPath) + "-splitted.mkv";
                 string firstPart = Path.GetDirectoryName (fullPath) + Path.DirectorySeparatorChar + Path.GetFileNameWithoutExtension (fullPath) + "-splitted-001.mkv";
+                long originalFileSize = new FileInfo (fullPath).Length;
 
                 if (!oldFullPath.Contains ("-splitted") && !File.Exists (firstPart)) {
-                    int partSize = 1024 * 1024 * 95;
+                    int partSize = 1024 * 1024 * 80;
                     string script = "LC_ALL=C mkvmerge --split size:" + partSize + " --compression 0:none --compression 1:none --clusters-in-meta-seek -o "
                                     + newFullPathTemplate.SingleQuoteShell () + " "
                                     + oldFullPath.SingleQuoteShell () + " && " +

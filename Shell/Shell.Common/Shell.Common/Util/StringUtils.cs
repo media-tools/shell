@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Shell.Common.Util
 {
@@ -50,6 +51,39 @@ namespace Shell.Common.Util
         public static bool Contains (this string source, string toCheck, StringComparison comp)
         {
             return source.IndexOf (toCheck, comp) >= 0;
+        }
+
+        private static Regex regexRemoveNonLetters = new Regex ("[^a-zA-Z]");
+        private static Regex regexRemoveNonDigits = new Regex ("[^0-9]");
+
+        public static int CountLetters (this string text)
+        {
+            text = regexRemoveNonLetters.Replace (text, "");
+            foreach (string meaninglessWord in meaninglessWords) {
+                text = text.Replace (meaninglessWord, "");
+            }
+            return text.Length;
+        }
+
+        private static string[] meaninglessWords = new [] {
+            "AllerleiThomasHeinz", "Screenshot", "Bildschirmfoto", "IMG", "MVC"
+        };
+
+        public static int CountDigits (this string text)
+        {
+            return regexRemoveNonDigits.Replace (text, "").Length;
+        }
+
+        public static string OnlyLetters (this string text)
+        {
+            text = regexRemoveNonLetters.Replace (text, "");
+            return text;
+        }
+
+        public static string OnlyDigits (this string text)
+        {
+            text = regexRemoveNonDigits.Replace (text, "");
+            return text;
         }
     }
 }

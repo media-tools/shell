@@ -26,7 +26,7 @@ namespace Shell.Media.Content
         }.ToHashSet ();
 
         public static Dictionary<string[],string[]> MIME_TYPES = new Dictionary<string[],string[]> () {
-            { new [] { "video/mp4" }, new [] { ".mp4" } },
+            { new [] { "video/mpeg4", "video/mp4" }, new [] { ".mp4" } },
             { new [] { "video/x-flv" }, new [] { ".flv" } },
             { new [] { "video/x-msvideo" }, new [] { ".avi" } },
             { new [] { "video/x-matroska" }, new [] { ".mkv" } },
@@ -41,6 +41,8 @@ namespace Shell.Media.Content
 
         public override string Type { get { return TYPE; } }
 
+        public override DateTime? PreferredTimestamp { get { return null; } }
+
         public Video (HexString hash)
             : base (hash)
         {
@@ -53,11 +55,14 @@ namespace Shell.Media.Content
 
         public override void Index (string fullPath)
         {
+            if (string.IsNullOrWhiteSpace (MimeType)) {
+                MimeType = libMediaFile.GetMimeTypeByExtension (fullPath: fullPath);
+            }
         }
 
         public override bool IsCompletelyIndexed {
             get {
-                return true;
+                return !string.IsNullOrWhiteSpace (MimeType);
             }
         }
 
@@ -86,12 +91,11 @@ namespace Shell.Media.Content
             }
         }
 
-        public override Dictionary<string, string> Serialize ()
+        protected override void SerializeInternal (Dictionary<string, string> dict)
         {
-            return new Dictionary<string, string> ();
         }
 
-        public override void Deserialize (Dictionary<string, string> dict)
+        protected override void DeserializeInternal (Dictionary<string, string> dict)
         {
         }
     }

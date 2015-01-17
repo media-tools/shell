@@ -38,10 +38,12 @@ namespace Shell.GoogleSync.Photos
 
             Log.Message (result.WebFiles.ToStringTable (
                 p => LogColor.Reset,
-                new[] { "Filename", "Id", "Dimensions" },
+                new[] { "Filename for Download", "Filename", "Id", "Dimensions", "Timestamp" },
+                p => p.FilenameForDownload,
                 p => p.Filename,
                 p => p.Id,
-                p => p.Dimensions.Width + "x" + p.Dimensions.Height
+                p => p.Dimensions.Width + "x" + p.Dimensions.Height,
+                p => p.Timestamp.ToString ("yyyy-MM-dd HH:mm:ss")
             ));
         }
 

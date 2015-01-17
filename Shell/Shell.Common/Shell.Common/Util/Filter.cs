@@ -8,6 +8,7 @@ namespace Shell.Common.Util
     {
         private string[] Elements = null;
         private FilterType Type;
+        private Filter[] SubFilters = null;
 
         private Filter ()
         {
@@ -20,10 +21,22 @@ namespace Shell.Common.Util
             if (filter.Length > 0) {
                 return new Filter () {
                     Type = FilterType.CONTAINS,
-                    Elements = filter
+                    Elements = filter.ToArray ()
                 };
             } else {
                 return Filter.None;
+            }
+        }
+
+        public static Filter ExactFilter (Filter copyFrom)
+        {
+            if (copyFrom.Type == FilterType.CONTAINS || copyFrom.Type == FilterType.EXACT_MATCH) {
+                return new Filter () {
+                    Type = FilterType.EXACT_MATCH,
+                    Elements = copyFrom.Elements.ToArray ()
+                };
+            } else {
+                throw new ArgumentException ("Invalid filter conversion: from " + copyFrom.Type.ToString () + " to EXACT_MATCH");
             }
         }
 
@@ -32,7 +45,31 @@ namespace Shell.Common.Util
             if (filter.Length > 0) {
                 return new Filter () {
                     Type = FilterType.EXACT_MATCH,
-                    Elements = filter
+                    Elements = filter.ToArray ()
+                };
+            } else {
+                return Filter.None;
+            }
+        }
+
+        public static Filter And (params Filter[] filters)
+        {
+            if (filters.Length > 0) {
+                return new Filter () {
+                    Type = FilterType.COMBINED_FILTER_AND,
+                    SubFilters = filters.ToArray ()
+                };
+            } else {
+                return Filter.None;
+            }
+        }
+
+        public static Filter Or (params Filter[] filters)
+        {
+            if (filters.Length > 0) {
+                return new Filter () {
+                    Type = FilterType.COMBINED_FILTER_OR,
+                    SubFilters = filters.ToArray ()
                 };
             } else {
                 return Filter.None;
@@ -66,6 +103,28 @@ namespace Shell.Common.Util
                 }
                 return false;
 
+            case FilterType.COMBINED_FILTER_AND:
+                {
+                    bool match = true;
+                    foreach (Filter subFilter in SubFilters) {
+                        match = match && subFilter.Matches (possibleMatches);
+                        if (!match)
+                            break;
+                    }
+                    return match;
+                }
+
+            case FilterType.COMBINED_FILTER_OR:
+                {
+                    bool match = false;
+                    foreach (Filter subFilter in SubFilters) {
+                        match = match || subFilter.Matches (possibleMatches);
+                        if (match)
+                            break;
+                    }
+                    return match;
+                }
+
             default:
                 throw new InvalidOperationException ("Filter has no type! (" + this + ")");
             }
@@ -82,7 +141,33 @@ namespace Shell.Common.Util
         {
             ACCEPT_EVERYTHING,
             CONTAINS,
-            EXACT_MATCH
+            EXACT_MATCH,
+            COMBINED_FILTER_AND,
+            COMBINED_FILTER_OR,
+        }
+
+
+        public override string ToString ()
+        {
+            switch (Type) {
+            case FilterType.ACCEPT_EVERYTHING:
+                return "{ * }";
+
+            case FilterType.CONTAINS:
+                return "{ contains: [" + string.Join (", ", Elements.Select (e => "\"" + e + "\"")) + "] }";
+
+            case FilterType.EXACT_MATCH:
+                return "{ exact: [" + string.Join (", ", Elements.Select (e => "\"" + e + "\"")) + "] }";
+
+            case FilterType.COMBINED_FILTER_AND:
+                return "{ and: [" + string.Join (", ", SubFilters.Select (e => e.ToString ())) + "] }";
+
+            case FilterType.COMBINED_FILTER_OR:
+                return "{ or: [" + string.Join (", ", SubFilters.Select (e => e.ToString ())) + "] }";
+
+            default:
+                throw new InvalidOperationException ("Filter has no type! (" + this + ")");
+            }
         }
     }
 

@@ -14,6 +14,7 @@ namespace Shell.Common.IO
         bool success;
         AutoResetEvent notifier;
         int lastProgress;
+        double lastBytesReceived;
 
         public Downloader ()
         {
@@ -70,9 +71,11 @@ namespace Shell.Common.IO
         private void ProgressChanged (object sender, DownloadProgressChangedEventArgs e)
         {
             int percentage = e.ProgressPercentage;
+            double bytesReceived = e.BytesReceived;
 
-            if (percentage > lastProgress) {
+            if (percentage > lastProgress || bytesReceived > lastBytesReceived + 100000) {
                 lastProgress = percentage;
+                lastBytesReceived = bytesReceived;
 
                 string speed = string.Format ("{0} kB/s", (e.BytesReceived / 1024d / sw.Elapsed.TotalSeconds).ToString ("0.00"));
 

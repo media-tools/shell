@@ -37,6 +37,7 @@
     <Compile Include="Shell.Common.Shares\FileSystemLibrary.cs" />
     <Compile Include="Shell.Common.Shares\ShareUnavailableException.cs" />
     <Compile Include="Shell.Common.Shares\CommonShare.cs" />
+    <Compile Include="Shell.Common.Shares\IRootDirectory.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

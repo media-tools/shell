@@ -24,6 +24,8 @@ namespace Shell.Media.Content
 
         public override string Type { get { return TYPE; } }
 
+        public override DateTime? PreferredTimestamp { get { return null; } }
+
         public Audio (HexString hash)
             : base (hash)
         {
@@ -48,12 +50,11 @@ namespace Shell.Media.Content
         {
         }
 
-        public override Dictionary<string, string> Serialize ()
+        protected override void SerializeInternal (Dictionary<string, string> dict)
         {
-            return new Dictionary<string, string> ();
         }
 
-        public override void Deserialize (Dictionary<string, string> dict)
+        protected override void DeserializeInternal (Dictionary<string, string> dict)
         {
         }
     }

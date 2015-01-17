@@ -23,17 +23,20 @@ namespace Shell.Media.Content
             ".xcf",
             ".bmp",
             ".tiff",
-            ".tif"
+            ".tif",
+            ".ico",
+            ".pamp",
         }.ToHashSet ();
 
         public static Dictionary<string[],string[]> MIME_TYPES = new Dictionary<string[],string[]> () {
-            { new [] { "image/jpeg" }, new [] { ".jpg", ".jpeg" } },
+            { new [] { "image/jpeg" }, new [] { ".jpg", ".jpeg", ".pamp" } },
             { new [] { "image/png" }, new [] { ".png" } },
             { new [] { "image/gif" }, new [] { ".gif" } },
             { new [] { "image/svg+xml" }, new [] { ".svg" } },
             { new [] { "image/tiff" }, new [] { ".tif", ".tiff" } },
             { new [] { "image/x-ms-bmp" }, new [] { ".bmp" } },
-            { new [] { "image/x-icon", "image/vnd.microsoft.icon" }, new [] { ".ico" } }
+            { new [] { "image/x-icon", "image/vnd.microsoft.icon" }, new [] { ".ico" } },
+            { new [] { "image/x-xcf" }, new [] { ".xcf" } },
         };
 
         public static readonly string TYPE = "picture";
@@ -50,8 +53,17 @@ namespace Shell.Media.Content
                     "DateTimeOriginal",
                     "CreateDate",
                     "GPSDateTime",
+                    //"ModifyDate",
+                    "DateTime",
+                };
+                return lib.TryParseExifTimestamp (exifTags: ExifTags, possibleTagNames: possibleTagNames);
+            }
+        }
+
+        public DateTime? ExifTimestampModified {
+            get {
+                string[] possibleTagNames = new [] {
                     "ModifyDate",
-                    "DateTime"
                 };
                 return lib.TryParseExifTimestamp (exifTags: ExifTags, possibleTagNames: possibleTagNames);
             }
@@ -60,13 +72,29 @@ namespace Shell.Media.Content
         public DateTime? ExifTimestampAcquired {
             get {
                 string[] possibleTagNames = new [] {
-                    "DateAcquired"
+                    "DateAcquired",
                 };
                 return lib.TryParseExifTimestamp (exifTags: ExifTags, possibleTagNames: possibleTagNames);
             }
         }
 
+        public override DateTime? PreferredTimestamp {
+            get {
+                DateTime? preferred = null;
+                if (ExifTimestampCreated.HasValue)
+                    preferred = ExifTimestampCreated;
+                else if (ExifTimestampModified.HasValue)
+                    preferred = ExifTimestampModified;
+                else if (ExifTimestampAcquired.HasValue)
+                    preferred = ExifTimestampAcquired;
+                   
+                return preferred;
+            }
+        }
+
         public bool IsDateless { get; private set; }
+
+        public bool IsCommonFormat { get; private set; }
 
         public HexString PixelHash { get; private set; }
 
@@ -83,22 +111,33 @@ namespace Shell.Media.Content
 
         public override void Index (string fullPath)
         {
-            if (ExifTags.Count == 0) {
-                ExifTags = lib.GetExifTags (fullPath: fullPath);
-                if (ExifTimestampCreated == null) {
-                    string fileName = Path.GetFileName (fullPath);
-                    DateTime date;
-                    if (lib.GetFileNameDate (fileName: fileName, date: out date)) {
-                        Log.Message ("Index: Set exif date for picture: ", fullPath, " => ", string.Format ("{0:yyyy:MM:dd HH:mm:ss}", date));
-                        lib.SetExifDate (fullPath: fullPath, date: date);
-                        ExifTags = lib.GetExifTags (fullPath: fullPath);
-                        IsDateless = false;
-                    } else {
-                        IsDateless = true;
-                    }
-                }
+            if (string.IsNullOrWhiteSpace (MimeType)) {
+                MimeType = libMediaFile.GetMimeTypeByExtension (fullPath: fullPath);
             }
-            if (PixelHash.Hash == null) {
+            IsCommonFormat = MimeType != "image/x-xcf";
+
+            if (ExifTags.Count == 0) {
+                Log.Debug ("Index: ", fullPath);
+                ExifTags = lib.GetExifTags (fullPath: fullPath);
+            }
+
+            if (ExifTimestampCreated == null && ExifTimestampModified == null && ExifTimestampAcquired == null) {
+                string fileName = Path.GetFileName (fullPath);
+                DateTime date;
+                if (NamingUtilities.GetFileNameDate (fileName: fileName, date: out date)) {
+                    Log.Message ("Index: Set exif date for picture: ", fullPath, " => ", string.Format ("{0:yyyy:MM:dd HH:mm:ss}", date));
+                    lib.SetExifDate (fullPath: fullPath, date: date);
+                    ExifTags = lib.GetExifTags (fullPath: fullPath);
+                    IsDateless = false;
+                } else {
+                    IsDateless = true;
+                }
+            } else {
+                IsDateless = false;
+            }
+
+            if (IsCommonFormat && string.IsNullOrWhiteSpace (PixelHash.Hash)) {
+                Log.Debug ("Index: ", fullPath);
                 Bitmap bitmap = lib.ReadBitmap (fileName: fullPath);
                 if (bitmap != null) {
                     using (bitmap) {
@@ -121,7 +160,9 @@ namespace Shell.Media.Content
 
         public override bool IsCompletelyIndexed {
             get {
-                return (ExifTags.Count > 0 || IsDateless) && !string.IsNullOrWhiteSpace (PixelHash.Hash);
+                return (ExifTags.Count > 0 || IsDateless)
+                && (!string.IsNullOrWhiteSpace (PixelHash.Hash) || !IsCommonFormat)
+                && !string.IsNullOrWhiteSpace (MimeType);
             }
         }
 
@@ -129,6 +170,10 @@ namespace Shell.Media.Content
         {
             // is the file ending in BMP format?
             if (Path.GetExtension (fullPath) == ".bmp") {
+                Picture.ConvertToJpeg (fullPath: ref fullPath);
+            }
+            // WTF is pamp?
+            if (Path.GetExtension (fullPath) == ".pamp") {
                 Picture.ConvertToJpeg (fullPath: ref fullPath);
             }
         }
@@ -156,10 +201,9 @@ namespace Shell.Media.Content
             return false;
         }
 
-        public override Dictionary<string, string> Serialize ()
+        protected override void SerializeInternal (Dictionary<string, string> dict)
         {
             // exif tags
-            Dictionary<string, string> dict = new Dictionary<string, string> ();
             foreach (ExifTag tag in ExifTags) {
                 string key;
                 string value;
@@ -169,19 +213,16 @@ namespace Shell.Media.Content
             }
 
             // is dateless?
-            if (IsDateless) {
-                dict ["flag:IsDateless"] = "true";
-            } else {
-                dict.Remove ("flag:IsDateless");
-            }
+            dict ["flag:IsDateless"] = IsDateless ? "true" : "false";
+
+            // is in a common format?
+            dict ["flag:IsCommonFormat"] = IsCommonFormat ? "true" : "false";
 
             // save the pixel hash
             dict ["picture:PixelHash"] = PixelHash.Hash;
-
-            return dict;
         }
 
-        public override void Deserialize (Dictionary<string, string> dict)
+        protected override void DeserializeInternal (Dictionary<string, string> dict)
         {
             // exif tags
             ExifTags.Clear ();
@@ -194,7 +235,10 @@ namespace Shell.Media.Content
             }
 
             // is dateless?
-            IsDateless = dict.ContainsKey ("flag:IsDateless") && dict ["flag:IsDateless"] == "true";
+            IsDateless = dict.ContainsKey ("flag:IsDateless") ? (dict ["flag:IsDateless"] == "true") : false;
+
+            // is in a common format?
+            IsCommonFormat = dict.ContainsKey ("flag:IsCommonFormat") ? (dict ["flag:IsCommonFormat"] == "true") : true;
 
             // load the pixel hash
             PixelHash = new HexString { Hash = dict ["picture:PixelHash"] };

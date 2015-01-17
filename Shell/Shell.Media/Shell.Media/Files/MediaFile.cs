@@ -26,35 +26,35 @@ namespace Shell.Media.Files
 
         public Medium Medium { get; private set; }
 
-        public MediaShare Share { get; private set; }
+        public MediaShareDatabase Database { get; private set; }
 
         private static MediaFileLibrary lib = new MediaFileLibrary ();
 
         public bool IsDeleted { get; set; }
 
-        public MediaFile (string fullPath, MediaShare share)
+        public MediaFile (string fullPath, MediaShareDatabase database)
         {
-            Share = share;
+            Database = database;
             FullPath = fullPath;
             initialize ();
-            Index ();
+            Index (delayedOperations: null);
         }
 
-        public MediaFile (string fullPath, HexString hash, MediaShare share)
+        public MediaFile (string fullPath, HexString hash, MediaShareDatabase database, List<Action> delayedOperations = null)
         {
-            Share = share;
+            Database = database;
             FullPath = fullPath;
             initialize ();
-            Index (hash);
+            Index (hash: hash, delayedOperations: delayedOperations);
         }
 
         private void initialize ()
         {
-            Debug.Assert (FullPath.StartsWith (Share.RootDirectory), "file path is not in root directory (FullName=" + FullPath + ",root=" + Share.RootDirectory + ")");
+            Debug.Assert (FullPath.StartsWith (Database.RootDirectory), "file path is not in root directory (FullName=" + FullPath + ",root=" + Database.RootDirectory + ")");
             Filename = Path.GetFileName (FullPath);
             Extension = Path.GetExtension (FullPath);
-            RelativePath = MediaShareUtilities.GetRelativePath (fullPath: FullPath, share: Share);
-            AlbumPath = MediaShareUtilities.GetAlbumPath (fullPath: FullPath, share: Share);
+            RelativePath = MediaShareUtilities.GetRelativePath (fullPath: FullPath, share: Database);
+            AlbumPath = MediaShareUtilities.GetAlbumPath (fullPath: FullPath, share: Database);
         }
 
         public long Size {
@@ -68,43 +68,92 @@ namespace Shell.Media.Files
             }
         }
 
-        public void Index ()
+        public DateTime PreferredTimestamp {
+            get {
+                if (Medium == null) {
+                    throw new ArgumentException ("Error! PreferredTimestamp of a MediaFile cannot be requested without a valid Medium!");
+                }
+
+                DateTime? fromMedium = Medium.PreferredTimestamp;
+                if (fromMedium.HasValue) {
+                    return fromMedium.Value;
+                }
+
+                DateTime filesystemDate = File.GetCreationTime (path: FullPath);
+
+                DateTime filenameDate;
+                // if the file name has a date
+                if (NamingUtilities.GetFileNameDate (fileName: Filename, date: out filenameDate)) {
+                    // if the file name date has a time component
+                    if (filenameDate.HasTimeComponent ()) {
+                        return filenameDate;
+                    }
+                    // if there is no time component int the file name date, look if the file system date is similar
+                    else if (filenameDate.Year == filesystemDate.Year) {
+                        return filesystemDate;
+                    }
+                    // if it isn't, return the file name date
+                    else {
+                        return filenameDate;
+                    }
+                }
+                // if the file name doesn't have a date, return the file system date
+                else {
+                    return filesystemDate;
+                }
+            }
+        }
+
+        public void Index (List<Action> delayedOperations)
         {
             // compute the file's hash
             HexString hash = FileSystemUtilities.HashOfFile (path: FullPath);
 
-            Index (hash);
+            Index (hash: hash, delayedOperations: delayedOperations);
+            IsDeleted = false;
         }
 
-        private void Index (HexString hash)
+        private void Index (HexString hash, List<Action> delayedOperations)
         {
+            Action indexOperation = null;
+
             // check whether the medium is already indexed, by looking for it's hash
             Medium cachedMedium;
-            if (Share.GetMediumByHash (hash: hash, medium: out cachedMedium)) {
+            if (Database.GetMediumByHash (hash: hash, medium: out cachedMedium)) {
                 Medium = cachedMedium;
+
+                if (!IsCompletelyIndexed || IsDeleted || Medium.IsDeleted) {
+                    indexOperation = () => {
+                        // run the medium's index routine to find out file type specific stuff
+                        Medium.Index (fullPath: FullPath);
+                    };
+                }
             }
             // create a new medium object
             else {
-                if (Picture.IsValidFile (fullPath: FullPath)) {
-                    Medium = new Picture (hash: hash);
-                } else if (Video.IsValidFile (fullPath: FullPath)) {
-                    Medium = new Video (hash: hash);
-                } else if (Audio.IsValidFile (fullPath: FullPath)) {
-                    Medium = new Audio (hash: hash);
-                } else if (Document.IsValidFile (fullPath: FullPath)) {
-                    Medium = new Document (hash: hash);
-                } else {
-                    throw new ArgumentException ("[MediaFile] Unknown file: " + FullPath);
-                }
+                indexOperation = () => {
+                    if (Picture.IsValidFile (fullPath: FullPath)) {
+                        Medium = new Picture (hash: hash);
+                    } else if (Video.IsValidFile (fullPath: FullPath)) {
+                        Medium = new Video (hash: hash);
+                    } else if (Audio.IsValidFile (fullPath: FullPath)) {
+                        Medium = new Audio (hash: hash);
+                    } else if (Document.IsValidFile (fullPath: FullPath)) {
+                        Medium = new Document (hash: hash);
+                    } else {
+                        throw new ArgumentException ("[MediaFile] Unknown file: " + FullPath);
+                    }
 
-                // put the medium in the share's database
-                Share.AddMedium (media: Medium);
+                    // put the medium in the share's database
+                    Database.AddMedium (medium: Medium);
+
+                    // run the medium's index routine to find out file type specific stuff
+                    Medium.Index (fullPath: FullPath);
+                    IsDeleted = false;
+                };
             }
 
-            if (!IsCompletelyIndexed) {
-                // run the medium's index routine to find out file type specific stuff
-                Medium.Index (fullPath: FullPath);
-            }
+            delayedOperations.AddOrExecuteNow (operation: indexOperation, logHeader: "Media File (unexpected): " + FullPath);
         }
 
         public bool IsCompletelyIndexed {
@@ -121,7 +170,7 @@ namespace Shell.Media.Files
             if (MediaFile.HasNoFileEnding (fullPath: fullPath)) {
                 string fileEnding;
                 // determine the best file ending
-                if (MediaFile.DetermineFileEnding (fullPath: fullPath, fileEnding: out fileEnding)) {
+                if (MediaFile.DetermineFileEndingByExternalCall (fullPath: fullPath, fileEnding: out fileEnding)) {
                     // rename the file
                     MediaFile.AddFileEnding (fullPath: ref fullPath, fileEnding: fileEnding);
                 }
@@ -210,9 +259,18 @@ namespace Shell.Media.Files
             return hasNoEnding;
         }
 
-        public static bool DetermineFileEnding (string fullPath, out string fileEnding)
+        public static bool DetermineFileEndingByExternalCall (string fullPath, out string fileEnding)
         {
             string mimeType = lib.GetMimeTypeByExternalCall (fullPath: fullPath);
+            fileEnding = lib.GetExtensionByMimeType (mimeType: mimeType);
+
+            Log.Debug ("DetermineFileEnding: mimeType=", mimeType, ", fileEnding=", fileEnding);
+
+            return fileEnding != null;
+        }
+
+        public static bool DetermineFileEndingByMimeType (string mimeType, out string fileEnding)
+        {
             fileEnding = lib.GetExtensionByMimeType (mimeType: mimeType);
 
             Log.Debug ("DetermineFileEnding: mimeType=", mimeType, ", fileEnding=", fileEnding);
@@ -260,6 +318,12 @@ namespace Shell.Media.Files
         {
             return ValueObject<MediaFile>.Inequality (a, b);
         }
+    }
+
+    public struct MediaFileInAlbum
+    {
+        public MediaFile File;
+        public Album Album;
     }
 }
 

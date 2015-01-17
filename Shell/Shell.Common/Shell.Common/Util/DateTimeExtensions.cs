@@ -62,5 +62,15 @@ namespace Shell.Common.Util
         {
             return dateTime.Between (StartOfYear (year), EndOfYear (year));
         }
+
+        public static bool HasTimeComponent (this DateTime dateTime)
+        {
+            return !(dateTime.Hour == 0 && dateTime.Minute == 0 && dateTime.Second == 0);
+        }
+
+        public static string StdFormat (this DateTime dateTime)
+        {
+            return dateTime.ToString (format: "yyyyMMdd_HHmmss");
+        }
     }
 }

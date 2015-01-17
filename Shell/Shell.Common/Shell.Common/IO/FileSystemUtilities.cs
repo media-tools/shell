@@ -87,6 +87,8 @@ namespace Shell.Common.Util
         {
             return Hash;
         }
+
+        public string PrintShort { get { return Hash.Length >= 8 ? Hash.Substring (0, 8) : string.Empty; } }
     }
 }
 

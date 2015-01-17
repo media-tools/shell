@@ -42,11 +42,13 @@ namespace Shell.Media
             string[] files = fs.Config.ReadAllLines (path: "trees.txt");
             foreach (string file in files) {
                 try {
-                    MediaShare share = MediaShare.CreateInstance (file, filesystems: fs);
+                    MediaShare share = MediaShare.CreateInstance (configPath: file, filesystems: fs);
 
                     SharesByConfigFile [file] = share;
+
                 } catch (IOException) {
                     Log.Error ("Can't open tree config file: ", file);
+
                 } catch (ShareUnavailableException ex) {
                     if (DEBUG_DISABLED_SHARES) {
                         Log.Error (ex.Message);
@@ -69,7 +71,7 @@ namespace Shell.Media
                     new[] { "Name", "Root Directory", "Album Count" },
                     s => s.Name,
                     s => s.RootDirectory,
-                    s => s.Albums.Length
+                    s => s.Database.AlbumCount
                 ));
                 Log.Indent--;
             } else {
@@ -143,7 +145,7 @@ namespace Shell.Media
             }
         }
 
-        public void Deduplicate (Filter shareFilter, Filter albumFilter)
+        public void DeduplicateAlbums (Filter shareFilter, Filter albumFilter, bool dryRun)
         {
             MediaShare[] filteredShares = Shares.Filter (shareFilter);
 
@@ -151,11 +153,46 @@ namespace Shell.Media
                 foreach (MediaShare share in filteredShares.OrderBy (share => share.RootDirectory)) {
                     Log.Message ("Share: ", share.Name);
                     Log.Indent++;
-                    share.Deduplicate (albumFilter: albumFilter);
+                    PictureDeduplication dedup = new PictureDeduplication ();
+                    dedup.DeduplicateAlbums (share: share, albumFilter: albumFilter, dryRun: dryRun);
                     Log.Indent--;
                 }
             } else {
                 Log.Message ("No shares are available for deduplicating.");
+            }
+        }
+
+        public void DeduplicateShares (Filter shareFilter, Filter albumFilter, bool dryRun)
+        {
+            MediaShare[] filteredShares = Shares.Filter (shareFilter);
+
+            if (filteredShares.Length != 0) {
+                foreach (MediaShare share in filteredShares.OrderBy (share => share.RootDirectory)) {
+                    Log.Message ("Share: ", share.Name);
+                    Log.Indent++;
+                    PictureDeduplication dedup = new PictureDeduplication ();
+                    dedup.DeduplicateShare (share: share, albumFilter: albumFilter, dryRun: dryRun);
+                    Log.Indent--;
+                }
+            } else {
+                Log.Message ("No shares are available for deduplicating.");
+            }
+        }
+
+        public void SetAuthor (Filter shareFilter, Filter albumFilter, string author, bool dryRun)
+        {
+            MediaShare[] filteredShares = Shares.Filter (shareFilter);
+
+            if (filteredShares.Length != 0) {
+                foreach (MediaShare share in filteredShares.OrderBy (share => share.RootDirectory)) {
+                    Log.Message ("Share: ", share.Name);
+                    Log.Indent++;
+                    PictureDeduplication dedup = new PictureDeduplication ();
+                    dedup.SetAuthor (share: share, albumFilter: albumFilter, author: author, dryRun: dryRun);
+                    Log.Indent--;
+                }
+            } else {
+                Log.Message ("No shares are available for author setting.");
             }
         }
 
@@ -175,6 +212,17 @@ namespace Shell.Media
             if (SharesByConfigFile.Count != 0) {
                 foreach (MediaShare share in Shares.OrderBy (share => share.RootDirectory)) {
                     share.Deserialize (verbose: false);
+                }
+            } else {
+                Log.Message ("No shares are available for deserializing.");
+            }
+        }
+
+        public void GarbageCollection ()
+        {
+            if (SharesByConfigFile.Count != 0) {
+                foreach (MediaShare share in Shares.OrderBy (share => share.RootDirectory)) {
+                    share.GarbageCollection ();
                 }
             } else {
                 Log.Message ("No shares are available for deserializing.");

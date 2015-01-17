@@ -6,6 +6,9 @@ using Google.GData.Photos;
 using Google.Picasa;
 using Shell.Common.IO;
 using Shell.Common.Util;
+using Shell.Media;
+using Shell.Media.Files;
+using Google.GData.Extensions.MediaRss;
 
 namespace Shell.GoogleSync.Photos
 {
@@ -49,9 +52,33 @@ namespace Shell.GoogleSync.Photos
                 TimestampUnix = (ulong)DateTime.Now.ToMillisecondsTimestamp ();
                 Log.Debug ("Fuck: ", Timestamp.ToString ());
             }
+
             Dimensions = new Size (internalPhoto.Width, internalPhoto.Height);
             MimeType = internalPhoto.PicasaEntry.Content.Type;
             DownloadUrl = internalPhoto.PicasaEntry.Content.AbsoluteUri;
+
+            foreach (MediaContent content in (internalPhoto.AtomEntry as PicasaEntry).Media.Contents) {
+                string contentType = content.Type;
+                int contentWidth = 0;
+                int contentHeight = 0;
+
+                if (!int.TryParse (content.Width, out contentWidth)) {
+                    Log.Debug ("WebPhoto: ", Filename, ": Failed to parse int (width): ", content.Width);
+                }
+                if (!int.TryParse (content.Height, out contentHeight)) {
+                    Log.Debug ("WebPhoto: ", Filename, ": Failed to parse int (height): ", content.Height);
+                }
+
+                Log.Debug ("WebPhoto: ", Filename, ": Content: type=", contentType, ", size=", contentWidth, "x", contentHeight);
+
+                if ((contentType.StartsWith ("video") && !MimeType.StartsWith ("video"))
+                    || (contentHeight > Dimensions.Height || contentWidth > Dimensions.Width)) {
+                    Dimensions = new Size (contentWidth, contentHeight);
+                    MimeType = contentType;
+                    DownloadUrl = content.Url;
+                }
+            }
+            Log.Debug ("WebPhoto: ", Filename, ": Best content: type=", MimeType, ", size=", Dimensions.Width, "x", Dimensions.Height);
 
             // the file name has to be platform independent
             Filename = Filename.Replace (":", "_").Trim ('_', '.', ' ', '~');
@@ -65,20 +92,40 @@ namespace Shell.GoogleSync.Photos
 
             string betterFilename = Filename;
             string username = albumCollection.GoogleAccount.ShortDisplayName;
-            if (Filename.Length > 12 && Filename.StartsWith ("IMG-") && Filename.Contains ("-WA") && Regex.IsMatch (Filename, patternImgWa)) {
+            /*if (Filename.Length > 12 && Filename.StartsWith ("IMG-") && Filename.Contains ("-WA") && Regex.IsMatch (Filename, patternImgWa)) {
                 if (Filename.Substring (4, 8) == Timestamp.ToString ("yyyyMMdd")) {
                     betterFilename = Regex.Replace (Filename, patternImgWa, "IMG_" + Timestamp.ToString ("yyyyMMdd_HHmmss") + "_WA");
-                } else {
-                    betterFilename = Timestamp.ToString ("yyyyMMdd_HHmmss_") + Filename;
                 }
                 Log.Debug ("Better Filename: ", Filename, " => ", betterFilename);
-            } else if (Filename == "MOVIE.m4v") {
+            } else*/
+            if (Filename == "MOVIE.m4v") {
                 betterFilename = "MOVIE_" + Timestamp.ToString ("yyyyMMdd_HHmmss") + ".m4v";
-            } else if (!Regex.IsMatch (Filename, patternDate)) {
-                betterFilename = Timestamp.ToString ("yyyyMMdd_HHmmss_") + Filename;
             }
-            betterFilename = username + "_" + betterFilename;
+
+            if (!NamingUtilities.IsPreferredFileName (betterFilename)) {
+                DateTime preferredDate;
+                // get the date from the filename or use google's timestamp
+                DateTime date;
+                if (NamingUtilities.GetFileNameDate (fileName: betterFilename, date: out date) && date.HasTimeComponent ()) {
+                    preferredDate = date;
+                } else {
+                    preferredDate = Timestamp;
+                }
+                betterFilename = NamingUtilities.MakePreferredFileName (fileName: betterFilename, date: preferredDate, author: username);
+            }
+            if (MediaFile.HasNoFileEnding (fullPath: betterFilename)) {
+                string fileEnding;
+                // determine the best file ending
+                if (MediaFile.DetermineFileEndingByMimeType (mimeType: MimeType, fileEnding: out fileEnding)) {
+                    // rename the file
+                    Filename += fileEnding;
+                    betterFilename += fileEnding;
+                    Log.Debug ("Filename with ending: ", betterFilename);
+                }
+            }
+            betterFilename = regexIllegalCharacters.Replace (betterFilename, "");
             FilenameForDownload = betterFilename;
+            Log.Debug ("Filename for download: ", FilenameForDownload);
 
             //string oddName = Timestamp.ToString ("yyyyMMdd_") + Filename;
             //Log.DebugLog ("OddName3|", Filename, "|", oddName, "|", FilenameForDownload);
@@ -90,8 +137,9 @@ namespace Shell.GoogleSync.Photos
 
         }
 
-        private static string patternImgWa = "IMG-((?:19|20)[0-9]{2})([0-9]{2})([0-9]{2})-WA";
-        private static string patternDate = "((?:19|20)[0-9]{2})([0-1][0-9])([0-3][0-9])";
+        //private static string patternImgWa = "IMG-((?:19|20)[0-9]{2})([0-9]{2})([0-9]{2})-WA";
+        //private static string patternDate = "((?:19|20)[0-9]{2})([0-1][0-9])([0-3][0-9])";
+        private static Regex regexIllegalCharacters = new Regex ("[^a-zA-Z0-9._)( -]");
 
         public void Delete ()
         {

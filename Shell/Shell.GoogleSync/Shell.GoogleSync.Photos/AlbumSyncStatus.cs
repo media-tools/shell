@@ -41,7 +41,7 @@ namespace Shell.GoogleSync.Photos
                     continue;
                 }
                 if (acceptDifferentVideoExtensions && Video.IsValidFile (localFile.Filename)
-                    && WebFiles.Any (wp => Path.GetFileNameWithoutExtension (wp.Filename) == Path.GetFileNameWithoutExtension (localFile.Filename) && Video.IsValidFile (wp.Filename))) {
+                    && WebFiles.Any (wp => Path.GetFileNameWithoutExtension (wp.FilenameForDownload) == Path.GetFileNameWithoutExtension (localFile.Filename) && Video.IsValidFile (wp.Filename))) {
                     continue;
                 }
 
@@ -59,7 +59,7 @@ namespace Shell.GoogleSync.Photos
                     continue;
                 }
                 if (acceptDifferentVideoExtensions && Video.IsValidFile (webFile.Filename)
-                    && LocalFiles.Any (lf => Path.GetFileNameWithoutExtension (lf.Filename) == Path.GetFileNameWithoutExtension (webFile.Filename) && Video.IsValidFile (lf.Filename))) {
+                    && LocalFiles.Any (lf => Path.GetFileNameWithoutExtension (lf.Filename) == Path.GetFileNameWithoutExtension (webFile.FilenameForDownload) && Video.IsValidFile (lf.Filename))) {
                     continue;
                 }
 

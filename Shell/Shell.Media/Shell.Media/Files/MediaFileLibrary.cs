@@ -66,7 +66,7 @@ namespace Shell.Media.Files
                 createMimeTypeDictionary ();
             }
             string extension = Path.GetExtension (fullPath);
-            return extensionToMimeType.ContainsKey (extension) ? extensionToMimeType [extension] : null;
+            return extensionToMimeType.ContainsKey (extension) ? extensionToMimeType [extension.ToLower ()] : null;
         }
 
         public string GetExtensionByMimeType (string mimeType)

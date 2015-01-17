@@ -23,42 +23,59 @@ namespace Shell.Media
                 "Update the media index.",
                 "Delete non-existant media files in the index.",
                 "Rebuild the media index for the specified album(s).",
-                "Find duplicate media files.",
+                "Find duplicate media files in albums.",
+                "Find duplicate media files in whole shares.",
+                "Set the author to the value specified with '--author'. An album filter must be set.",
                 "Install third-party executables",
+                "Run garbage collection on the database",
             };
             Parameters = new [] {
                 "find-shares",
                 "index",
                 "clean",
                 "reindex",
-                "deduplicate",
+                "deduplicate-albums",
+                "deduplicate-shares",
+                "set-author",
                 "install",
+                "gc",
             };
             Methods = new Action[] {
                 () => findShares (),
                 () => index (),
                 () => clean (),
                 () => reindex (),
-                () => deduplicate (),
+                () => deduplicateAlbums (),
+                () => deduplicateShares (),
+                () => setAuthor (),
                 () => install (),
+                () => gc (),
             };
         }
 
         Filter shareFilter = Filter.None;
         Filter albumFilter = Filter.None;
+        string author = string.Empty;
+        bool dryRun = false;
 
         protected override void SetupOptions (ref OptionSet optionSet)
         {
             optionSet = optionSet
                 .Add ("share=",
-                "Only modify the specified share(s). Multiple names are seperated by ',' or ';'.",
+                "Only modify the specified share(s). Multiple names are seperated by comma.",
                 option => shareFilter = Filter.ContainFilter (Filter.Split (option)))
                 .Add ("album=",
                 "Only modify the specified album(s). Multiple values are seperated by comma.",
                 option => albumFilter = Filter.ContainFilter (Filter.Split (option)))
+                .Add ("author=",
+                "The author. Only use with '--set-author'!",
+                option => author = option)
                 .Add ("debug-shares",
                 "Show debug messages and errors regarding disabled shares",
-                option => MediaShareManager.DEBUG_DISABLED_SHARES = true);
+                option => MediaShareManager.DEBUG_DISABLED_SHARES = true)
+                .Add ("dry-run",
+                "Don't modify the file system",
+                option => dryRun = option != null);
         }
 
         void index ()
@@ -104,18 +121,61 @@ namespace Shell.Media
             shares.PrintShares (shareFilter);
         }
 
-        void deduplicate ()
+        void deduplicateAlbums ()
         {
             MediaShareManager shares = new MediaShareManager (rootDirectory: "/");
             shares.Initialize (cached: true);
             shares.Deserialize ();
-            shares.Deduplicate (shareFilter: shareFilter, albumFilter: albumFilter);
-            shares.Serialize ();
+            shares.DeduplicateAlbums (shareFilter: shareFilter, albumFilter: albumFilter, dryRun: dryRun);
+        }
+
+        void deduplicateShares ()
+        {
+            MediaShareManager shares = new MediaShareManager (rootDirectory: "/");
+            shares.Initialize (cached: true);
+            shares.Deserialize ();
+            shares.DeduplicateShares (shareFilter: shareFilter, albumFilter: albumFilter, dryRun: dryRun);
+        }
+
+        void setAuthor ()
+        {
+            if (string.IsNullOrWhiteSpace (author) || author != author.OnlyLetters ().ToLower ()) {
+                Log.Error ("You have to set a valid author.");
+                return;
+            }
+
+            if (albumFilter.AcceptsEverything || shareFilter.AcceptsEverything) {
+                if (albumFilter.AcceptsEverything)
+                    Log.Error ("You have to set a valid album filter.");
+                if (shareFilter.AcceptsEverything)
+                    Log.Error ("You have to set a valid share filter.");
+                return;
+            }
+
+            albumFilter = Filter.ExactFilter (copyFrom: albumFilter);
+
+            Log.Message ("Author: ", author);
+            Log.Message ("Album filter: ", albumFilter);
+            Log.Message ("Share filter: ", shareFilter);
+
+            MediaShareManager shares = new MediaShareManager (rootDirectory: "/");
+            shares.Initialize (cached: true);
+            shares.Deserialize ();
+            shares.SetAuthor (shareFilter: shareFilter, albumFilter: albumFilter, author: author, dryRun: dryRun);
         }
 
         void install ()
         {
             fs.Runtime.RequirePackages ("libimage-exiftool-perl");
+        }
+
+        void gc ()
+        {
+            MediaShareManager shares = new MediaShareManager (rootDirectory: "/");
+            shares.Initialize (cached: true);
+            shares.Deserialize ();
+            shares.GarbageCollection ();
+            shares.Serialize ();
         }
     }
 }

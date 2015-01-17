@@ -98,9 +98,10 @@ namespace Shell.GoogleSync.Contacts
             CatchErrors (() => {
                 Log.Message (ContactList.ToStringTable (
                     c => c.IsIncludedInSynchronisation () ? (account.IsMasterAccount () ? LogColor.DarkYellow : LogColor.DarkCyan) : LogColor.Reset,
-                    new[] { "Full Name", "E-Mail Address", "Role" },
+                    new[] { "Full Name", "E-Mail Address", "Phone", "Role" },
                     c => c.Name.FullName,
                     c => c.Emails.PrintShort (),
+                    c => string.Join (", ", c.Phonenumbers.Select (p => p.Value + " (" + (p.Rel != null ? p.Rel.Split ('#').Last () : p.Label) + ")")),
                     c => c.IsIncludedInSynchronisation () ? (account.IsMasterAccount () ? "master" : "slave") : ""
                 ));
             });

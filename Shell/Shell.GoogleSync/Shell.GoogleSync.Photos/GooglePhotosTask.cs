@@ -53,6 +53,7 @@ namespace Shell.GoogleSync.Photos
         Filter googleUserFilter = Filter.None;
         Filter shareFilter = Filter.None;
         Filter albumFilter = Filter.None;
+        bool deleteExcess = false;
 
         protected override void SetupOptions (ref OptionSet optionSet)
         {
@@ -63,6 +64,9 @@ namespace Shell.GoogleSync.Photos
                 .Add ("only-videos",
                 "Upload only videos",
                 option => validTypes = new Type[] { typeof(Video) })
+                .Add ("delete-excess",
+                "Delete excess web files",
+                option => deleteExcess = true)
                 .Add ("user=",
                 "Upload the share of the specified google user(s). Multiple values are seperated by comma.",
                 option => googleUserFilter = Filter.ContainFilter (Filter.Split (option)))
@@ -117,7 +121,7 @@ namespace Shell.GoogleSync.Photos
         void upload ()
         {
             forMatchingShares ((share, webAlbumCollection, otherShares) => {
-                webAlbumCollection.UploadShare (share: share, selectedTypes: validTypes, albumFilter: albumFilter);
+                webAlbumCollection.UploadShare (share: share, selectedTypes: validTypes, albumFilter: albumFilter, deleteExcess: deleteExcess);
             });
         }
 

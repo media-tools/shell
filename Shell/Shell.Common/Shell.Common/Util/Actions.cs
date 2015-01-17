@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using Shell.Common.IO;
 
 namespace Shell.Common.Util
 {
@@ -16,6 +18,26 @@ namespace Shell.Common.Util
         {
         }
         /* Put as many overloads as you want */
+
+        public static void AddOrExecuteNow (this List<Action> delayedOperations, Action operation, string logHeader = null)
+        {
+            if (operation != null) {
+                if (delayedOperations != null) {
+                    if (logHeader != null) {
+                        Action originalOperation = operation;
+                        operation = () => {
+                            Log.Message (logHeader);
+                            Log.Indent++;
+                            originalOperation ();
+                            Log.Indent--;
+                        };
+                    }
+                    delayedOperations.Add (operation);
+                } else {
+                    operation ();
+                }
+            }
+        }
     }
 
     public static class Functions

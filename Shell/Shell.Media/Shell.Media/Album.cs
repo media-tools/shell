@@ -7,7 +7,7 @@ using Shell.Media.Files;
 
 namespace Shell.Media
 {
-    public class Album : IFilterable
+    public class Album : ValueObject<Album>, IFilterable
     {
         public string AlbumPath { get; private set; }
 
@@ -62,6 +62,32 @@ namespace Shell.Media
         public string[] FilterKeys ()
         {
             return new [] { AlbumPath };
+        }
+
+
+        protected override IEnumerable<object> Reflect ()
+        {
+            return new object[] { AlbumPath };
+        }
+
+        public override bool Equals (object obj)
+        {
+            return ValueObject<Album>.Equals (myself: this, obj: obj);
+        }
+
+        public override int GetHashCode ()
+        {
+            return base.GetHashCode ();
+        }
+
+        public static bool operator == (Album a, Album b)
+        {
+            return ValueObject<Album>.Equality (a, b);
+        }
+
+        public static bool operator != (Album a, Album b)
+        {
+            return ValueObject<Album>.Inequality (a, b);
         }
     }
 }

@@ -15,6 +15,7 @@ namespace Shell.Media
         }
 
         public static string SPECIAL_ALBUM_AUTO_BACKUP = "Auto Backup";
+        public static string SPECIAL_ALBUM_HANGOUT = "Hangout:";
 
         public static string ToSyncedAlbumName (Album album)
         {

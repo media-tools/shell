@@ -21,16 +21,32 @@ namespace Shell.Media
 
         private static string CONFIG_SECTION = "Pictures";
 
-        public Dictionary<string, Album> AlbumMap { get; private set; }
-
-        public Album[] Albums { get { return AlbumMap.Values.ToArray (); } }
-
-        public Dictionary<HexString, Medium> Media { get; private set; }
+        public MediaShareDatabase Database { get; private set; }
 
         private ConfigFile serializedAlbums;
         private ConfigFile serializedMedia;
 
-        private FileSystems fs;
+        public static MediaShare CreateInstance (string configPath, FileSystems filesystems)
+        {
+            if (Instances.ContainsKey (configPath)) {
+                return Instances [configPath];
+            } else {
+                return Instances [configPath] = new MediaShare (path: configPath, filesystems: filesystems);
+            }
+        }
+
+        private MediaShare (string path, FileSystems filesystems)
+            : base (path: path, configSection: CONFIG_SECTION)
+        {
+            RequireFields (HighQualityAlbums, GoogleAccount, SpecialAlbumPrefix);
+
+            Database = new MediaShareDatabase (rootDirectory: RootDirectory, createAlbum: ap => new Album (albumPath: ap, share: this));
+
+            serializedAlbums = filesystems.Config.OpenConfigFile ("index_albums_" + Name + ".ini");
+            serializedAlbums.AutoSaveEnabled = false;
+            serializedMedia = filesystems.Config.OpenConfigFile ("index_media_" + Name + ".ini");
+            serializedMedia.AutoSaveEnabled = false;
+        }
 
         private HashSet<string> _highQualityAlbums;
 
@@ -48,63 +64,9 @@ namespace Shell.Media
             set { config [CONFIG_SECTION, "album-prefix-special", ""] = value; }
         }
 
-        public static MediaShare CreateInstance (string configPath, FileSystems filesystems)
-        {
-            if (Instances.ContainsKey (configPath)) {
-                return Instances [configPath];
-            } else {
-                return Instances [configPath] = new MediaShare (path: configPath, filesystems: filesystems);
-            }
-        }
-
-        private MediaShare (string path, FileSystems filesystems)
-            : base (path: path, configSection: CONFIG_SECTION)
-        {
-            fs = filesystems;
-
-            int fuuuck = (GoogleAccount + SpecialAlbumPrefix).GetHashCode ();
-            fuuuck++;
-
-            AlbumMap = new Dictionary<string, Album> ();
-            Media = new Dictionary<HexString, Medium> ();
-            serializedAlbums = fs.Config.OpenConfigFile ("index_albums_" + Name + ".ini");
-            serializedAlbums.AutoSaveEnabled = false;
-            serializedMedia = fs.Config.OpenConfigFile ("index_media_" + Name + ".ini");
-            serializedMedia.AutoSaveEnabled = false;
-        }
-
         public string GoogleAccount {
             get { return config [CONFIG_SECTION, "google-account", "username"]; }
             set { config [CONFIG_SECTION, "google-account", "username"] = value; }
-        }
-
-        public void AddAlbum (Album album)
-        {
-            if (album != null) {
-                AlbumMap [album.AlbumPath] = album;
-            } else {
-                throw new ArgumentNullException (string.Format ("Album is null: {0}", album));
-            }
-        }
-
-        public void AddMedium (Medium media)
-        {
-            if (media != null) {
-                Media [media.Hash] = media;
-            } else {
-                throw new ArgumentNullException (string.Format ("Media is null: {0}", media));
-            }
-        }
-
-        public bool GetMediumByHash (HexString hash, out Medium medium)
-        {
-            if (Media.ContainsKey (hash)) {
-                medium = Media [hash];
-                return true;
-            } else {
-                medium = null;
-                return false;
-            }
         }
 
         public override string ToString ()
@@ -144,8 +106,9 @@ namespace Shell.Media
             // list media files
             Log.Message ("List media files...");
             Log.Indent++;
+            Func<FileInfo, bool> noShareConfigs = fileInfo => fileInfo.Name != CommonShare<MediaShare>.CONFIG_FILENAME;
             Func<DirectoryInfo, bool> dirFilter = dir => !dir.Name.StartsWith (".");
-            FileInfo[] pictureFiles = FileSystemLibrary.GetFileList (rootDirectory: RootDirectory, fileFilter: file => true, dirFilter: dirFilter, followSymlinks: true).ToArray ();
+            FileInfo[] pictureFiles = FileSystemLibrary.GetFileList (rootDirectory: RootDirectory, fileFilter: noShareConfigs, dirFilter: dirFilter, followSymlinks: true).ToArray ();
 
             // open progress bar
             ProgressBar progress = Log.OpenProgressBar (identifier: "PictureShare:" + RootDirectory, description: "Indexing media files...");
@@ -172,6 +135,11 @@ namespace Shell.Media
                     continue;
                 }
 
+                if (NamingUtilities.IsRawFilename (fullPath)) {
+                    Log.Error ("Raw File: ", fullPath);
+                    continue;
+                }
+
                 // run index hooks. they may change the full path (and rename the file, obviously)
                 MediaFile.RunIndexHooks (fullPath: ref fullPath);
                 Picture.RunIndexHooks (fullPath: ref fullPath);
@@ -181,7 +149,7 @@ namespace Shell.Media
 
                 // create album, if necessery
                 string albumPath = MediaShareUtilities.GetAlbumPath (fullPath: fullPath, share: this);
-                Album album = AlbumMap.TryCreateEntry (key: albumPath, defaultValue: () => new Album (albumPath: albumPath, share: this));
+                Album album = Database.GetAlbum (albumPath: albumPath);
 
                 string relativePath = MediaShareUtilities.GetRelativePath (fullPath: fullPath, share: this);
 
@@ -197,7 +165,7 @@ namespace Shell.Media
                         Log.Message ("Media file (update): ", fullPath);
                         Log.Indent++;
 
-                        cached.Index ();
+                        cached.Index (delayedOperations: null);
 
                         // put albums into global hashset
                         if (i % 100 == 0 || i >= max - 5) {
@@ -214,7 +182,7 @@ namespace Shell.Media
                     Log.Indent++;
 
                     // create the file record and index it
-                    MediaFile file = new MediaFile (fullPath: fullPath, share: this);
+                    MediaFile file = new MediaFile (fullPath: fullPath, database: Database);
                     album.AddFile (file);
 
                     // put albums into global hashset
@@ -317,7 +285,7 @@ namespace Shell.Media
             Log.Message ("Clean up index...");
             Log.Indent++;
             // iterate over a copy to be able to delete stuff
-            foreach (Album album in Albums) {
+            foreach (Album album in Database.Albums) {
                 // iterate over a copy to be able to delete stuff
                 foreach (MediaFile file in album.Files) {
                     if (!File.Exists (Path.Combine (RootDirectory, album.AlbumPath, file.Filename))) {
@@ -349,20 +317,33 @@ namespace Shell.Media
             // clean up album list
             Log.Message ("Remove from index...");
             Log.Indent++;
-            foreach (Album album in Albums.Filter(albumFilter)) {
+            foreach (Album album in Database.Albums.Filter(albumFilter)) {
                 Log.Message ("- ", album.AlbumPath);
+                foreach (MediaFile file in album.Files) {
+                    file.Medium.IsDeleted = true;
+                    file.IsDeleted = true;
+                }
                 album.IsDeleted = true;
             }
             Serialize (verbose: false);
             Log.Indent--;
         }
 
-        public void Deduplicate (Filter albumFilter)
+        public void GarbageCollection ()
         {
-            PictureDeduplication dedup = new PictureDeduplication ();
-            dedup.Deduplicate (share: this, albumFilter: albumFilter);
-        }
+            HashSet<HexString> usedMedia = new HashSet<HexString> ();
+            foreach (Album album in Database.Albums.ToArray()) {
+                foreach (MediaFile file in album.Files.ToArray()) {
+                    usedMedia.Add (file.Medium.Hash);
+                }
+            }
 
+            foreach (Medium medium in Database.Media) {
+                if (!usedMedia.Contains (medium.Hash)) {
+                    medium.IsDeleted = true;
+                }
+            }
+        }
 
         public void Serialize (bool verbose)
         {
@@ -377,7 +358,7 @@ namespace Shell.Media
             
 
             Commons.PendingOperations++;
-            foreach (Album album in Albums.ToArray()) {
+            foreach (Album album in Database.Albums.ToArray()) {
                 foreach (MediaFile file in album.Files.ToArray()) {
                     try {
                         if (file.IsDeleted) {
@@ -395,7 +376,7 @@ namespace Shell.Media
                 }
                 if (album.IsDeleted) {
                     serializedAlbums.RemoveSection (section: album.AlbumPath);
-                    AlbumMap.Remove (album.AlbumPath);
+                    Database.RemoveAlbum (album);
                 }
             }
 
@@ -404,11 +385,16 @@ namespace Shell.Media
             }
             
 
-            foreach (Medium medium in Media.Values) {
-                serializedMedia [section: medium.Hash.Hash, option: "type", defaultValue: ""] = medium.Type;
-                Dictionary<string, string> dict = medium.Serialize ();
-                foreach (KeyValuePair<string, string> entry in dict) {
-                    serializedMedia [section: medium.Hash.Hash, option: entry.Key, defaultValue: ""] = entry.Value;
+            foreach (Medium medium in Database.Media.ToArray()) {
+                if (medium.IsDeleted) {
+                    Log.Debug ("deleted medium: ", medium.Hash);
+                    serializedMedia.RemoveSection (section: medium.Hash.Hash);
+                } else {
+                    serializedMedia [section: medium.Hash.Hash, option: "type", defaultValue: ""] = medium.Type;
+                    Dictionary<string, string> dict = medium.Serialize ();
+                    foreach (KeyValuePair<string, string> entry in dict) {
+                        serializedMedia [section: medium.Hash.Hash, option: entry.Key, defaultValue: ""] = entry.Value;
+                    }
                 }
             }
 
@@ -419,12 +405,13 @@ namespace Shell.Media
 
         public void Deserialize (bool verbose)
         {
-            Media.Clear ();
-            AlbumMap.Clear ();
+            Database.Clear ();
 
             if (verbose) {
                 Log.Debug ("Deserialize share: ", Name, ": media...");
             }
+
+            List<Action> delayedOperations = new List<Action> ();
 
             foreach (string _hash in serializedMedia.Sections) {
                 HexString hash = new HexString { Hash = _hash };
@@ -447,7 +434,7 @@ namespace Shell.Media
                 Dictionary<string, string> dict = serializedMedia.SectionToDictionary (section: _hash);
                 dict.Remove (key: "type");
                 medium.Deserialize (dict);
-                Media [medium.Hash] = medium;
+                Database.AddMedium (medium);
             }
 
             if (verbose) {
@@ -461,10 +448,22 @@ namespace Shell.Media
                     string filename = entry.Key;
                     string fullPath = Path.Combine (RootDirectory, albumPath, filename);
                     HexString hash = new HexString { Hash = entry.Value };
-                    MediaFile file = new MediaFile (fullPath: fullPath, hash: hash, share: this);
+                    MediaFile file = new MediaFile (fullPath: fullPath, hash: hash, database: Database, delayedOperations: delayedOperations);
                     album.AddFile (mediaFile: file);
                 }
-                AlbumMap [album.AlbumPath] = album;
+                Database.AddAlbum (album);
+            }
+
+            if (delayedOperations.Count > 0) {
+                Log.Message ("Share: ", Name);
+                Log.Indent++;
+                Log.Message ("Unexpected Index Updates: ", delayedOperations.Count);
+                Log.Indent++;
+                foreach (Action delayedOperation in delayedOperations) {
+                    delayedOperation ();
+                }
+                Log.Indent--;
+                Log.Indent--;
             }
 
             serializedAlbums.Save ();
@@ -475,7 +474,7 @@ namespace Shell.Media
         {
             Log.Message (Name, " (in ", RootDirectory, "):");
             Log.Indent++;
-            Log.Message (Albums.Filter (albumFilter).ToStringTable (
+            Log.Message (Database.Albums.Filter (albumFilter).ToStringTable (
                 a => LogColor.Reset,
                 new[] { "Album", "Picture Files", "Audio Files", "Video Files", "Document Files" },
                 a => a.AlbumPath,

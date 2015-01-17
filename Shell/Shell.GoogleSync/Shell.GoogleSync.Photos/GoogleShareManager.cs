@@ -91,7 +91,7 @@ namespace Shell.GoogleSync
                     new[] { "Name", "Root Directory", "Album Count", "Google Name", "Google Email", "Google ID" },
                     s => s.Name,
                     s => s.RootDirectory,
-                    s => s.Albums.Length,
+                    s => s.Database.AlbumCount,
                     s => this [s].DisplayName,
                     s => this [s].Emails,
                     s => this [s].Id

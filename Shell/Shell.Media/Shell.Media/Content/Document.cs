@@ -18,7 +18,19 @@ namespace Shell.Media.Content
             ".nfo",
             ".html",
             ".htm",
-            ".chm"
+            ".chm",
+            ".vcf",
+            ".sh",
+            ".ini",
+            ".gz",
+            ".xz",
+            ".tar",
+
+            // genealogy
+            ".ahn",
+            ".ged",
+            ".gpkg",
+
         }.ToHashSet ();
 
         public static Dictionary<string[],string[]> MIME_TYPES = new Dictionary<string[],string[]> () {
@@ -28,12 +40,21 @@ namespace Shell.Media.Content
             { new [] { "text/x-markdown" }, new [] { ".md" } },
             { new [] { "message/rfc822" }, new [] { ".eml" } },
             { new [] { "text/html" }, new [] { ".html", ".htm" } },
-            { new [] { "application/x-chm" }, new [] { ".chm" } }
+            { new [] { "application/x-chm" }, new [] { ".chm" } },
+            { new [] { "text/x-vcard" }, new [] { ".vcf" } },
+            { new [] { "text/x-shellscript" }, new [] { ".sh" } },
+            { new [] { "text/x-ini" }, new [] { ".ini" } },
+            { new [] { "application/gzip" }, new [] { ".gz" } },
+            { new [] { "application/x-xz" }, new [] { ".xz" } },
+            { new [] { "application/x-tar" }, new [] { ".tar" } },
+            { new [] { "application/x-genealogy" }, new [] { ".ahn", ".ged", ".gpkg" } },
         };
 
         public static readonly string TYPE = "document";
 
         public override string Type { get { return TYPE; } }
+
+        public override DateTime? PreferredTimestamp { get { return null; } }
 
         public Document (HexString hash)
             : base (hash)
@@ -47,11 +68,14 @@ namespace Shell.Media.Content
 
         public override void Index (string fullPath)
         {
+            if (string.IsNullOrWhiteSpace (MimeType)) {
+                MimeType = libMediaFile.GetMimeTypeByExtension (fullPath: fullPath);
+            }
         }
 
         public override bool IsCompletelyIndexed {
             get {
-                return true;
+                return !string.IsNullOrWhiteSpace (MimeType);
             }
         }
 
@@ -59,12 +83,11 @@ namespace Shell.Media.Content
         {
         }
 
-        public override Dictionary<string, string> Serialize ()
+        protected override void SerializeInternal (Dictionary<string, string> dict)
         {
-            return new Dictionary<string, string> ();
         }
 
-        public override void Deserialize (Dictionary<string, string> dict)
+        protected override void DeserializeInternal (Dictionary<string, string> dict)
         {
         }
     }

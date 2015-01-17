@@ -38,7 +38,7 @@ namespace Shell.Media.Content
                 ExifTag tag;
                 if (ExifTag.ReadFromExiftoolConsoleOutput (line, out tag)) {
                     tags.Add (tag);
-                    Log.Message ("- ", Log.Fill (tag.Name, 20), ": ", tag.Value);
+                    Log.Message ("- ", Log.Fill (tag.Name, 30), ": ", tag.Value);
                 }
             };
 
@@ -71,71 +71,6 @@ namespace Shell.Media.Content
             fs.Runtime.ExecuteScript (path: "run3.sh", ignoreEmptyLines: true, verbose: false);
         }
 
-        class FormatCombo
-        {
-            public string Prefix;
-            public string Format;
-        }
-
-        FormatCombo[] dateFormats = new FormatCombo[] {
-            new FormatCombo { Prefix = "", Format = "yyyyMMdd_HHmmss" },
-            new FormatCombo { Prefix = "", Format = "yyyyMMdd-HHmmss" },
-            new FormatCombo { Prefix = "", Format = "yyyyMMdd HHmmss" },
-            new FormatCombo { Prefix = "", Format = "yyyyMMdd" },
-            new FormatCombo { Prefix = "IMG_", Format = "yyyyMMdd_HHmmss" },
-            new FormatCombo { Prefix = "IMG_", Format = "ddMMyyyy_HHmmss" },
-            new FormatCombo { Prefix = "IMG-", Format = "yyyyMMdd-HHmmss" },
-            new FormatCombo { Prefix = "IMG-", Format = "yyyyMMdd" },
-            new FormatCombo { Prefix = "Screenshot_", Format = "yyyy-MM-dd-HH-mm-ss" },
-            new FormatCombo { Prefix = "Screenshot_", Format = "yyyy-MM-dd HH.mm.ss" },
-            new FormatCombo { Prefix = "Screenshot ", Format = "yyyy-MM-dd HH.mm.ss" },
-            new FormatCombo { Prefix = "Screenshot - ", Format = "dd.MM.yyyy - HH_mm_ss" },
-            new FormatCombo { Prefix = "Bildschirmfoto vom ", Format = "yyyy-MM-dd HH_mm_ss" },
-            new FormatCombo { Prefix = "Bildschirmfoto - ", Format = "dd.MM.yyyy - HH_mm_ss" },
-            new FormatCombo { Prefix = "", Format = "yyyy-MM-dd HH-mm-ss" },
-            new FormatCombo { Prefix = "", Format = "yyyy-MM-dd HH.mm.ss" },
-            new FormatCombo { Prefix = "", Format = "yyyy-MM-dd HHmmss" },
-            
-            new FormatCombo { Prefix = "", Format = "yyyy-MM-dd-HH-mm-ss" },
-            new FormatCombo { Prefix = "", Format = "yyyy-MM-dd-HH.mm.ss" },
-            new FormatCombo { Prefix = "", Format = "yyyy-MM-dd-HHmmss" },
-            new FormatCombo { Prefix = "", Format = "yyyy-MM-dd_HH-mm-ss" },
-            new FormatCombo { Prefix = "", Format = "yyyy-MM-dd_HH.mm.ss" },
-            new FormatCombo { Prefix = "", Format = "yyyy-MM-dd_HHmmss" },
-            new FormatCombo { Prefix = "", Format = "yyyy-MM-dd" },
-        };
-
-        public bool GetFileNameDate (string fileName, out DateTime date)
-        {
-            foreach (FormatCombo formatCombo in dateFormats) {
-                string prefix = formatCombo.Prefix;
-                string format = formatCombo.Format;
-                string regexPrefix = prefix;
-                string regexFormat = format.Replace ("yyyy", "(?:19|20)[0-9][0-9]").Replace ("MM", "[0-9][0-9]").Replace ("dd", "[0-9][0-9]").Replace ("HH", "[0-9][0-9]")
-                    .Replace ("mm", "[0-9][0-9]").Replace ("ss", "[0-9][0-9]").Replace (".", "\\.");
-
-                foreach (string preprefix in new [] { "^", "" }) {
-                    Regex regex = new Regex (preprefix + regexPrefix + "(" + regexFormat + ")");
-                    // Log.Debug ("prefix=", prefix, ", format=", format, ", regex=", regex);
-                    Match match = regex.Match (fileName);
-                    if (match.Success) {
-                        string dateTimeStr = match.Groups [1].Value;
-                        Log.Debug ("GetFileNameDate: fileName=", fileName, ", dateTimeStr=", dateTimeStr);
-                        try {
-                            date = DateTime.ParseExact (dateTimeStr, format,
-                                System.Globalization.CultureInfo.InvariantCulture);
-                            return true;
-                        } catch (Exception e) {
-                            Log.Error (e);
-                        }
-                    }
-                }
-            }
-            date = new DateTime ();
-            return false;
-        }
-
-
         public Bitmap ReadBitmap (string fileName)
         {
             try {
@@ -144,7 +79,7 @@ namespace Shell.Media.Content
                     Log.Debug ("ReadBitmap: FromStream: bitmap=", bitmap);
                     return bitmap;
                 }
-            } catch (Exception ex) {
+            } catch (Exception) {
                 try {
                     Bitmap bitmap = (Bitmap)Image.FromFile (fileName);
                     Log.Debug ("ReadBitmap: FromFile: bitmap=", bitmap);

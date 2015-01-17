@@ -9,9 +9,13 @@ namespace Shell.Media.Content
 {
     public abstract class Medium : ValueObject<Medium>
     {
+        protected static MediaFileLibrary libMediaFile = new MediaFileLibrary ();
+
         public HexString Hash { get; private set; }
 
         public abstract string Type { get; }
+
+        public string MimeType { get; protected set; }
 
         public Medium (HexString hash)
         {
@@ -22,15 +26,33 @@ namespace Shell.Media.Content
 
         public abstract bool IsCompletelyIndexed { get; }
 
-        public virtual Dictionary<string, string> Serialize ()
+        public bool IsDeleted { get; set; }
+
+        public abstract DateTime? PreferredTimestamp { get; }
+
+        public Dictionary<string, string> Serialize ()
         {
-            throw new NotImplementedException ();
+            Dictionary<string, string> dict = new Dictionary<string, string> ();
+
+            // save the mime type
+            dict ["file:MimeType"] = MimeType;
+
+            SerializeInternal (dict: dict);
+
+            return dict;
         }
 
-        public virtual void Deserialize (Dictionary<string, string> dict)
+        public void Deserialize (Dictionary<string, string> dict)
         {
-            throw new NotImplementedException ();
+            // load the mime type
+            MimeType = dict.ContainsKey ("file:MimeType") ? dict ["file:MimeType"] : null;
+
+            DeserializeInternal (dict: dict);
         }
+
+        protected abstract void SerializeInternal (Dictionary<string, string> dict);
+
+        protected abstract void DeserializeInternal (Dictionary<string, string> dict);
 
         protected override IEnumerable<object> Reflect ()
         {

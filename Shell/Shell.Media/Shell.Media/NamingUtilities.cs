@@ -99,6 +99,7 @@ namespace Shell.Media
         }
 
         static FormatCombo[] dateFormats = new FormatCombo[] {
+            new FormatCombo { Prefix = "", Format = "yyyy_MMdd_HHmmss" },
             new FormatCombo { Prefix = "", Format = "yyyyMMdd_HHmmss" },
             new FormatCombo { Prefix = "", Format = "yyyyMMdd-HHmmss" },
             new FormatCombo { Prefix = "", Format = "yyyyMMdd HHmmss" },

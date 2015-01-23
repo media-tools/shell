@@ -16,6 +16,7 @@ namespace Shell.Media
 
         public static string SPECIAL_ALBUM_AUTO_BACKUP = "Auto Backup";
         public static string SPECIAL_ALBUM_HANGOUT = "Hangout:";
+        public static string SPECIAL_ALBUM_DATE_TITLE_REGEX = "^(((?:19|20)[0-9]{2})-([0-1][0-9])-([0-3][0-9]))|(([0-3][0-9])[.]([0-1][0-9])[.]([0-9]{2}))$";
 
         public static string ToSyncedAlbumName (Album album)
         {

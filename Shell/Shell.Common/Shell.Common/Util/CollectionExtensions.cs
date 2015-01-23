@@ -56,6 +56,10 @@ namespace Shell.Common.Util
         {
             string result = "";
 
+            if (text.Contains ("/")) {
+                text = text.Split ('/') [0];
+            }
+
             foreach (char c in text??"") {
                 if (c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c == 'ü' || c == 'ä' || c == 'ö' || c == '-' || (c == ' ' && (result.Length == 0 || !result.EndsWith (" ")))) {
                     result += c;

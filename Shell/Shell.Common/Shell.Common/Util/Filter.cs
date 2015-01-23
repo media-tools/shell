@@ -1,12 +1,15 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Shell.Common.Util
 {
     public class Filter
     {
         private string[] Elements = null;
+        private Regex Regex = null;
+        private string RegexString = null;
         private FilterType Type;
         private Filter[] SubFilters = null;
 
@@ -22,6 +25,19 @@ namespace Shell.Common.Util
                 return new Filter () {
                     Type = FilterType.CONTAINS,
                     Elements = filter.ToArray ()
+                };
+            } else {
+                return Filter.None;
+            }
+        }
+
+        public static Filter RegexFilter (string regex)
+        {
+            if (regex.Length > 0) {
+                return new Filter () {
+                    Type = FilterType.REGEX,
+                    Regex = new Regex (regex, RegexOptions.IgnoreCase),
+                    RegexString = regex,
                 };
             } else {
                 return Filter.None;
@@ -103,6 +119,14 @@ namespace Shell.Common.Util
                 }
                 return false;
 
+            case FilterType.REGEX:
+                foreach (string possibleMatch in possibleMatches) {
+                    if (this.Regex.IsMatch (possibleMatch)) {
+                        return true;
+                    }
+                }
+                return false;
+
             case FilterType.COMBINED_FILTER_AND:
                 {
                     bool match = true;
@@ -142,6 +166,7 @@ namespace Shell.Common.Util
             ACCEPT_EVERYTHING,
             CONTAINS,
             EXACT_MATCH,
+            REGEX,
             COMBINED_FILTER_AND,
             COMBINED_FILTER_OR,
         }
@@ -158,6 +183,9 @@ namespace Shell.Common.Util
 
             case FilterType.EXACT_MATCH:
                 return "{ exact: [" + string.Join (", ", Elements.Select (e => "\"" + e + "\"")) + "] }";
+
+            case FilterType.REGEX:
+                return "{ regex: " + RegexString + " }";
 
             case FilterType.COMBINED_FILTER_AND:
                 return "{ and: [" + string.Join (", ", SubFilters.Select (e => e.ToString ())) + "] }";

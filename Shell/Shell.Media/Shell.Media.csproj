@@ -61,6 +61,8 @@
     <Compile Include="Shell.Media\IWebAlbum.cs" />
     <Compile Include="Shell.Media\PictureDeduplication.cs" />
     <Compile Include="Shell.Media\MediaShareDatabase.cs" />
+    <Compile Include="Shell.Media\ActionCamTask.cs" />
+    <Compile Include="Shell.Media\ActionCamUtilities.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

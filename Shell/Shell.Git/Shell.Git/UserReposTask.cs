@@ -20,18 +20,24 @@ namespace Shell.Git
 
             Description = new [] {
                 "Commit changes in the user's selected repositories",
+                "Push the user's selected repositories",
+                "Show the status of the user's selected repositories",
                 "Add a repository to the list",
                 "List the repositories",
                 "Remove an repository from the list"
             };
             Parameters = new [] {
                 "commit",
+                "push",
+                "status",
                 "add",
                 "list",
                 "remove"
             };
             Methods = new Action[] {
                 () => commit (),
+                () => push (),
+                () => status (),
                 () => add (),
                 () => list (),
                 () => remove (),
@@ -41,6 +47,8 @@ namespace Shell.Git
         protected override void HookBeforeOptionParsing ()
         {
             base.HookBeforeOptionParsing ();
+
+            Log.DEBUG_ENABLED = true;
 
             config = fs.Config.OpenConfigFile ("userrepos.ini");
         }
@@ -88,6 +96,46 @@ namespace Shell.Git
                 int i = 1;
                 foreach (string path in RepoPaths) {
                     Log.Message ("Commit: ", path);
+                    GitLibrary.Execute (commands: commands, verbose: true, rootDirectory: path);
+                    ++i;
+                }
+            } else {
+                Log.Message ("No repositories.");
+            }
+        }
+
+
+        private void push ()
+        {
+            fs.Runtime.RequirePackages ("git");
+
+            if (RepoPaths.Count >= 1) {
+                string[][] commands = new [] {
+                    new [] { "pull" },
+                    new [] { "push" },
+                };
+                int i = 1;
+                foreach (string path in RepoPaths) {
+                    Log.Message ("Push: ", path);
+                    GitLibrary.Execute (commands: commands, verbose: true, rootDirectory: path);
+                    ++i;
+                }
+            } else {
+                Log.Message ("No repositories.");
+            }
+        }
+
+        private void status ()
+        {
+            fs.Runtime.RequirePackages ("git");
+
+            if (RepoPaths.Count >= 1) {
+                string[][] commands = new [] {
+                    new [] { "status" },
+                };
+                int i = 1;
+                foreach (string path in RepoPaths) {
+                    Log.Message ("Status: ", path);
                     GitLibrary.Execute (commands: commands, verbose: true, rootDirectory: path);
                     ++i;
                 }

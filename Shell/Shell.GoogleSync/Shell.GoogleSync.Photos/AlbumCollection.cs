@@ -700,15 +700,17 @@ namespace Shell.GoogleSync.Photos
         {
             Filter webAlbumAutoBackup = Filter.ExactFilter (PhotoSyncUtilities.SPECIAL_ALBUM_AUTO_BACKUP);
             Filter webAlbumHangouts = Filter.ContainFilter (PhotoSyncUtilities.SPECIAL_ALBUM_HANGOUT);
-            Filter webAlbumFilter = Filter.Or (webAlbumAutoBackup, webAlbumHangouts);
+            Filter webAlbumDateTitle = Filter.RegexFilter (PhotoSyncUtilities.SPECIAL_ALBUM_DATE_TITLE_REGEX);
+            Filter downloadableWebAlbums = Filter.Or (webAlbumAutoBackup, webAlbumHangouts, webAlbumDateTitle);
+            Filter deletableWebAlbums = Filter.Or (webAlbumAutoBackup, webAlbumDateTitle);
 
             // list photos in web albums
-            Dictionary<WebAlbum, WebPhoto[]> webAlbums = ListWebAlbums (share: share, albumFilter: webAlbumFilter, onlySyncedAlbums: false, holdInternals: true);
+            Dictionary<WebAlbum, WebPhoto[]> webAlbums = ListWebAlbums (share: share, albumFilter: downloadableWebAlbums, onlySyncedAlbums: false, holdInternals: true);
 
             // look for files which are already present in our share's any any other shares's local albums
             MediaShare[] allShares = new MediaShare[]{ share }.Concat (otherShares).ToHashSet ().ToArray ();
             // only delete stuff in the "Auto Backup" album, not in the "Hangouts:"-Albums !!
-            Dictionary<WebAlbum, WebPhoto[]> webAlbumsUnindexed = FilterLocallyUnindexedFiles (shares: allShares, webAlbums: webAlbums, deletableWebAlbums: webAlbumAutoBackup);
+            Dictionary<WebAlbum, WebPhoto[]> webAlbumsUnindexed = FilterLocallyUnindexedFiles (shares: allShares, webAlbums: webAlbums, deletableWebAlbums: deletableWebAlbums);
 
 
             // compare local and web albums...

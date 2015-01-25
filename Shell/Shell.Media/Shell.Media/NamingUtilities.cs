@@ -83,12 +83,12 @@ namespace Shell.Media
 
         public static string MakeRawFilename (string fileName)
         {
-            return IsRawFilename (fileName) ? fileName : Path.GetFileName ("raw_" + fileName);
+            return IsRawFilename (fileName) ? fileName : Path.Combine (Path.GetDirectoryName (fileName), "raw_" + Path.GetFileName (fileName));
         }
 
         public static string UnmakeRawFilename (string fileName)
         {
-            return IsRawFilename (fileName) ? fileName.Substring (4) : fileName;
+            return IsRawFilename (fileName) ? Path.Combine (Path.GetDirectoryName (fileName), Path.GetFileName (fileName).Substring (4)) : fileName;
         }
 
 

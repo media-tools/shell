@@ -20,7 +20,7 @@ namespace Shell.GoogleSync.Photos
         public MediaFile[] FilesOnlyInLocalAlbum;
         public WebPhoto[] FilesOnlyInWebAlbum;
 
-        public AlbumSyncStatus (Album localAlbum, WebAlbum webAlbum, WebPhoto[] webFiles, bool requireStrictFilenames, bool acceptDifferentVideoExtensions)
+        public AlbumSyncStatus (Album localAlbum, WebAlbum webAlbum, WebPhoto[] webFiles, bool requireStrictFilenames, bool acceptDifferentExtensions)
         {
             LocalAlbum = localAlbum;
             WebAlbum = webAlbum;
@@ -40,8 +40,8 @@ namespace Shell.GoogleSync.Photos
                 if (!requireStrictFilenames && WebFiles.Any (wp => wp.Filename.ToLower () == localFile.Filename.ToLower ())) {
                     continue;
                 }
-                if (acceptDifferentVideoExtensions && Video.IsValidFile (localFile.Filename)
-                    && WebFiles.Any (wp => Path.GetFileNameWithoutExtension (wp.FilenameForDownload) == Path.GetFileNameWithoutExtension (localFile.Filename) && Video.IsValidFile (wp.Filename))) {
+                if (acceptDifferentExtensions
+                    && WebFiles.Any (wp => Path.GetFileNameWithoutExtension (wp.FilenameForDownload) == Path.GetFileNameWithoutExtension (localFile.Filename))) {
                     continue;
                 }
 
@@ -58,8 +58,8 @@ namespace Shell.GoogleSync.Photos
                 if (!requireStrictFilenames && LocalFiles.Any (lf => lf.Filename.ToLower () == webFile.Filename.ToLower ())) {
                     continue;
                 }
-                if (acceptDifferentVideoExtensions && Video.IsValidFile (webFile.Filename)
-                    && LocalFiles.Any (lf => Path.GetFileNameWithoutExtension (lf.Filename) == Path.GetFileNameWithoutExtension (webFile.FilenameForDownload) && Video.IsValidFile (lf.Filename))) {
+                if (acceptDifferentExtensions
+                    && LocalFiles.Any (lf => Path.GetFileNameWithoutExtension (lf.Filename) == Path.GetFileNameWithoutExtension (webFile.FilenameForDownload))) {
                     continue;
                 }
 

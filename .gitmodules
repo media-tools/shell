@@ -1,0 +1,3 @@
+[submodule "ThirdParty/LibJpeg.Net"]
+	path = ThirdParty/LibJpeg.Net
+	url = https://github.com/tobiasschulz/LibJpeg.Net.git

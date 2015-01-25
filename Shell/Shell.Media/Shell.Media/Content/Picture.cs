@@ -10,6 +10,7 @@ using System.Drawing.Imaging;
 using System.Drawing;
 using System.Linq;
 using System.Globalization;
+using BitMiracle.LibJpeg;
 
 namespace Shell.Media.Content
 {
@@ -176,19 +177,30 @@ namespace Shell.Media.Content
             if (Path.GetExtension (fullPath) == ".pamp") {
                 Picture.ConvertToJpeg (fullPath: ref fullPath);
             }
+            // As jpegs, Screenshots don't look any different and save much disk space
+            if (Path.GetExtension (fullPath) == ".png") {
+                if (Path.GetFileName (fullPath).ToLower ().Contains ("screenshot")) {
+                    if (fullPath.ToLower ().Contains ("serie")) {
+                        Picture.ConvertToJpeg (fullPath: ref fullPath, quality: 85);
+                    } else {
+                        Picture.ConvertToJpeg (fullPath: ref fullPath, quality: 95);
+                    }
+                }
+            }
         }
 
-        public static bool ConvertToJpeg (ref string fullPath)
+        public static bool ConvertToJpeg (ref string fullPath, int quality = 95)
         {
             string oldPath = fullPath;
             string newPath = Path.GetDirectoryName (oldPath) + SystemInfo.PathSeparator + Path.GetFileNameWithoutExtension (oldPath) + ".jpg";
 
             try {
-                Log.Message ("Convert picture to JPEG: ", Path.GetFileName (oldPath), " => ", Path.GetFileName (newPath));
-                Image original = Image.FromFile (oldPath);
-                EncoderParameters encoderParams = new EncoderParameters (1);
-                encoderParams.Param [0] = new EncoderParameter (System.Drawing.Imaging.Encoder.Quality, 100L);
-                original.Save (filename: newPath, encoder: PictureLibrary.GetEncoder (ImageFormat.Jpeg), encoderParams: encoderParams);
+                Log.Message ("Convert picture to JPEG: ", Path.GetFileName (oldPath), " => ", Path.GetFileName (newPath), " (quality: ", quality, ")");
+                Bitmap original = (Bitmap)Image.FromFile (oldPath);
+                JpegHelper.Current.Save (image: original, filename: newPath, compression: new CompressionParameters { Quality = quality });
+                //EncoderParameters encoderParams = new EncoderParameters (1);
+                //encoderParams.Param [0] = new EncoderParameter (System.Drawing.Imaging.Encoder.Quality, 100L);
+                //original.Save (filename: newPath, encoder: PictureLibrary.GetEncoder (ImageFormat.Jpeg), encoderParams: encoderParams);
                 lib.CopyExifTags (sourcePath: oldPath, destPath: newPath);
                 if (File.Exists (newPath) && File.Exists (oldPath)) {
                     File.Delete (oldPath);

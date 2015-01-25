@@ -363,7 +363,7 @@ namespace Shell.GoogleSync.Photos
                         WebPhoto[] webFiles = webAlbums [webAlbum];
 
                         AlbumSyncStatus syncStatus = new AlbumSyncStatus (localAlbum: localAlbum, webAlbum: webAlbum, webFiles: webFiles,
-                                                         requireStrictFilenames: false, acceptDifferentVideoExtensions: false);
+                                                         requireStrictFilenames: false, acceptDifferentExtensions: false);
                         syncStatusList.Add (syncStatus);
                     }
                 }
@@ -585,7 +585,7 @@ namespace Shell.GoogleSync.Photos
 
                             // only those files which are not in the local album are unindexed!
                             AlbumSyncStatus syncStatus = new AlbumSyncStatus (localAlbum: localAlbum, webAlbum: webAlbum, webFiles: allWebFiles,
-                                                             requireStrictFilenames: true, acceptDifferentVideoExtensions: true);
+                                                             requireStrictFilenames: true, acceptDifferentExtensions: true);
                             WebPhoto[] unindexedWebFiles = syncStatus.FilesOnlyInWebAlbum;
 
                             webAlbumsUnindexed [webAlbum] = unindexedWebFiles;

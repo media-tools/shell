@@ -72,7 +72,7 @@ namespace Shell.Media.Content
             if (Video.IsValidFile (fullPath: fullPath) && Path.GetExtension (fullPath) != ".mkv") {
                 // convert the video file
                 string outputPath;
-                if (VideoLibrary.Instance.ConvertVideoToMatroska (fullPath: fullPath, outputPath: out outputPath)) {
+                if (VideoLibrary.Instance.EncodeMatroska (fullPath: fullPath, outputPath: out outputPath, encoding: VideoEncoding.COPY)) {
                     fullPath = outputPath;
                 }
             }

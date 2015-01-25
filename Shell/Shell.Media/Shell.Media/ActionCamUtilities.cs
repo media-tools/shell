@@ -3,12 +3,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Mono.Options;
 using Shell.Common;
 using Shell.Common.IO;
 using Shell.Common.Tasks;
 using Shell.Common.Util;
-using Shell.Namespaces;
+using Shell.Media.Content;
 
 namespace Shell.Media
 {
@@ -33,24 +32,29 @@ namespace Shell.Media
 
             try {
                 string[] files = Directory.GetFiles (directory);
-                string[] videos = files.Select (path => Path.GetFileName (path)).Where (name => patternSjcamVideo.IsMatch (name)).ToArray ();
+                ActionCamVideo[] videos = files.Where (path => ActionCamVideo.IsValidVideoFile (path)).Select (path => new ActionCamVideo (path)).ToArray ();
 
-                string[][] consecutiveVideos = FindConsecutiveVideos (videos);
+                ActionCamVideo[][] consecutiveVideos = FindConsecutiveVideos (videos);
 
-                foreach (string[] consecution in consecutiveVideos) {
-                    DateTime date;
-                    if (NamingUtilities.GetFileNameDate (fileName: consecution.First (), date: out date)) {
-                        string formattedDate = date.ToString (format: dateFormatSjcamVideo);
+                foreach (ActionCamVideo[] consecution in consecutiveVideos) {
 
-                        Log.Message ("[", formattedDate, "]");
-                        Log.Indent++;
+                    Log.Message ("[", consecution.First ().FormattedDate, "]");
+                    Log.Indent++;
 
-                        foreach (string fileName in consecution) {
-                            Log.Message (fileName);
-                        }
-
-                        Log.Indent--;
+                    Log.Message ("Original video files:");
+                    Log.Indent++;
+                    foreach (ActionCamVideo video in consecution) {
+                        Log.Message (video.FileName);
                     }
+                    Log.Indent--;
+
+                    ConvertContainerFormat (consecution: consecution);
+
+                    if (consecution.Length >= 2) {
+                        MergeConsecution (consecution: consecution);
+                    }
+
+                    Log.Indent--;
                 }
 
             } catch (IOException ex) {
@@ -60,28 +64,82 @@ namespace Shell.Media
             Log.Indent--;
         }
 
-        private string[][] FindConsecutiveVideos (string[] files)
+        private void ConvertContainerFormat (ActionCamVideo[] consecution)
         {
-            List<List<string>> consecutiveVideos = new List<List<string>> ();
+            try {
+                Log.Try ();
 
-            List<string> consecution = null;
-            foreach (string currentfileName in files) {
+                if (consecution.Any (v => !v.FileName.EndsWith (".mkv"))) {
+                    Log.Message ("Convert container format of files:");
+                    Log.Indent++;
+
+                    foreach (ActionCamVideo video in consecution) {
+                        Log.Message ("[", video.FileName, "]");
+                        Log.Indent++;
+
+                        string newPath;
+                        if (VideoLibrary.Instance.EncodeMatroska (fullPath: video.FullPath, outputPath: out newPath, encoding: VideoEncoding.COPY)) {
+                            string newPathRaw = NamingUtilities.MakeRawFilename (newPath);
+                            File.Move (newPath, newPathRaw);
+                            video.FullPath = newPathRaw;
+                        } else {
+                            Log.Error ("Error while converting container format to matroska!");
+                            return;
+                        }
+
+                        Log.Indent--;
+                    }
+
+                    Log.Indent--;
+                }
+            } catch (IOException ex) {
+                Log.Error (ex);
+            } finally {
+                Log.Finally ();
+            }
+        }
+
+        private void MergeConsecution (ActionCamVideo[] consecution)
+        {
+            ActionCamVideo first = consecution.First ();
+            ActionCamVideo last = consecution.Last ();
+            string targetFileName = NamingUtilities.MakeRawFilename (first.FormattedDate + "_" + first.FormattedConsecutiveNumber + "-" + last.FormattedConsecutiveNumber + ".mkv");
+            string targetFullPath = Path.Combine (Path.GetDirectoryName (first.FullPath), targetFileName);
+
+            Log.Message ("Merge into: ", targetFileName);
+            Log.Indent++;
+
+            if (VideoLibrary.Instance.MergeMatroska (outputPath: targetFullPath, inputPaths: consecution.Select (video => video.FullPath).ToArray ())) {
+                Log.Message ("Success.");
+            } else {
+                Log.Message ("Failure.");
+            }
+
+            Log.Indent--;
+        }
+
+        private ActionCamVideo[][] FindConsecutiveVideos (ActionCamVideo[] files)
+        {
+            List<List<ActionCamVideo>> consecutiveVideos = new List<List<ActionCamVideo>> ();
+
+            List<ActionCamVideo> consecution = null;
+            foreach (ActionCamVideo currentVideo in files) {
                 // if this is the first file
                 if (consecution == null) {
-                    consecution = new List<string> ();
-                    consecution.Add (currentfileName);
+                    consecution = new List<ActionCamVideo> ();
+                    consecution.Add (currentVideo);
                 } else {
-                    string previousFileName = consecution.Last ();
+                    ActionCamVideo previousVideo = consecution.Last ();
 
                     // if the current file is a consecutive file of the previous one
-                    if (IsConsecutiveFile (fileA: previousFileName, fileB: currentfileName)) {
-                        consecution.Add (currentfileName);
+                    if (IsConsecutiveFile (fileA: previousVideo, fileB: currentVideo)) {
+                        consecution.Add (currentVideo);
                     }
                     // otherwise...
                     else {
                         consecutiveVideos.Add (consecution);
-                        consecution = new List<string> ();
-                        consecution.Add (currentfileName);
+                        consecution = new List<ActionCamVideo> ();
+                        consecution.Add (currentVideo);
                     }
                 }
             }
@@ -93,53 +151,19 @@ namespace Shell.Media
             return consecutiveVideos.Select (list => list.ToArray ()).ToArray ();
         }
 
-        private bool IsConsecutiveFile (string fileA, string fileB)
+        private bool IsConsecutiveFile (ActionCamVideo fileA, ActionCamVideo fileB)
         {
-            DateTime dateOfA;
-            DateTime dateOfB;
+            TimeSpan span = fileB.Date - fileA.Date;
 
-            if (NamingUtilities.GetFileNameDate (fileName: fileA, date: out dateOfA) && NamingUtilities.GetFileNameDate (fileName: fileB, date: out dateOfB)) {
-                TimeSpan span = dateOfB - dateOfA;
-                int numOfA = GetConsecutiveNumber (fileA);
-                int numOfB = GetConsecutiveNumber (fileB);
+            bool result = fileB.ConsecutiveNumber == fileA.ConsecutiveNumber + 1 && Math.Abs (span.TotalSeconds) <= 11 * 60;
 
-                bool result = numOfB == numOfA + 1 && Math.Abs (span.TotalSeconds) <= 11 * 60;
+            Log.Debug ("IsConsecutiveFile: fileA=", fileA.FileName, ", fileB=", fileB.FileName,
+                ", numOfA=", fileA.ConsecutiveNumber, ", numOfB=", fileB.ConsecutiveNumber,
+                ", dateOfA=", fileA.FormattedDate, ", dateOfB=", fileB.FormattedDate,
+                ", result=", result);
 
-                Log.Debug ("IsConsecutiveFile: fileA=", Path.GetFileName (fileA), ", fileB=", Path.GetFileName (fileB),
-                    ", numOfA=", numOfA, ", numOfB=", numOfB,
-                    ", dateOfA=", dateOfA, ", dateOfB", dateOfB,
-                    ", result=", result);
-
-                return result;
-            } else {
-                Log.Error ("BUG!");
-                Log.Error ("Unable to determine the DateTime of one of the following files: '", fileA, "' or '", fileB, "'");
-                return false;
-            }
-        }
-
-        private static string dateFormatSjcamVideo = "yyyy_MMdd_HHmmss";
-        private static Regex patternSjcamVideo = new Regex ("((?:19|20)[0-9]{2})_([0-9]{2})([0-9]{2})_([0-9]{6})_([0-9]{3})");
-
-        private int GetConsecutiveNumber (string fileName)
-        {
-            try {
-                Match match = patternSjcamVideo.Match (fileName);
-                if (match.Success) {
-                    string num = match.Groups [5].Value;
-                    return int.Parse (num);
-                } else {
-                    Log.Error ("Unable to determine the consecutive number of the following file: '", fileName, "'");
-                    return -1;
-                }
-            } catch (Exception ex) {
-                Log.Error ("BUG!");
-                Log.Error ("Unable to determine the consecutive number of the following file: '", fileName, "'");
-                Log.Error (ex);
-                return -1;
-            }
+            return result;
         }
     }
-
 }
 

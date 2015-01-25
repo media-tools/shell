@@ -61,8 +61,10 @@
     <Compile Include="Shell.Media\IWebAlbum.cs" />
     <Compile Include="Shell.Media\PictureDeduplication.cs" />
     <Compile Include="Shell.Media\MediaShareDatabase.cs" />
-    <Compile Include="Shell.Media\ActionCamTask.cs" />
     <Compile Include="Shell.Media\ActionCamUtilities.cs" />
+    <Compile Include="Shell.Media\ActionCamVideo.cs" />
+    <Compile Include="Shell.Media\VideoTask.cs" />
+    <Compile Include="Shell.Media\VideoUtilities.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -73,6 +75,10 @@
     <ProjectReference Include="..\Shell.Common.Shares\Shell.Common.Shares.csproj">
       <Project>{C58D63FE-50CC-4EA7-98AA-AE7EBC5B8330}</Project>
       <Name>Shell.Common.Shares</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\ThirdParty\LibJpeg.Net\LibJpeg\LibJpeg.csproj">
+      <Project>{7300CDF5-1C93-4611-8CC9-47FE79F340AB}</Project>
+      <Name>LibJpeg</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

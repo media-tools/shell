@@ -25,6 +25,13 @@ namespace Shell.Media.Content
             ".gz",
             ".xz",
             ".tar",
+            ".odt",
+            ".doc",
+            ".docx",
+            ".xls",
+            ".xlsx",
+            ".pps",
+            ".ppsx",
 
             // genealogy
             ".ahn",
@@ -47,6 +54,24 @@ namespace Shell.Media.Content
             { new [] { "application/gzip" }, new [] { ".gz" } },
             { new [] { "application/x-xz" }, new [] { ".xz" } },
             { new [] { "application/x-tar" }, new [] { ".tar" } },
+            { new [] { "application/vnd.oasis.opendocument.text" }, new [] { ".odt" } },
+
+            // doc
+            { new [] { "application/msword" }, new [] { ".doc" } }, { // docx
+                new [] { "application/vnd.openxmlformats-officedocument.wordprocessingml.document" },
+                new [] { ".docx" }
+            },
+            // xls
+            { new [] { "application/vnd.ms-excel" }, new [] { ".xls" } }, { // xlsx
+                new [] { "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" },
+                new [] { ".xlsx" }
+            },
+            // pps
+            { new [] { "application/vnd.ms-powerpoint" }, new [] { ".pps" } }, { // ppsx
+                new [] { "application/vnd.openxmlformats-officedocument.presentationml.slideshow" },
+                new [] { ".ppsx" }
+            },
+
             { new [] { "application/x-genealogy" }, new [] { ".ahn", ".ged", ".gpkg" } },
         };
 

@@ -147,6 +147,12 @@ namespace Shell.Media
                 Video.RunIndexHooks (fullPath: ref fullPath);
                 Document.RunIndexHooks (fullPath: ref fullPath);
 
+                // run again, in case the file was renamed to a raw file somewhere in the hooks!
+                if (NamingUtilities.IsRawFilename (fullPath)) {
+                    Log.Error ("Raw File: ", fullPath);
+                    continue;
+                }
+
                 // create album, if necessery
                 string albumPath = MediaShareUtilities.GetAlbumPath (fullPath: fullPath, share: this);
                 Album album = Database.GetAlbum (albumPath: albumPath);

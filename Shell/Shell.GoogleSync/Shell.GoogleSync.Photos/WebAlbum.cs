@@ -3,10 +3,11 @@ using Google.GData.Photos;
 using Google.Picasa;
 using Shell.Common.IO;
 using Shell.Common.Util;
+using System.Collections.Generic;
 
 namespace Shell.GoogleSync.Photos
 {
-    public class WebAlbum : Shell.Media.IWebAlbum, IFilterable
+    public class WebAlbum : ValueObject<WebAlbum>, Shell.Media.IWebAlbum, IFilterable
     {
         public AlbumCollection AlbumCollection { get; private set; }
 
@@ -60,6 +61,36 @@ namespace Shell.GoogleSync.Photos
         public string[] FilterKeys ()
         {
             return new [] { Title };
+        }
+
+        public override string ToString ()
+        {
+            return string.Format ("[WebAlbum: Title={0}, Id={1}, NumPhotos={2}]", Title, Id, NumPhotos);
+        }
+
+        protected override IEnumerable<object> Reflect ()
+        {
+            return new object[] { Id };
+        }
+
+        public override bool Equals (object obj)
+        {
+            return ValueObject<WebAlbum>.Equals (myself: this, obj: obj);
+        }
+
+        public override int GetHashCode ()
+        {
+            return base.GetHashCode ();
+        }
+
+        public static bool operator == (WebAlbum a, WebAlbum b)
+        {
+            return ValueObject<WebAlbum>.Equality (a, b);
+        }
+
+        public static bool operator != (WebAlbum a, WebAlbum b)
+        {
+            return ValueObject<WebAlbum>.Inequality (a, b);
         }
     }
 }

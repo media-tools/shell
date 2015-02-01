@@ -74,6 +74,11 @@ namespace Shell.Common.IO
             }
         }
 
+        public static string FormatString (params object[] message)
+        {
+            return string.Join ("", NoNull (NoColors (NoShellCharacters (message))));
+        }
+
         // Prefix
         private static string LogFilePrefix { get { return Commons.DATETIME_LOG + " " + Commons.PID + " "; } }
 

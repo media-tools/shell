@@ -173,6 +173,10 @@ namespace Shell.Media.Content
             if (Path.GetExtension (fullPath) == ".bmp") {
                 Picture.ConvertToJpeg (fullPath: ref fullPath);
             }
+            // is the file ending in TIF format?
+            if (Path.GetExtension (fullPath) == ".tif" || Path.GetExtension (fullPath) == ".tiff") {
+                Picture.ConvertToJpeg (fullPath: ref fullPath);
+            }
             // WTF is pamp?
             if (Path.GetExtension (fullPath) == ".pamp") {
                 Picture.ConvertToJpeg (fullPath: ref fullPath);
@@ -197,16 +201,34 @@ namespace Shell.Media.Content
             try {
                 Log.Message ("Convert picture to JPEG: ", Path.GetFileName (oldPath), " => ", Path.GetFileName (newPath), " (quality: ", quality, ")");
                 Bitmap original = (Bitmap)Image.FromFile (oldPath);
+
                 JpegHelper.Current.Save (image: original, filename: newPath, compression: new CompressionParameters { Quality = quality });
-                //EncoderParameters encoderParams = new EncoderParameters (1);
-                //encoderParams.Param [0] = new EncoderParameter (System.Drawing.Imaging.Encoder.Quality, 100L);
-                //original.Save (filename: newPath, encoder: PictureLibrary.GetEncoder (ImageFormat.Jpeg), encoderParams: encoderParams);
+
                 lib.CopyExifTags (sourcePath: oldPath, destPath: newPath);
                 if (File.Exists (newPath) && File.Exists (oldPath)) {
                     File.Delete (oldPath);
                     fullPath = newPath;
                 }
                 return true;
+            } catch (NotImplementedException ex) {
+                Log.Error ("NotImplementedException is thrown by BitMiracle.LibJpeg!");
+                Log.Error (ex);
+                try {
+                    Log.Message ("Convert picture to JPEG (using the awful .NET encoder): ", Path.GetFileName (oldPath), " => ", Path.GetFileName (newPath), " (quality: ", quality, ")");
+                    Bitmap original = (Bitmap)Image.FromFile (oldPath);
+
+                    EncoderParameters encoderParams = new EncoderParameters (1);
+                    encoderParams.Param [0] = new EncoderParameter (System.Drawing.Imaging.Encoder.Quality, 100L);
+                    original.Save (filename: newPath, encoder: PictureLibrary.GetEncoder (ImageFormat.Jpeg), encoderParams: encoderParams);
+
+                    lib.CopyExifTags (sourcePath: oldPath, destPath: newPath);
+                    if (File.Exists (newPath) && File.Exists (oldPath)) {
+                        File.Delete (oldPath);
+                        fullPath = newPath;
+                    }
+                } catch (Exception ex2) {
+                    Log.Error (ex2);
+                }
             } catch (Exception ex) {
                 Log.Error (ex);
             }
@@ -221,6 +243,9 @@ namespace Shell.Media.Content
                 string value;
                 if (tag.Serialize (out key, out value)) {
                     dict [key] = value;
+                }
+                if (key == "exif:UserComment" && value.Length > 100) {
+                    dict [key] = "";
                 }
             }
 

@@ -79,7 +79,7 @@ namespace Shell.Media.Content
 
                     bool success = true;
                     Action<string> receiveOutput = line => {
-                        if (line.ToLower ().Contains ("error")) {
+                        if (line.ToLower ().Contains ("error") || line.Contains ("Conversion failed!")) {
                             success = false;
                             Log.Error ("Error in EncodeMatroska: ", line);
                             Log.Error ("Script:");

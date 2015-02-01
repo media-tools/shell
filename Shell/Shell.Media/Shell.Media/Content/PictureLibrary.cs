@@ -29,16 +29,19 @@ namespace Shell.Media.Content
 
         public List<ExifTag> GetExifTags (string fullPath)
         {
-            string script = "exiftool -time:all -a -G0:1 -s " + fullPath.SingleQuoteShell ();
+            //string script = "exiftool -time:all -a -G0:1 -s " + fullPath.SingleQuoteShell ();
+            string script = "exiftool -a -G0:1 -s " + fullPath.SingleQuoteShell ();
 
             List<ExifTag> tags = new List<ExifTag> ();
             Action<string> receiveOutput = line => {
                 // example: [EXIF:ExifIFD]  DateTimeOriginal                : 2014:10:23 22:45:11
 
-                ExifTag tag;
-                if (ExifTag.ReadFromExiftoolConsoleOutput (line, out tag)) {
-                    tags.Add (tag);
-                    Log.Message ("- ", Log.Fill (tag.Name, 30), ": ", tag.Value);
+                if (!line.Contains ("ICC_Profile")) {
+                    ExifTag tag;
+                    if (ExifTag.ReadFromExiftoolConsoleOutput (line, out tag)) {
+                        tags.Add (tag);
+                        Log.Message ("- ", Log.Fill (tag.Name, 30), ": ", tag.Value);
+                    }
                 }
             };
 

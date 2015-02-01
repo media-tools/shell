@@ -57,6 +57,7 @@ namespace Shell.Media
         Filter albumFilter = Filter.None;
         string author = string.Empty;
         bool dryRun = false;
+        bool albumWildcardOverride = false;
 
         protected override void SetupOptions (ref OptionSet optionSet)
         {
@@ -67,6 +68,9 @@ namespace Shell.Media
                 .Add ("album=",
                 "Only modify the specified album(s). Multiple values are seperated by comma.",
                 option => albumFilter = Filter.ContainFilter (Filter.Split (option)))
+                .Add ("album-accept-wildcards",
+                "Accept wildcard characters in the album filter.",
+                option => albumWildcardOverride = option != null)
                 .Add ("author=",
                 "The author. Only use with '--set-author'!",
                 option => author = option)
@@ -152,7 +156,15 @@ namespace Shell.Media
                 return;
             }
 
-            albumFilter = Filter.ExactFilter (copyFrom: albumFilter);
+            if (albumWildcardOverride) {
+                // leave album filter as it is (CONTAIN policy instead of EXACT)
+                Log.Message ("Are you SURE you want to allow wildcards in the album filter?");
+                Log.Message ("Album filter: ", albumFilter);
+                Console.ReadLine ();
+            } else {
+                // override album filter to use the EXACT policy
+                albumFilter = Filter.ExactFilter (copyFrom: albumFilter);
+            }
 
             Log.Message ("Author: ", author);
             Log.Message ("Album filter: ", albumFilter);

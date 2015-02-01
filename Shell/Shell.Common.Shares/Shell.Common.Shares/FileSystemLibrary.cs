@@ -40,7 +40,11 @@ namespace Shell.Common.Shares
 
         private static IEnumerable<FileInfo> GetFileList (DirectoryInfo rootDirectory, Func<FileInfo, bool> fileFilter, Func<DirectoryInfo, bool> dirFilter, ProgressBar progressBar, bool followSymlinks, int depth = 0)
         {
-            // Log.Debug (rootDirectory.FullName);
+            //Log.Debug ("GetFileList: ", rootDirectory.FullName);
+
+            if (rootDirectory.Name == ".encfs") {
+                yield break;
+            }
 
             // list files
             IEnumerable<FileInfo> fileList = null;

@@ -22,7 +22,6 @@ namespace Shell.GoogleSync.Photos
     public class AlbumCollection : GDataLibrary
     {
         private PicasaService service;
-        private static MediaFileLibrary libMediaFile = new MediaFileLibrary ();
 
         public AlbumCollection (GoogleAccount account)
             : base (account)
@@ -43,19 +42,32 @@ namespace Shell.GoogleSync.Photos
 
         public WebAlbum[] GetAlbums ()
         {
-            List<WebAlbum> albumList = new List<WebAlbum> ();
+            HashSet<WebAlbum> albumList = new HashSet<WebAlbum> ();
 
-            CatchErrors (() => {
-                AlbumQuery query = new AlbumQuery (PicasaQuery.CreatePicasaUri (account.Id));
-                PicasaFeed feed = service.Query (query);
+            for (int i = 0; i < 4; ++i) {
+                CatchErrors (() => {
+                    AlbumQuery query = new AlbumQuery (PicasaQuery.CreatePicasaUri (account.Id));
+                    PicasaFeed feed = service.Query (query);
 
-                foreach (PicasaEntry entry in feed.Entries) {
-                    Picasa.Album internalAlbum = new Picasa.Album ();
-                    internalAlbum.AtomEntry = entry;
-                    WebAlbum album = new WebAlbum (albumCollection: this, internalAlbum: internalAlbum);
-                    albumList.Add (album);
-                }
-            });
+                    Log.Debug ("Album count (try #", i, "): ", feed.Entries.Count);
+
+                    foreach (PicasaEntry entry in feed.Entries) {
+                        Picasa.Album internalAlbum = new Picasa.Album ();
+                        internalAlbum.AtomEntry = entry;
+                        WebAlbum album = new WebAlbum (albumCollection: this, internalAlbum: internalAlbum);
+
+                        if (i == 0 && albumList.Any (a => a.Title == album.Title)) {
+                            string message = Log.FormatString ("Duplicate album: ", albumList.Last (a => a.Title == album.Title), " <=> ", album);
+                            if (PhotoSyncUtilities.IsSyncedAlbum (album))
+                                Log.Message (message);
+                            else
+                                Log.Debug (message);
+                        }
+
+                        albumList.Add (album);
+                    }
+                });
+            }
 
             return albumList.ToArray ();
         }
@@ -296,6 +308,7 @@ namespace Shell.GoogleSync.Photos
                                 if (result.WebFiles.Length == 0) {
                                     album.Delete (verbose: false);
                                     result.Log ("Delete album.");
+                                    Log.Message ("Delete album: ", album.Title);
                                     deleted = true;
                                 }
                                 // .. if it contains something, print it! it may be obsolete.

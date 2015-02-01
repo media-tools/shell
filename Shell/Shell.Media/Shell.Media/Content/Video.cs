@@ -70,11 +70,18 @@ namespace Shell.Media.Content
         {
             // is it a video that is not in the mkv file format?
             if (Video.IsValidFile (fullPath: fullPath) && Path.GetExtension (fullPath) != ".mkv") {
+                // rename the video file to a file name indicating a raw format
+                string oldPath = fullPath;
+                string newPath = NamingUtilities.MakeRawFilename (fullPath);
+                MediaFile.RenamePath (fullPath: ref fullPath, oldPath: oldPath, newPath: newPath);
+
+                /*
                 // convert the video file
                 string outputPath;
                 if (VideoLibrary.Instance.EncodeMatroska (fullPath: fullPath, outputPath: out outputPath, encoding: VideoEncoding.COPY)) {
                     fullPath = outputPath;
                 }
+                */
             }
 
             try {

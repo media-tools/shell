@@ -1,0 +1,327 @@
+Skript gestartet auf So 17 Aug 2014 01:53:22 CEST
+S (3): * OK Gimap ready for requests from 82.83.187.40 eq14mb80076868ldc
+C (3): 1000 CAPABILITY
+S (3): 1000 OK Thats all she wrote! eq14mb80076868ldc
+C (3): 1001 LOGIN "tobias.schulz186@gmail.com" *
+S (3): 1001 OK tobias.schulz186@gmail.com Tobias Schulz authenticated (Success)
+C (3): 1002 CAPABILITY
+S (3): 1002 OK Success
+C (3): 1003 NAMESPACE
+S (3): 1003 OK Success
+C (3): 1004 SELECT "INBOX"
+S (3): 1004 OK [READ-WRITE] INBOX selected. (Success)
+C (3): 1005 UID SEARCH ALL BEFORE 18-Jul-2014
+S (3): 1005 OK SEARCH completed (Success)
+C (3): 1006 UID SEARCH ALL SEEN
+S (3): 1006 OK SEARCH completed (Success)
+C (3): 1007 UID SEARCH ALL UNFLAGGED
+S (3): 1007 OK SEARCH completed (Success)
+S (4): * OK Gimap ready for requests from 82.83.187.40 t9mb70670445lbf
+C (4): 1008 CAPABILITY
+S (4): 1008 OK Thats all she wrote! t9mb70670445lbf
+C (4): 1009 LOGIN "tschulz186@gmail.com" *
+S (4): 1009 OK tschulz186@gmail.com Tobias Schulz authenticated (Success)
+C (4): 100A CAPABILITY
+S (4): 100A OK Success
+C (4): 100B NAMESPACE
+S (4): 100B OK Success
+C (4): 100C SELECT "INBOX"
+S (4): 100C OK [READ-WRITE] INBOX selected. (Success)
+C (4): 100D UID SEARCH ALL BEFORE 18-Jul-2014
+S (4): 100D OK SEARCH completed (Success)
+C (4): 100E UID SEARCH ALL SEEN
+S (4): 100E OK SEARCH completed (Success)
+C (4): 100F UID SEARCH ALL UNFLAGGED
+S (4): 100F OK SEARCH completed (Success)
+S (5): * OK Gimap ready for requests from 82.83.187.40 eq8mb78497219lbc
+C (5): 1010 CAPABILITY
+S (5): 1010 OK Thats all she wrote! eq8mb78497219lbc
+C (5): 1011 LOGIN "freehalproject@gmail.com" *
+S (5): 1011 OK freehalproject@gmail.com Tobias Schulz authenticated (Success)
+C (5): 1012 CAPABILITY
+S (5): 1012 OK Success [THROTTLED]
+C (5): 1013 NAMESPACE
+S (5): 1013 OK Success [THROTTLED]
+C (5): 1014 SELECT "INBOX"
+S (5): 1014 OK [READ-WRITE] INBOX selected. (Success) [THROTTLED]
+C (5): 1015 UID SEARCH ALL BEFORE 18-Jul-2014
+S (5): 1015 OK SEARCH completed (Success) [THROTTLED]
+C (5): 1016 UID SEARCH ALL SEEN
+S (5): 1016 OK SEARCH completed (Success) [THROTTLED]
+C (5): 1017 UID SEARCH ALL UNFLAGGED
+S (5): 1017 OK SEARCH completed (Success) [THROTTLED]
+S (6): * OK Gimap ready for requests from 82.83.187.40 f4mb76470315laf
+C (6): 1018 CAPABILITY
+S (6): 1018 OK Thats all she wrote! f4mb76470315laf
+C (6): 1019 LOGIN "tobiasschulz.server@gmail.com" *
+S (6): 1019 OK tobiasschulz.server@gmail.com Tobias Schulz authenticated (Success)
+C (6): 101A CAPABILITY
+S (6): 101A OK Success
+C (6): 101B NAMESPACE
+S (6): 101B OK Success
+C (6): 101C SELECT "INBOX"
+S (6): 101C OK [READ-WRITE] INBOX selected. (Success)
+C (6): 101D UID SEARCH ALL BEFORE 18-Jul-2014
+S (6): 101D OK SEARCH completed (Success)
+C (6): 101E UID SEARCH ALL SEEN
+S (6): 101E OK SEARCH completed (Success)
+C (6): 101F UID SEARCH ALL UNFLAGGED
+S (6): 101F OK SEARCH completed (Success)
+S (7): * OK Gimap ready for requests from 82.83.187.40 j20mb78220541lbg
+C (7): 1020 CAPABILITY
+S (7): 1020 OK Thats all she wrote! j20mb78220541lbg
+C (7): 1021 LOGIN "protobitug@gmail.com" *
+S (7): 1021 OK protobitug@gmail.com Tobias Schulz authenticated (Success)
+C (7): 1022 CAPABILITY
+S (7): 1022 OK Success
+C (7): 1023 NAMESPACE
+S (7): 1023 OK Success
+C (7): 1024 SELECT "INBOX"
+S (7): 1024 OK [READ-WRITE] INBOX selected. (Success)
+C (7): 1025 UID SEARCH ALL BEFORE 18-Jul-2014
+S (7): 1025 OK SEARCH completed (Success)
+C (7): 1026 UID SEARCH ALL SEEN
+S (7): 1026 OK SEARCH completed (Success)
+C (7): 1027 UID SEARCH ALL UNFLAGGED
+S (7): 1027 OK SEARCH completed (Success)
+S (8): * OK Gimap ready for requests from 82.83.187.40 5mb77278556lai
+C (8): 1028 CAPABILITY
+S (8): 1028 OK Thats all she wrote! 5mb77278556lai
+C (8): 1029 LOGIN "tobiasschulzkit@gmail.com" *
+S (8): 1029 OK tobiasschulz.kit@gmail.com Tobias Schulz authenticated (Success)
+C (8): 102A CAPABILITY
+S (8): 102A OK Success
+C (8): 102B NAMESPACE
+S (8): 102B OK Success
+C (8): 102C SELECT "INBOX"
+S (8): 102C OK [READ-WRITE] INBOX selected. (Success)
+C (8): 102D UID SEARCH ALL BEFORE 18-Jul-2014
+S (8): 102D OK SEARCH completed (Success)
+C (8): 102E UID SEARCH ALL SEEN
+S (8): 102E OK SEARCH completed (Success)
+C (8): 102F UID SEARCH ALL UNFLAGGED
+S (8): 102F OK SEARCH completed (Success)
+S (9): * OK Gimap ready for requests from 82.83.187.40 er11mb78493745lbb
+C (9): 1030 CAPABILITY
+S (9): 1030 OK Thats all she wrote! er11mb78493745lbb
+C (9): 1031 LOGIN "tobiasschulz1993@gmail.com" *
+S (9): 1031 OK tobiasschulz1993@gmail.com Tobias Schulz authenticated (Success)
+C (9): 1032 CAPABILITY
+S (9): 1032 OK Success [THROTTLED]
+C (9): 1033 NAMESPACE
+S (9): 1033 OK Success [THROTTLED]
+C (9): 1034 SELECT "INBOX"
+S (9): 1034 OK [READ-WRITE] INBOX selected. (Success) [THROTTLED]
+C (9): 1035 UID SEARCH ALL BEFORE 18-Jul-2014
+S (9): 1035 OK SEARCH completed (Success) [THROTTLED]
+C (9): 1036 UID SEARCH ALL SEEN
+S (9): 1036 OK SEARCH completed (Success) [THROTTLED]
+C (9): 1037 UID SEARCH ALL UNFLAGGED
+S (9): 1037 OK SEARCH completed (Success) [THROTTLED]
+S (10): * OK Gimap ready for requests from 82.83.187.40 t19mb77370229laz
+C (10): 1038 CAPABILITY
+S (10): 1038 OK Thats all she wrote! t19mb77370229laz
+C (10): 1039 LOGIN "tobiasschulzbackup@gmail.com" *
+S (10): 1039 OK tobiasschulzbackup@gmail.com Tobias Schulz authenticated (Success)
+C (10): 103A CAPABILITY
+S (10): 103A OK Success
+C (10): 103B NAMESPACE
+S (10): 103B OK Success
+C (10): 103C SELECT "INBOX"
+S (10): 103C OK [READ-WRITE] INBOX selected. (Success)
+C (10): 103D UID SEARCH ALL BEFORE 18-Jul-2014
+S (10): 103D OK SEARCH completed (Success)
+C (10): 103E UID SEARCH ALL SEEN
+S (10): 103E OK SEARCH completed (Success)
+C (10): 103F UID SEARCH ALL UNFLAGGED
+S (10): 103F OK SEARCH completed (Success)
+S (11): * OK Gimap ready for requests from 82.83.187.40 lo4mb67446554lbb
+C (11): 1040 CAPABILITY
+S (11): 1040 OK Thats all she wrote! lo4mb67446554lbb
+C (11): 1041 LOGIN "felixschulz26@gmail.com" *
+S (11): 1041 OK felixschulz26@gmail.com Felix Schulz authenticated (Success)
+C (11): 1042 CAPABILITY
+S (11): 1042 OK Success
+C (11): 1043 NAMESPACE
+S (11): 1043 OK Success
+C (11): 1044 SELECT "INBOX"
+S (11): 1044 OK [READ-WRITE] INBOX selected. (Success)
+C (11): 1045 UID SEARCH ALL BEFORE 18-Jul-2014
+S (11): 1045 OK SEARCH completed (Success)
+C (11): 1046 UID SEARCH ALL SEEN
+S (11): 1046 OK SEARCH completed (Success)
+C (11): 1047 UID SEARCH ALL UNFLAGGED
+S (11): 1047 OK SEARCH completed (Success)
+S (12): * OK Gimap ready for requests from 82.83.187.40 e2mb77329062lag
+C (12): 1048 CAPABILITY
+S (12): 1048 OK Thats all she wrote! e2mb77329062lag
+C (12): 1049 LOGIN "monikaschulz64@gmail.com" *
+S (12): 1049 OK monika.schulz64@gmail.com Monika Schulz authenticated (Success)
+C (12): 104A CAPABILITY
+S (12): 104A OK Success
+C (12): 104B NAMESPACE
+S (12): 104B OK Success
+C (12): 104C SELECT "INBOX"
+S (12): 104C OK [READ-WRITE] INBOX selected. (Success)
+C (12): 104D UID SEARCH ALL BEFORE 18-Jul-2014
+S (12): 104D OK SEARCH completed (Success)
+C (12): 104E UID SEARCH ALL SEEN
+S (12): 104E OK SEARCH completed (Success)
+C (12): 104F UID SEARCH ALL UNFLAGGED
+S (12): 104F OK SEARCH completed (Success)
+S (13): * OK Gimap ready for requests from 82.83.187.40 eq6mb78294166lbb
+C (13): 1050 CAPABILITY
+S (13): 1050 OK Thats all she wrote! eq6mb78294166lbb
+C (13): 1051 LOGIN "lisar1398@gmail.com" *
+S (13): 1051 OK lisar1398@gmail.com Lisa Rüggeberg authenticated (Success)
+C (13): 1052 CAPABILITY
+S (13): 1052 OK Success
+C (13): 1053 NAMESPACE
+S (13): 1053 OK Success
+C (13): 1054 SELECT "INBOX"
+S (13): 1054 OK [READ-WRITE] INBOX selected. (Success)
+C (13): 1055 UID SEARCH ALL BEFORE 18-Jul-2014
+S (13): 1055 OK SEARCH completed (Success)
+C (13): 1056 UID SEARCH ALL SEEN
+S (13): 1056 OK SEARCH completed (Success)
+C (13): 1057 UID SEARCH ALL UNFLAGGED
+S (13): 1057 OK SEARCH completed (Success)
+S (14): * OK Gimap ready for requests from 82.83.187.40 eb2mb80007825ldc
+C (14): 1058 CAPABILITY
+S (14): 1058 OK Thats all she wrote! eb2mb80007825ldc
+C (14): 1059 LOGIN "heinzr22@gmail.com" *
+S (14): 1059 OK heinzr22@gmail.com Heinz Rüggeberg authenticated (Success)
+C (14): 105A CAPABILITY
+S (14): 105A OK Success
+C (14): 105B NAMESPACE
+S (14): 105B OK Success
+C (14): 105C SELECT "INBOX"
+S (14): 105C OK [READ-WRITE] INBOX selected. (Success)
+C (14): 105D UID SEARCH ALL BEFORE 18-Jul-2014
+S (14): 105D OK SEARCH completed (Success)
+C (14): 105E UID SEARCH ALL SEEN
+S (14): 105E OK SEARCH completed (Success)
+C (14): 105F UID SEARCH ALL UNFLAGGED
+S (14): 105F OK SEARCH completed (Success)
+Server certificate subject: /O=Dovecot mail server/OU=hetzner2/CN=hetzner2/emailAddress=root@static.164.205.47.78.clients.your-server.de
+Server certificate issuer: /O=Dovecot mail server/OU=hetzner2/CN=hetzner2/emailAddress=root@static.164.205.47.78.clients.your-server.de
+Server key fingerprint: 74:B0:B8:A0:66:20:F6:67:1F:77:A9:DC:78:A7:9C:55
+(R)eject, accept (t)emporarily or accept (p)ermanently? S (15): * OK [CAPABILITY IMAP4rev1 LITERAL+ SASL-IR LOGIN-REFERRALS ID ENABLE IDLE AUTH=PLAIN AUTH=LOGIN] Dovecot (Ubuntu) ready.
+C (15): 1060 CAPABILITY
+S (15): 1060 OK Pre-login capabilities listed, post-login capabilities have more.
+C (15): 1061 LOGIN "tobias" *
+S (15): 1061 OK Logged in
+C (15): 1062 CAPABILITY
+S (15): 1062 OK Capability completed.
+C (15): 1063 NAMESPACE
+S (15): 1063 OK Namespace completed.
+C (15): 1064 SELECT "INBOX"
+S (15): 1064 OK [READ-WRITE] Select completed (0.000 secs).
+C (15): 1065 UID SEARCH ALL BEFORE 18-Jul-2014
+S (15): 1065 OK Search completed (0.023 secs).
+C (15): 1066 UID SEARCH ALL SEEN
+S (15): 1066 OK Search completed (0.000 secs).
+C (15): 1067 UID SEARCH ALL UNFLAGGED
+S (15): 1067 OK Search completed (0.000 secs).
+C (15): 1068 UID COPY 137:150,171,190:191,193:226 "Archiv"
+S (15): 1068 NO [TRYCREATE] Mailbox doesn't exist: Archiv
+imapfilter: IMAP (15): 1068 NO [TRYCREATE] Mailbox doesn't exist: Archiv
+C (15): 1069 CREATE "Archiv"
+S (15): 1069 OK Create completed.
+C (15): 106A UID COPY 137:150,171,190:191,193:226 "Archiv"
+S (15): 106A OK [COPYUID 1393320651 137:150,171,190:191,193:226 1:51] Copy completed.
+C (15): 106B UID STORE 137:150,171,190:191,193:226 +FLAGS.SILENT (\Deleted)
+S (15): 106B OK Store completed.
+C (15): 106C EXPUNGE
+S (15): 106C OK Expunge completed.
+51 messages moved from tobias@hetzner2/INBOX to tobias@hetzner2/Archiv.
+Server certificate subject: /C=DE/O=Karlsruhe Institute of Technology/CN=imap.kit.edu
+Server certificate issuer: /C=DE/ST=Baden-Wuerttemberg/L=Karlsruhe/O=Karlsruhe Institute of Technology/OU=Steinbuch Centre for Computing/CN=KIT-CA/emailAddress=ca@kit.edu
+Server key fingerprint: 8F:43:7B:43:80:EF:9D:58:04:10:6C:93:06:18:8F:AB
+(R)eject, accept (t)emporarily or accept (p)ermanently? S (16): * OK The Microsoft Exchange IMAP4 service is ready.
+C (16): 106D CAPABILITY
+S (16): 106D OK CAPABILITY completed.
+C (16): 106E LOGIN "uaeti@student.kit.edu" *
+S (16): 106E OK LOGIN completed.
+C (16): 106F CAPABILITY
+S (16): 106F OK CAPABILITY completed.
+C (16): 1070 NAMESPACE
+S (16): 1070 OK NAMESPACE completed.
+C (16): 1071 SELECT "INBOX"
+S (16): 1071 OK [READ-WRITE] SELECT completed.
+C (16): 1072 UID SEARCH ALL BEFORE 18-Jul-2014
+S (16): 1072 OK SEARCH completed.
+C (16): 1073 UID SEARCH ALL SEEN
+S (16): 1073 OK SEARCH completed.
+C (16): 1074 UID SEARCH ALL UNFLAGGED
+S (16): 1074 OK SEARCH completed.
+C (16): 1075 UID COPY 2639:2720 "Archiv"
+S (16): 1075 OK COPY completed.
+C (16): 1076 UID STORE 2639:2720 +FLAGS.SILENT (\Deleted)
+S (16): 1076 OK STORE completed.
+C (16): 1077 EXPUNGE
+S (16): 1077 OK EXPUNGE completed.
+82 messages moved from uaeti@student.kit.edu@imap.kit.edu/INBOX to uaeti@student.kit.edu@imap.kit.edu/Archiv.
+Server certificate subject: /C=DE/O=1&1 Mail & Media GmbH/ST=Rhineland-Palatinate/L=Montabaur/emailAddress=server-certs@1und1.de/CN=imap.gmx.net
+Server certificate issuer: /C=DE/O=T-Systems International GmbH/OU=T-Systems Trust Center/ST=NRW/postalCode=57250/L=Netphen/street=Untere Industriestr. 20/CN=TeleSec ServerPass DE-1
+Server key fingerprint: 2C:3F:F5:FA:27:28:47:E1:55:28:6C:BD:7D:DA:60:65
+(R)eject, accept (t)emporarily or accept (p)ermanently? S (17): * OK IMAP server ready H migmx112 101319 IMAP-0MVRkt-1WsrWn21V8-00YA7y
+C (17): 1078 CAPABILITY
+S (17): 1078 OK CAPABILITY completed
+C (17): 1079 LOGIN "fx.schulz@gmx.de" *
+S (17): 1079 OK LOGIN completed
+C (17): 107A CAPABILITY
+S (17): 107A OK CAPABILITY completed
+C (17): 107B NAMESPACE
+S (17): 107B OK NAMESPACE completed
+C (17): 107C SELECT "INBOX"
+S (17): 107C OK [READ-WRITE] SELECT completed
+C (17): 107D UID SEARCH ALL BEFORE 18-Jul-2014
+S (17): 107D OK UID SEARCH completed
+C (17): 107E UID SEARCH ALL SEEN
+S (17): 107E OK UID SEARCH completed
+C (17): 107F UID SEARCH ALL UNFLAGGED
+S (17): 107F OK UID SEARCH completed
+C (17): 1080 UID COPY 2721:2845,2847:2849,2851:2958,2961:2963,2967:2978,2980,2982:3037,3039:3046,3050:3067,3069:3080,3083:3098,3100:3223,3225:3444,3446:3451,3453:3468,3472:3880,3897,3918:4022,4035,4038,4119:4133,4135:4137,4140:4141,4144:4149,4151:4182,4207,4233:4235,4250,4254,4285,4344,4348:4349,4402,4457,4483,4520,4534:4535,4576:4577,4584,4598,4601,4924:4974,5048:5148,5159:5160,5164:5166,5169:5170,5176,5178:5179,5183:5185,5188 "Archiv"
+S (17): 1080 OK [COPYUID 1281289263 2721:2845,2847:2849,2851:2958,2961:2963,2967:2978,2980,2982:3037,3039:3046,3050:3067,3069:3080,3083:3098,3100:3195,3204,3196:3203,3205:3223,3225:3444,3446:3451,3453:3468,3472:3880,3897,3918:3975,3980,3976:3979,3981:4022,4035,4038,4119:4133,4135:4137,4140:4141,4144:4149,4151:4182,4207,4233:4235,4250,4254,4285,4344,4348:4349,4402,4457,4483,4520,4534:4535,4576:4577,4584,4598,4601,4924:4974,5048:5148,5159:5160,5164:5166,5169:5170,5176,5178:5179,5183:5185,5188 1:1490] UID COPY completed
+C (17): 1081 UID COPY 5190,5198,5200:5201,5203,5215:5216,5222:5223,5230:5232,5242:5244,5257,5262:5282,5284:5285,5292:5320,5334,5338:5364,5371,5373,5375,5379:5403,5405,5408:5436,5441,5446,5449,5452,5455:5456,5458,5461,5471,5473:5474,5476,5479,5481,5483,5487:5488,5492,5494:5496,5503:5527,5532,5540:5541,5546,5548,5551,5553:5577,5579,5588,5599 "Archiv"
+S (17): 1081 OK [COPYUID 1281289263 5190,5198,5200:5201,5203,5215:5216,5222:5223,5230:5232,5243:5244,5242,5257,5262:5282,5284:5285,5292:5320,5334,5338:5364,5371,5373,5375,5379:5403,5405,5408:5436,5441,5446,5449,5452,5455:5456,5458,5461,5471,5473:5474,5476,5479,5481,5483,5487:5488,5492,5494:5496,5503:5527,5532,5540:5541,5546,5548,5551,5553:5577,5579,5588,5599 1491:1724] UID COPY completed
+C (17): 1082 UID STORE 2721:2845,2847:2849,2851:2958,2961:2963,2967:2978,2980,2982:3037,3039:3046,3050:3067,3069:3080,3083:3098,3100:3223,3225:3444,3446:3451,3453:3468,3472:3880,3897,3918:4022,4035,4038,4119:4133,4135:4137,4140:4141,4144:4149,4151:4182,4207,4233:4235,4250,4254,4285,4344,4348:4349,4402,4457,4483,4520,4534:4535,4576:4577,4584,4598,4601,4924:4974,5048:5148,5159:5160,5164:5166,5169:5170,5176,5178:5179,5183:5185,5188 +FLAGS.SILENT (\Deleted)
+S (17): 1082 OK UID STORE completed
+C (17): 1083 EXPUNGE
+S (17): 1083 OK EXPUNGE completed
+C (17): 1084 UID STORE 5190,5198,5200:5201,5203,5215:5216,5222:5223,5230:5232,5242:5244,5257,5262:5282,5284:5285,5292:5320,5334,5338:5364,5371,5373,5375,5379:5403,5405,5408:5436,5441,5446,5449,5452,5455:5456,5458,5461,5471,5473:5474,5476,5479,5481,5483,5487:5488,5492,5494:5496,5503:5527,5532,5540:5541,5546,5548,5551,5553:5577,5579,5588,5599 +FLAGS.SILENT (\Deleted)
+S (17): 1084 OK UID STORE completed
+C (17): 1085 EXPUNGE
+S (17): 1085 OK EXPUNGE completed
+1724 messages moved from fx.schulz@gmx.de@imap.gmx.net/INBOX to fx.schulz@gmx.de@imap.gmx.net/Archiv.
+C (17): 1086 LOGOUT
+S (17): 1086 OK LOGOUT completed
+C (16): 1087 LOGOUT
+S (16): 1087 OK LOGOUT completed.
+C (15): 1088 LOGOUT
+S (15): 1088 OK Logout completed.
+C (14): 1089 LOGOUT
+S (14): 1089 OK 73 good day (Success)
+C (13): 108A LOGOUT
+S (13): 108A OK 73 good day (Success)
+C (12): 108B LOGOUT
+S (12): 108B OK 73 good day (Success)
+C (11): 108C LOGOUT
+S (11): 108C OK 73 good day (Success)
+C (10): 108D LOGOUT
+S (10): 108D OK 73 good day (Success)
+C (9): 108E LOGOUT
+S (9): 108E OK 73 good day (Success) [THROTTLED]
+C (8): 108F LOGOUT
+S (8): 108F OK 73 good day (Success)
+C (7): 1090 LOGOUT
+S (7): 1090 OK 73 good day (Success)
+C (6): 1091 LOGOUT
+S (6): 1091 OK 73 good day (Success)
+C (5): 1092 LOGOUT
+S (5): 1092 OK 73 good day (Success) [THROTTLED]
+C (4): 1093 LOGOUT
+S (4): 1093 OK 73 good day (Success)
+C (3): 1094 LOGOUT
+S (3): 1094 OK 73 good day (Success)

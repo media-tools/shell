@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{F03A89B1-EEC4-4121-A6DB-61F729BED16B}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Shell.MailSync</RootNamespace>
+    <AssemblyName>Shell.Tasks.MailSync</AssemblyName>
+    <ReleaseVersion>0.5</ReleaseVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Externalconsole>true</Externalconsole>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>full</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Externalconsole>true</Externalconsole>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Security" />
+    <Reference Include="BouncyCastle">
+      <HintPath>..\packages\MimeKit.1.0.6.1\lib\net45\BouncyCastle.dll</HintPath>
+    </Reference>
+    <Reference Include="MimeKit">
+      <HintPath>..\packages\MimeKit.1.0.6.1\lib\net45\MimeKit.dll</HintPath>
+    </Reference>
+    <Reference Include="MailKit">
+      <HintPath>..\packages\MailKit.1.0.6.1\lib\net45\MailKit.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Shell.MailSync\Account.cs" />
+    <Compile Include="Shell.MailSync\GoogleAccount.cs" />
+    <Compile Include="Shell.MailSync\Channel.cs" />
+    <Compile Include="Shell.MailSync\MailLibrary.cs" />
+    <Compile Include="Shell.MailSync\MailSyncLibrary.cs" />
+    <Compile Include="Shell.MailSync\MessageList.cs" />
+    <Compile Include="Shell.MailSync\ImapClientWrapper.cs" />
+    <Compile Include="Shell.MailSync\ImapFolderWrapper.cs" />
+    <Compile Include="Shell.MailSync\RelayException.cs" />
+    <Compile Include="Shell.MailSync\TriedTooOftenException.cs" />
+    <Compile Include="Shell.MailSync\MailTask.cs" />
+    <Compile Include="Shell.MailSync\NamespaceMail.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <Folder Include="Shell.MailSync\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Shell.Common\Shell.Common.csproj">
+      <Project>{CBB5DE48-A305-4F9C-88F3-F0F071AC3298}</Project>
+      <Name>Shell.Common</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,9 @@
+[submodule "ThirdParty/LibJpeg.Net"]
+	path = ThirdParty/LibJpeg.Net
+	url = https://github.com/media-tools/LibJpeg.Net.git
+[submodule "ThirdParty/sqlite-net"]
+	path = ThirdParty/sqlite-net
+	url = https://github.com/media-tools/sqlite-net.git
+[submodule "ThirdParty/sqlite-net-extensions"]
+	path = ThirdParty/sqlite-net-extensions
+	url = https://github.com/media-tools/sqlite-net-extensions.git

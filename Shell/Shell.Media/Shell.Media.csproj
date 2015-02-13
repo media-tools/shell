@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{F2C117FF-E1E9-4512-BECB-CBEBBA7FAB05}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Shell.Media</RootNamespace>
+    <AssemblyName>Shell.Tasks.Media</AssemblyName>
+    <ReleaseVersion>0.5</ReleaseVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>full</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Shell.Media\MediaShare.cs" />
+    <Compile Include="Shell.Media\MediaShareManager.cs" />
+    <Compile Include="Shell.Media\MediaTask.cs" />
+    <Compile Include="Shell.Media\Content\Audio.cs" />
+    <Compile Include="Shell.Media\Content\Document.cs" />
+    <Compile Include="Shell.Media\Content\Picture.cs" />
+    <Compile Include="Shell.Media\Content\Video.cs" />
+    <Compile Include="Shell.Media\Files\MediaFileLibrary.cs" />
+    <Compile Include="Shell.Media\Database\Album.cs" />
+    <Compile Include="Shell.Media\Web\IWebAlbum.cs" />
+    <Compile Include="Shell.Media\NamespaceMedia.cs" />
+    <Compile Include="Shell.Media\Videos\ActionCamVideo.cs" />
+    <Compile Include="Shell.Media\Videos\VideoTask.cs" />
+    <Compile Include="Shell.Media\Videos\VideoUtilities.cs" />
+    <Compile Include="Shell.Media\Videos\ActionCamUtilities.cs" />
+    <Compile Include="Shell.Media\Files\NamingUtilities.cs" />
+    <Compile Include="Shell.Media\MediaShareUtilities.cs" />
+    <Compile Include="Shell.Media\Pictures\ImageResizeUtilities.cs" />
+    <Compile Include="Shell.Media\Pictures\PhotoSyncUtilities.cs" />
+    <Compile Include="Shell.Media\Pictures\PictureDeduplication.cs" />
+    <Compile Include="Shell.Media\Database\MediaDatabase.cs" />
+    <Compile Include="Shell.Media\Database\SqliteExtensions.cs" />
+    <Compile Include="Shell.Media\Pictures\ExifTag.cs" />
+    <Compile Include="Shell.Media\Pictures\PictureLibrary.cs" />
+    <Compile Include="Shell.Media\Videos\VideoLibrary.cs" />
+    <Compile Include="Shell.Media\Files\FileHooks.cs" />
+    <Compile Include="Shell.Media\Files\MediaFile.cs" />
+    <Compile Include="Shell.Media\Files\MediaFileInAlbum.cs" />
+    <Compile Include="Shell.Media\Database\IDatabaseAware.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <ProjectReference Include="..\Shell.Common\Shell.Common.csproj">
+      <Project>{CBB5DE48-A305-4F9C-88F3-F0F071AC3298}</Project>
+      <Name>Shell.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Shell.Common.Shares\Shell.Common.Shares.csproj">
+      <Project>{C58D63FE-50CC-4EA7-98AA-AE7EBC5B8330}</Project>
+      <Name>Shell.Common.Shares</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\ThirdParty\LibJpeg.Net\LibJpeg\LibJpeg.csproj">
+      <Project>{7300CDF5-1C93-4611-8CC9-47FE79F340AB}</Project>
+      <Name>LibJpeg</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\ThirdParty\sqlite-net\src\SQLiteNet-Mono.csproj">
+      <Project>{EAF7E19F-DAD2-4767-88EC-C6D6C484BC03}</Project>
+      <Name>SQLiteNet-Mono</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="exiftool.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Shell.Media\" />
+    <Folder Include="Shell.Media\Database\" />
+    <Folder Include="Shell.Media\Web\" />
+    <Folder Include="Shell.Media\Videos\" />
+    <Folder Include="Shell.Media\Pictures\" />
+  </ItemGroup>
+</Project>

@@ -26,12 +26,12 @@ namespace Shell.Media.Videos
 
         private Random random = new Random ();
 
-        public bool EncodeMatroska (string fullPath, out string outputPath, VideoEncoding encoding, int crf = -1)
+        public bool EncodeMatroska (string fullPath, out string outputPath, VideoEncoding encoding, int crf, int scaleX, int scaleY)
         {
             string oldFullPath = fullPath;
             string newFullPath = Path.GetDirectoryName (fullPath) + Path.DirectorySeparatorChar + Path.GetFileNameWithoutExtension (fullPath) + ".mkv";
 
-            if (EncodeMatroska (sourceFullPath: oldFullPath, destinationFullPath: newFullPath, encoding: encoding, crf: crf)) {
+            if (EncodeMatroska (sourceFullPath: oldFullPath, destinationFullPath: newFullPath, encoding: encoding, crf: crf, scaleX: scaleX, scaleY: scaleY)) {
                 outputPath = newFullPath;
             } else {
                 outputPath = null;
@@ -40,17 +40,19 @@ namespace Shell.Media.Videos
             return outputPath != null;
         }
 
-        public bool EncodeMatroska (string sourceFullPath, string destinationFullPath, VideoEncoding encoding, int crf = -1)
+        public bool EncodeMatroska (string sourceFullPath, string destinationFullPath, VideoEncoding encoding, int crf, int scaleX, int scaleY)
         {
             try {
                 if (!File.Exists (destinationFullPath)) {
-                    string ffmpegCommand = "x265-ffmpeg";
+                    const string ffmpegCommand = "x265-ffmpeg";
                     string ffmpegParams = string.Empty;
+
+                    string scaling = scaleX > 0 || scaleY > 0 ? string.Format (" -vf \"scale={0}:{1}\" ", scaleX, scaleY) : " ";
 
                     switch (encoding) {
                     case VideoEncoding.H265:
                         //ffmpegParams = " -c:v hevc -c:a libfaac -preset veryslow -strict experimental -pix_fmt yuv420p ";
-                        ffmpegParams = " -c:a libfdk_aac -b:a 256k -c:v hevc -preset veryslow -strict experimental -pix_fmt yuv420p ";
+                        ffmpegParams = " -c:a libfdk_aac -b:a 256k -c:v hevc -preset veryslow -strict experimental -pix_fmt yuv420p " + scaling;
                         break;
 
                     case VideoEncoding.H264:
@@ -59,7 +61,7 @@ namespace Shell.Media.Videos
                             crf = oldFileSize < 50 * 1000000 ? 22 : 25;
                         }
                         //ffmpegParams = " -c:v libx264 -preset veryslow -crf " + crf + " -strict experimental -pix_fmt yuv420p ";
-                        ffmpegParams = " -c:a libfdk_aac -b:a 256k -c:v libx264 -preset veryslow -crf " + crf + " -strict experimental -pix_fmt yuv420p ";
+                        ffmpegParams = " -c:a libfdk_aac -b:a 256k -c:v libx264 -preset veryslow -crf " + crf + " -strict experimental -threads 6 -pix_fmt yuv420p " + scaling;
                         break;
 
                     case VideoEncoding.COPY:
@@ -97,6 +99,13 @@ namespace Shell.Media.Videos
                         Log.Error ("New video files exists and the old one doesn't; let's assume it worked!");
                         success = true;
                     }
+
+                    string sourceSubtitles = sourceFullPath.Replace (".mkv", ".srt");
+                    string destinationSubtitles = destinationFullPath.Replace (".mkv", ".srt");
+                    if (success && File.Exists (sourceSubtitles) && !File.Exists (destinationSubtitles)) {
+                        Log.Message ("Move subtitles too: ", sourceSubtitles, " => ", destinationSubtitles);
+                        File.Move (sourceSubtitles, destinationSubtitles);
+                    }
                     
                     return success;
                 }
@@ -116,7 +125,7 @@ namespace Shell.Media.Videos
                 long originalFileSize = new FileInfo (fullPath).Length;
 
                 if (!oldFullPath.Contains ("-splitted") && !File.Exists (firstPart)) {
-                    int partSize = 1024 * 1024 * 80;
+                    const int partSize = 1024 * 1024 * 80;
                     string script = "LC_ALL=C mkvmerge --split size:" + partSize + " --compression 0:none --compression 1:none --clusters-in-meta-seek -o "
                                     + newFullPathTemplate.SingleQuoteShell () + " "
                                     + oldFullPath.SingleQuoteShell () + " && " +

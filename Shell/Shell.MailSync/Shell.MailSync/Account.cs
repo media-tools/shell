@@ -46,7 +46,7 @@ namespace Shell.MailSync
 
         public void ConnectAndAuthenticate (ImapClient client)
         {
-            client.Connect (hostName: Hostname, port: 993, useSsl: true);
+            client.Connect (host: Hostname, port: 993, useSsl: true);
             client.AuthenticationMechanisms.Remove ("XOAUTH");
             client.Authenticate (userName: Username, password: Password);
         }

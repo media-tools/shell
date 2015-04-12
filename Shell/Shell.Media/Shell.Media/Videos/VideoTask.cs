@@ -38,6 +38,7 @@ namespace Shell.Media.Videos
         VideoEncoding? encoding;
         int? crf;
         bool dryRun = false;
+        int scaleX = -1, scaleY = -1;
 
         protected override void SetupOptions (ref OptionSet optionSet)
         {
@@ -60,6 +61,28 @@ namespace Shell.Media.Videos
                     } else {
                         Log.Error ("Invalid CRF: ", option);
                         crf = -1;
+                    }
+                })
+                .Add ("scale-width=",
+                "Scale to the specified width",
+                option => {
+                    int _val;
+                    if (int.TryParse (option, out _val) && _val > 0) {
+                        scaleX = _val;
+                    } else {
+                        Log.Error ("Invalid scale width: ", option);
+                        scaleX = -1;
+                    }
+                })
+                .Add ("scale-height=",
+                "Scale to the specified height",
+                option => {
+                    int _val;
+                    if (int.TryParse (option, out _val) && _val > 0) {
+                        scaleY = _val;
+                    } else {
+                        Log.Error ("Invalid scale height: ", option);
+                        scaleY = -1;
                     }
                 })
                 .Add ("dry-run",
@@ -100,7 +123,7 @@ namespace Shell.Media.Videos
             }
 
             VideoUtilities acu = new VideoUtilities ();
-            acu.VideoEncodeDirectory (directories: _directories, encoding: encoding.Value, crf: crf.Value, dryRun: dryRun);
+            acu.VideoEncodeDirectory (directories: _directories, encoding: encoding.Value, crf: crf.Value, dryRun: dryRun, scaleX: scaleX, scaleY: scaleY);
         }
     }
 }

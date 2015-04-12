@@ -79,7 +79,7 @@ namespace Shell.Media.Videos
                         Log.Indent++;
 
                         string newPath;
-                        if (VideoLibrary.Instance.EncodeMatroska (fullPath: video.FullPath, outputPath: out newPath, encoding: VideoEncoding.COPY)) {
+                        if (VideoLibrary.Instance.EncodeMatroska (fullPath: video.FullPath, outputPath: out newPath, encoding: VideoEncoding.COPY, crf: -1, scaleX: -1, scaleY: -1)) {
                             string newPathRaw = NamingUtilities.MakeRawFilename (newPath);
                             File.Move (newPath, newPathRaw);
                             video.FullPath = newPathRaw;

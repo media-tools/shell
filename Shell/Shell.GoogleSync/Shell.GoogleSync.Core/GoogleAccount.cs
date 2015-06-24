@@ -141,6 +141,7 @@ namespace Shell.GoogleSync.Core
             if (success) {
                 token = credential.Token;
                 AccessToken = token.AccessToken;
+                Log.Debug ("Refresh successful: ", AccessToken);
                 return true;
             } else {
                 Log.Error ("Refresh failed: ", this);

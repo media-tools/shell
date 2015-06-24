@@ -65,7 +65,11 @@ namespace Shell.GoogleSync.Contacts
         public static bool IsIncludedInSynchronisation (this Contact contact)
         {
             return (from name in Contacts.IncludeNames
-                             where contact.Name.FullName != null && contact.Name.FullName.ToLower ().Contains (name.ToLower ())
+                             where contact.Name.FullName != null && contact.Name.FullName.Length > 1 && (
+                                     name.StartsWith ("^") ? contact.Name.FullName.ToLower ().StartsWith (name.Substring (1).ToLower ())
+                                        : name.EndsWith ("$") ? contact.Name.FullName.ToLower ().EndsWith (name.Substring (0, name.Length - 1).ToLower ())
+                                        : contact.Name.FullName.ToLower ().Contains (name.ToLower ())
+                                 )
                              select name).Any ();
         }
 

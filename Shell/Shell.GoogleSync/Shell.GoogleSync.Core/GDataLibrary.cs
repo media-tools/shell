@@ -71,10 +71,21 @@ namespace Shell.GoogleSync.Core
         public void CatchErrors (Action todo)
         {
             string dummy;
-            CatchErrors (todo: todo, errorMessage: out dummy, catchAllExceptions: false, retryTimes: 1);
+            CatchErrors (todo: todo, errorMessage: out dummy, catchAllExceptions: false, retryTimes: 1, afterRefresh: null);
+        }
+
+        public void CatchErrors (Action todo, Action afterRefresh)
+        {
+            string dummy;
+            CatchErrors (todo: todo, errorMessage: out dummy, catchAllExceptions: false, retryTimes: 1, afterRefresh: afterRefresh);
         }
 
         public void CatchErrors (Action todo, out string errorMessage, bool catchAllExceptions, int retryTimes)
+        {
+            CatchErrors (todo: todo, errorMessage: out errorMessage, catchAllExceptions: catchAllExceptions, retryTimes: retryTimes, afterRefresh: null);
+        }
+
+        public void CatchErrors (Action todo, out string errorMessage, bool catchAllExceptions, int retryTimes, Action afterRefresh)
         {
             int triesLeft = retryTimes;
             do {
@@ -90,7 +101,11 @@ namespace Shell.GoogleSync.Core
                         Log.Error ("GDataRequestException: ", ex.ResponseString);
                         Log.Error (ex);
                         if (ex.ResponseString.Contains ("Token invalid")) {
+                            Log.Error ("Refresh Account!");
                             RefreshAccount ();
+                            if (afterRefresh != null) {
+                                afterRefresh ();
+                            }
                         }
                         // Log.Error (ex);
                     }

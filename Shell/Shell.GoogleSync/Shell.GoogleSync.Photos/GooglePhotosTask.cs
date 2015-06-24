@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Core.IO;
 using Mono.Options;
+using Newtonsoft.Json;
 using Shell.Common.IO;
 using Shell.Common.Tasks;
 using Shell.Common.Util;
@@ -26,6 +28,7 @@ namespace Shell.GoogleSync.Photos
                 "Print the local albums of the specified user",
                 "Print the web albums of the specified user",
                 "Print the photos in the specified web album.",
+                "Print the photos in the specified web album (JSON export).",
                 "Upload local photos and videos",
                 "Download photos und videos from auto backup that are not in any local album"
             };
@@ -35,17 +38,19 @@ namespace Shell.GoogleSync.Photos
                 "list-local-albums",
                 "list-web-albums",
                 "list-web-photos",
+                "json-web-photos",
                 "upload",
                 "download-auto-backup",
             };
             Methods = new Action[] {
-                () => findShares (),
-                () => listShares (),
-                () => listLocalAlbums (),
-                () => listWebAlbums (),
-                () => listWebPhotos (),
-                () => upload (),
-                () => downloadAutoBackup (),
+                findShares,
+                listShares,
+                listLocalAlbums,
+                listWebAlbums,
+                listWebPhotos,
+                jsonWebPhotos,
+                upload,
+                downloadAutoBackup,
             };
         }
 
@@ -115,6 +120,48 @@ namespace Shell.GoogleSync.Photos
                     }
                     Log.Indent--;
                 }
+            }
+        }
+
+        void jsonWebPhotos ()
+        {
+            GoogleAccount[] accs = GoogleAccount.List ().Where (googleUserFilter.Matches).ToArray ();
+
+            if (accs.Count () != 1) {
+                Log.Message ("Json can only be exported for ONE google account at a time!");
+                return;
+            }
+
+            GoogleAccount acc = accs.First ();
+            acc.Refresh ();
+
+            JsonAlbumCollection jsonAlbums = new JsonAlbumCollection ();
+            AlbumCollection albums = new AlbumCollection (account: acc);
+            foreach (WebAlbum album in albums.GetAlbums()) {
+                if (albumFilter.Matches (album)) {
+                    JsonAlbumCollection.JsonAlbum jsonAlbum = new JsonAlbumCollection.JsonAlbum {
+                        Title = album.Title,
+                        Photos = album.JsonPhotos ()
+                    };
+                    jsonAlbums.Albums [jsonAlbum.Title] = jsonAlbum;
+                }
+            }
+            Console.WriteLine (PortableConfigHelper.WriteConfig (jsonAlbums));
+        }
+
+        public class JsonAlbumCollection
+        {
+
+            [JsonProperty ("albums")]
+            public Dictionary<string, JsonAlbum> Albums { get; set; } = new Dictionary<string, JsonAlbum>();
+
+            public class JsonAlbum
+            {
+                [JsonProperty ("album_title")]
+                public string Title { get; set; } = "";
+
+                [JsonProperty ("photos")]
+                public WebAlbum.JsonPhoto[] Photos { get; set; } = new WebAlbum.JsonPhoto[0];
             }
         }
 

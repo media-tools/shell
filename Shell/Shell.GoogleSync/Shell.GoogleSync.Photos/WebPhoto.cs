@@ -34,6 +34,8 @@ namespace Shell.GoogleSync.Photos
 
         public string FilenameForDownload { get; private set; }
 
+        public string FilenameForDownloadWithoutExtension { get; private set; }
+
         public string MimeType { get; private set; }
 
         public string DownloadUrl { get; private set; }
@@ -135,6 +137,7 @@ namespace Shell.GoogleSync.Photos
             //    Log.Debug (internalPhoto.PhotoUri);
             //}
 
+            FilenameForDownloadWithoutExtension = Path.GetFileNameWithoutExtension (FilenameForDownload);
         }
 
         //private static string patternImgWa = "IMG-((?:19|20)[0-9]{2})([0-9]{2})([0-9]{2})-WA";

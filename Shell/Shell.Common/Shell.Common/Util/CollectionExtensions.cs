@@ -52,6 +52,14 @@ namespace Shell.Common.Util
             return result.ToString ();
         }
 
+        private static HashSet<string> lowercaseWords = new HashSet<string> {
+            "von",
+            "zu",
+            "der",
+            "die",
+            "das",
+        };
+
         public static string FormatName (this string text)
         {
             if (string.IsNullOrWhiteSpace (text))
@@ -69,7 +77,8 @@ namespace Shell.Common.Util
                 }
             }
 
-            result = string.Join (" ", result.Split (new []{ " " }, StringSplitOptions.RemoveEmptyEntries).Select (word => word.ToUpperFirst ()));
+            result = string.Join (" ", result.Split (new []{ " " }, StringSplitOptions.RemoveEmptyEntries)
+                .Select (word => lowercaseWords.Contains (word.ToLower ()) ? word.ToLower () : word.ToUpperFirst ()));
 
             return result.ToString ();
         }

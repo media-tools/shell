@@ -598,24 +598,43 @@ namespace Shell.GoogleSync.Photos
 
             Dictionary<WebAlbum, WebPhoto[]> webAlbumsUnindexed = webAlbums.ToDictionary (entry => entry.Key, entry => entry.Value);
 
-            foreach (MediaShare share in shares) {
-                foreach (Album localAlbum in share.Database.Albums) {
+            bool stop = false;
+
+            Random r = new Random ();
+            foreach (MediaShare share in shares.Where(s=>s.ConfigPath.Contains("Cloud/Bilder"))) {
+                if (stop)
+                    break;
+                
+                foreach (Album localAlbum in share.Database.Albums
+                    .OrderBy(x => r.Next())) {
+                    if (stop)
+                        break;
+                    
+                    //.Where(a=>a.Path.Contains("Auto Backup")||a.Path.Contains("Reisen")||a.Path.Contains("2015")||a.Path.Contains("2014")||a.Path.Contains("ortier"))) {
                     if (PhotoSyncUtilities.IsIncludedInSync (localAlbum)) {
 
                         foreach (WebAlbum webAlbum in webAlbumsUnindexed.Keys.ToArray()) {
+                            if (stop)
+                                break;
+                            
                             WebPhoto[] allWebFiles = webAlbumsUnindexed [webAlbum];
+
+                            Log.Message ("- look for indexed files: ", localAlbum, " (local) <=> ", webAlbum, " (web)");
 
                             // only those files which are not in the local album are unindexed!
                             AlbumSyncStatus syncStatus = new AlbumSyncStatus (localAlbum: localAlbum, webAlbum: webAlbum, webFiles: allWebFiles,
-                                                             requireStrictFilenames: true, acceptDifferentExtensions: true);
+                                                             requireStrictFilenames: false, acceptDifferentExtensions: true);
                             WebPhoto[] unindexedWebFiles = syncStatus.FilesOnlyInWebAlbum;
 
                             webAlbumsUnindexed [webAlbum] = unindexedWebFiles;
 
                             if (deletableWebAlbums.Matches (webAlbum)) {
                                 foreach (WebPhoto webFile in allWebFiles.Except(unindexedWebFiles)) {
+                                    if (stop)
+                                        break;
+                                    
                                     Log.Message ("- [", share.Name, "] [", localAlbum.Path, "] contains: ", webFile.FilenameForDownload, " aka ", webFile.Filename);
-                                    CatchErrors (() => webFile.Delete ());
+                                    CatchErrors (todo: webFile.Delete, afterRefresh: () => stop = true);
                                 }
                             }
                         }
@@ -639,7 +658,7 @@ namespace Shell.GoogleSync.Photos
 
             Log.Indent--;
 
-            return webAlbumsUnindexed;
+            return stop ? null : webAlbumsUnindexed;
         }
 
         public void DownloadFiles (string localDirectory, WebPhoto[] webFiles)
@@ -734,26 +753,29 @@ namespace Shell.GoogleSync.Photos
             // only delete stuff in the "Auto Backup" album, not in the "Hangouts:"-Albums !!
             Dictionary<WebAlbum, WebPhoto[]> webAlbumsUnindexed = FilterLocallyUnindexedFiles (shares: allShares, webAlbums: webAlbums, deletableWebAlbums: deletableWebAlbums);
 
+            // if no access token errors occurred
+            if (webAlbumsUnindexed != null) {
 
-            // compare local and web albums...
-            Log.Message ("Download locally unindexed files:");
-            Log.Indent++;
+                // compare local and web albums...
+                Log.Message ("Download locally unindexed files:");
+                Log.Indent++;
 
-            // download all locally unindexed files!
-            foreach (WebAlbum webAlbum in webAlbumsUnindexed.Keys) {
-                for (int year = 1971; year < 2050; ++year) {
-                    WebPhoto[] photosFromThatYear = webAlbumsUnindexed [webAlbum].Where (f => f.Timestamp.IsInYear (year)).ToArray ();
-                    if (photosFromThatYear.Length > 0) {
-                        string albumName = share.SpecialAlbumPrefix + PhotoSyncUtilities.SPECIAL_ALBUM_AUTO_BACKUP + " " + year;
-                        Log.Message ("Album: [", albumName, "] (Year: ", year, ")");
-                        Log.Indent++;
-                        DownloadFiles (localDirectory: Path.Combine (share.RootDirectory, albumName), webFiles: photosFromThatYear);
-                        Log.Indent--;
+                // download all locally unindexed files!
+                foreach (WebAlbum webAlbum in webAlbumsUnindexed.Keys) {
+                    for (int year = 1971; year < 2050; ++year) {
+                        WebPhoto[] photosFromThatYear = webAlbumsUnindexed [webAlbum].Where (f => f.Timestamp.IsInYear (year)).ToArray ();
+                        if (photosFromThatYear.Length > 0) {
+                            string albumName = share.SpecialAlbumPrefix + PhotoSyncUtilities.SPECIAL_ALBUM_AUTO_BACKUP + " " + year;
+                            Log.Message ("Album: [", albumName, "] (Year: ", year, ")");
+                            Log.Indent++;
+                            DownloadFiles (localDirectory: Path.Combine (share.RootDirectory, albumName), webFiles: photosFromThatYear);
+                            Log.Indent--;
+                        }
                     }
                 }
-            }
 
-            Log.Indent--;
+                Log.Indent--;
+            }
         }
     }
 }

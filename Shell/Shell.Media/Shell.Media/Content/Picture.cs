@@ -5,7 +5,8 @@ using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using BitMiracle.LibJpeg;
+
+//using BitMiracle.LibJpeg;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Shell.Common.IO;
@@ -14,6 +15,7 @@ using Shell.Media.Database;
 using Shell.Media.Files;
 using Shell.Media.Pictures;
 using SQLite;
+using BitMiracle.LibJpeg;
 
 namespace Shell.Media.Content
 {

@@ -172,8 +172,11 @@ namespace Shell.GoogleSync.Contacts
         {
             IEnumerable<GoogleAccount> accounts = GoogleAccount.List ();
             accounts.ForEach (acc => acc.Refresh ());
+
             IEnumerable<GoogleAccount> masters = accounts.Where (acc => acc.IsMasterAccount ());
             IEnumerable<GoogleAccount> slaves = accounts.Where (acc => acc.IsSlaveAccount ());
+
+
             if (!accounts.Any ()) {
                 Log.Error ("There are no accounts.");
             } else if (!masters.Any ()) {
@@ -185,6 +188,7 @@ namespace Shell.GoogleSync.Contacts
                     foreach (GoogleAccount slave in slaves) {
                         Contacts masterContacts = new Contacts (account: master);
                         Contacts slaveContacts = new Contacts (account: slave);
+                        slaveContacts.Deduplicate ();
                         masterContacts.SyncTo (otherContacts: slaveContacts);
                     }
                 }

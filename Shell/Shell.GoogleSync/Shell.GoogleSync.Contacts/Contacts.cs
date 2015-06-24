@@ -96,6 +96,7 @@ namespace Shell.GoogleSync.Contacts
         public void PrintAllContacts ()
         {
             CatchErrors (() => {
+                // Analysis disable once ConvertToLambdaExpression
                 Log.Message (ContactList.ToStringTable (
                     c => c.IsIncludedInSynchronisation () ? (account.IsMasterAccount () ? LogColor.DarkYellow : LogColor.DarkCyan) : LogColor.Reset,
                     new[] { "Full Name", "E-Mail Address", "Phone", "Role" },
@@ -107,6 +108,29 @@ namespace Shell.GoogleSync.Contacts
             });
         }
 
+        public void Deduplicate ()
+        {
+            Log.Message ("Deduplicate contacts: ", account);
+            Log.Indent++;
+            CatchErrors (() => {
+                HashSet<string> names = new HashSet<string> ();
+                foreach (Contact masterContact in ContactList.ToArray()) {
+                    Log.Message ("Contact: ", masterContact);
+                    Log.Indent++;
+
+                    if (names.Contains (masterContact.Name.FullName)) {
+                        Log.Message ("delete!");
+                        DeleteContact (masterContact);
+                    } else {
+                        names.Add (masterContact.Name.FullName);
+                    }
+
+                    Log.Indent--;
+                }
+            });
+            Log.Indent--;
+        }
+
         public void SyncTo (Contacts otherContacts)
         {
             Log.Message ("Synchronizing contacts: ", account, " => ", otherContacts.account);
@@ -115,15 +139,17 @@ namespace Shell.GoogleSync.Contacts
                 Contact[] masterContacts = (from c in ContactList
                                                         where c.IsIncludedInSynchronisation ()
                                                         select c).ToArray ();
-
+                
                 foreach (Contact masterContact in masterContacts) {
                     Log.Message ("Contact: ", masterContact);
                     Log.Indent++;
 
-                    Contact slaveContact;
-                    if (otherContacts.FindContact (checkFor: masterContact, result: out slaveContact)) {
-                        Log.Message ("Update contact: ", slaveContact);
-                        otherContacts.UpdateContact (slave: slaveContact, master: masterContact, masterList: this);
+                    Contact[] slaveContacts = otherContacts.FindContact (checkFor: masterContact).ToArray ();
+                    if (slaveContacts.Length > 0) {
+                        foreach (Contact slaveContact in slaveContacts) {
+                            Log.Message ("Update contact: ", slaveContact);
+                            otherContacts.UpdateContact (slave: slaveContact, master: masterContact, masterList: this);
+                        }
                     } else {
                         Log.Message ("Create contact.");
                         otherContacts.CreateContact (template: masterContact, templateList: this);
@@ -200,6 +226,7 @@ namespace Shell.GoogleSync.Contacts
                     }
                 }
             }
+            
 
             GDataContactExtensions.Merge (slave.ContactEntry.Relations, master.ContactEntry.Relations, r => r.Value);
             slave.ContactEntry.Websites.Clear ();
@@ -286,30 +313,25 @@ namespace Shell.GoogleSync.Contacts
 
         public bool HasContact (Contact checkFor)
         {
-            Contact dummy;
-            return FindContact (checkFor: checkFor, result: out dummy);
+            return FindContact (checkFor: checkFor).Any ();
         }
 
-        public bool FindContact (Contact checkFor, out Contact result)
+        public IEnumerable<Contact> FindContact (Contact checkFor)
         {
             foreach (Contact contact in ContactList) {
                 if (contact.Name.FullName.ToLower ().RemoveNonAlphanumeric () == checkFor.Name.FullName.ToLower ().RemoveNonAlphanumeric ()) {
-                    result = contact;
-                    return true;
+                    yield return contact;
                 }
             }
             foreach (Contact contact in ContactList) {
                 foreach (EMail email1 in contact.Emails) {
                     foreach (EMail email2 in checkFor.Emails) {
                         if (email1.Address == email2.Address) {
-                            result = contact;
-                            return true;
+                            yield return contact;
                         }
                     }
                 }
             }
-            result = null;
-            return false;
         }
 
         public void CleanContacts ()
@@ -317,11 +339,14 @@ namespace Shell.GoogleSync.Contacts
             Log.Message ("Cleaning contacts: ", account);
             Log.Indent++;
             CatchErrors (() => {
+                
                 foreach (Contact contact in ContactList) {
                     Log.Message ("Contact: ", contact);
                     Log.Indent++;
 
                     CleanContact (contact: contact);
+
+                    contact.Name.FullName = (contact.Name.GivenName + " " + contact.Name.FamilyName).Trim ();
 
                     Log.Indent--;
                 }
@@ -354,30 +379,40 @@ namespace Shell.GoogleSync.Contacts
             Log.Debug ("PostalAddresses:", string.Join ("; ", contact.PostalAddresses.Select (a => a.Format ())));
 
 
-            if (string.Join (", ", contact.Emails.Select (e => e.Address)).Contains ("tobias.schulz.games")
+            if (string.Join (", ", contact.Emails.Select (e => e.Address)).Contains ("tobias.schulz.")
                 || (contact.Name.FullName.ToLower ().Contains ("tobias") && !contact.Name.FullName.ToLower ().Contains ("schulz"))) {
                 Log.Error ("Delete odd contact!!!");
                 //ContactsRequest cr = new ContactsRequest (settings);
                 //cr.Delete (contact);
 
-                contact.Name.FullName = "Unknown";
-                contact.Name.GivenName = "Unknown";
-                contact.Name.FamilyName = "";
-                contact.Name.NamePrefix = "";
-                contact.Name.NameSuffix = "";
-                contact.Name.AdditionalName = "";
-                contact.Emails.Clear ();
-                contact.Organizations.Clear ();
-                contact.Languages.Clear ();
-                contact.IMs.Clear ();
-                contact.Phonenumbers.Clear ();
-                contact.PostalAddresses.Clear ();
-                contact.ContactEntry.Relations.Clear ();
-                contact.ContactEntry.Websites.Clear ();
-                contact.ContactEntry.Nickname = "";
-                contact.ContactEntry.ShortName = "";
+                DeleteContact (contact);
             }
 
+
+            CatchErrors (() => {
+                ContactsRequest cr = new ContactsRequest (settings);
+                cr.Update (contact);
+            });
+        }
+
+        void DeleteContact (Contact contact)
+        {
+            contact.Name.FullName = "Unknown";
+            contact.Name.GivenName = "Unknown";
+            contact.Name.FamilyName = "";
+            contact.Name.NamePrefix = "";
+            contact.Name.NameSuffix = "";
+            contact.Name.AdditionalName = "";
+            contact.Emails.Clear ();
+            contact.Organizations.Clear ();
+            contact.Languages.Clear ();
+            contact.IMs.Clear ();
+            contact.Phonenumbers.Clear ();
+            contact.PostalAddresses.Clear ();
+            contact.ContactEntry.Relations.Clear ();
+            contact.ContactEntry.Websites.Clear ();
+            contact.ContactEntry.Nickname = "";
+            contact.ContactEntry.ShortName = "";
 
             CatchErrors (() => {
                 ContactsRequest cr = new ContactsRequest (settings);

@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using Google.GData.Photos;
 using Google.Picasa;
+using Newtonsoft.Json;
 using Shell.Common.IO;
 using Shell.Common.Util;
-using System.Collections.Generic;
+using Core.Math;
+using System.Linq;
 
 namespace Shell.GoogleSync.Photos
 {
@@ -39,13 +42,47 @@ namespace Shell.GoogleSync.Photos
 
             Log.Message (result.WebFiles.ToStringTable (
                 p => LogColor.Reset,
-                new[] { "Filename for Download", "Filename", "Id", "Dimensions", "Timestamp" },
+                new[] { "Filename for Download", "Filename", "Id", "Dimensions", "Timestamp", "Download URL" },
                 p => p.FilenameForDownload,
                 p => p.Filename,
                 p => p.Id,
                 p => p.Dimensions.Width + "x" + p.Dimensions.Height,
-                p => p.Timestamp.ToString ("yyyy-MM-dd HH:mm:ss")
+                p => p.Timestamp.ToString ("yyyy-MM-dd HH:mm:ss"),
+                p => p.DownloadUrl
             ));
+        }
+
+        public JsonPhoto[] JsonPhotos ()
+        {
+            WebPhotoCollection result = AlbumCollection.GetPhotos (album: this, deleteDuplicates: false, holdInternals: false);
+
+            return result.WebFiles.Select (
+                p => new JsonPhoto {
+                    GoogleId = p.Id,
+                    Filenames = new string[] { p.Filename, p.FilenameForDownload },
+                    Width = p.Dimensions.Width,
+                    Height = p.Dimensions.Height,
+                    HostedURL = p.DownloadUrl
+                }
+            ).ToArray ();
+        }
+
+        public class JsonPhoto
+        {
+            [JsonProperty ("google_photos_id")]
+            public string GoogleId { get; set; } = "";
+
+            [JsonProperty ("filenames")]
+            public string[] Filenames { get; set; } = new string[0];
+
+            [JsonProperty ("width")]
+            public int Width { get; set; } = 0;
+
+            [JsonProperty ("height")]
+            public int Height { get; set; } = 0;
+
+            [JsonProperty ("url_hosted")]
+            public string HostedURL { get; set; } = null;
         }
 
         public void Delete (bool verbose = true)

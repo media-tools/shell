@@ -53,7 +53,10 @@ namespace Shell.Media.Files
         public HexString Hash { get; set; }
 
         [Ignore]
-        public string Filename { get { return Path.GetFileName (FullPath); } }
+        public string Filename { get { return Path.GetFileName (RelativePath); } }
+
+        [Ignore]
+        public string FilenameWithoutExtension { get { return Path.GetFileNameWithoutExtension (RelativePath); } }
 
         [Ignore]
         public string Extension { get { return Path.GetExtension (Filename); } }

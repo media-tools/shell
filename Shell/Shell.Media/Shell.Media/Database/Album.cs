@@ -9,7 +9,7 @@ using SQLite;
 
 namespace Shell.Media.Database
 {
-    public class Album : ValueObject<Album>, IFilterable, IDatabaseAware
+    public class Album : Core.Common.ValueObject<Album>, IFilterable, IDatabaseAware
     {
         [PrimaryKey, AutoIncrement]
         public int SqlId { get; set; }
@@ -163,26 +163,6 @@ namespace Shell.Media.Database
         protected override IEnumerable<object> Reflect ()
         {
             return new object[] { Path };
-        }
-
-        public override bool Equals (object obj)
-        {
-            return ValueObject<Album>.Equals (myself: this, obj: obj);
-        }
-
-        public override int GetHashCode ()
-        {
-            return base.GetHashCode ();
-        }
-
-        public static bool operator == (Album a, Album b)
-        {
-            return ValueObject<Album>.Equality (a, b);
-        }
-
-        public static bool operator != (Album a, Album b)
-        {
-            return ValueObject<Album>.Inequality (a, b);
         }
     }
 }

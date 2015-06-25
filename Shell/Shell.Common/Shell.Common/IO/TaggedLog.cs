@@ -30,8 +30,8 @@ namespace Shell.Common.IO
 		public void Message (string tag, params object[] message)
 		{
 			object[] taggedMessage = construstTaggedMessage (tag, message);
-			Log.MessageConsole (taggedMessage);
-			Log.MessageLog (taggedMessage);
+			Log.InfoConsole (taggedMessage);
+			Log.InfoLog (taggedMessage);
 		}
 
 		public void Debug (string tag, params object[] message)

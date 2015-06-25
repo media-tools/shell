@@ -146,7 +146,7 @@ namespace Shell.Media.Content
                 string fileName = Path.GetFileName (FullPath);
                 DateTime date;
                 if (NamingUtilities.GetFileNameDate (fileName: fileName, date: out date)) {
-                    Log.Message ("Index: Set exif date for picture: ", FullPath, " => ", string.Format ("{0:yyyy:MM:dd HH:mm:ss}", date));
+                    Log.Info ("Index: Set exif date for picture: ", FullPath, " => ", string.Format ("{0:yyyy:MM:dd HH:mm:ss}", date));
                     lib.SetExifDate (fullPath: FullPath, date: date);
                     ExifTags = lib.GetExifTags (fullPath: FullPath);
                     IsDateless = false;
@@ -169,7 +169,7 @@ namespace Shell.Media.Content
                             } else {
                                 Log.Error ("Index: Unable to get pixel hash! fullPath=", FullPath);
                             }
-                            Log.Message ("PixelHash: ", PixelHash);
+                            Log.Info ("PixelHash: ", PixelHash);
                         }
                     }
                 } else {
@@ -226,7 +226,7 @@ namespace Shell.Media.Content
             string newPath = Path.GetDirectoryName (oldPath) + SystemInfo.PathSeparator + Path.GetFileNameWithoutExtension (oldPath) + ".jpg";
 
             try {
-                Log.Message ("Convert picture to JPEG: ", Path.GetFileName (oldPath), " => ", Path.GetFileName (newPath), " (quality: ", quality, ")");
+                Log.Info ("Convert picture to JPEG: ", Path.GetFileName (oldPath), " => ", Path.GetFileName (newPath), " (quality: ", quality, ")");
                 Bitmap original = (Bitmap)Image.FromFile (oldPath);
 
                 JpegHelper.Current.Save (image: original, filename: newPath, compression: new CompressionParameters { Quality = quality });
@@ -241,7 +241,7 @@ namespace Shell.Media.Content
                 Log.Error ("NotImplementedException is thrown by BitMiracle.LibJpeg!");
                 Log.Error (ex);
                 try {
-                    Log.Message ("Convert picture to JPEG (using the awful .NET encoder): ", Path.GetFileName (oldPath), " => ", Path.GetFileName (newPath), " (quality: ", quality, ")");
+                    Log.Info ("Convert picture to JPEG (using the awful .NET encoder): ", Path.GetFileName (oldPath), " => ", Path.GetFileName (newPath), " (quality: ", quality, ")");
                     Bitmap original = (Bitmap)Image.FromFile (oldPath);
 
                     EncoderParameters encoderParams = new EncoderParameters (1);

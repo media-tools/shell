@@ -49,20 +49,20 @@ namespace Shell.MailSync
                     if (parts.Length == 4) {
                         Account acc = new GoogleAccount (accountname: parts [1], username: parts [2], password: parts [3]);
                         accounts.Add (acc);
-                        Log.Message ("Found account: ", acc);
+                        Log.Info ("Found account: ", acc);
                     } else {
-                        Log.Message ("Invalid google account in ", ACCOUNTS_CONF, ":", lineNum);
+                        Log.Info ("Invalid google account in ", ACCOUNTS_CONF, ":", lineNum);
                     }
                 } else if (parts.Length >= 1 && parts [0] == "custom") {
                     if (parts.Length == 5) {
                         Account acc = new Account (accountname: parts [1], username: parts [2], password: parts [3], hostname: parts [4]);
                         accounts.Add (acc);
-                        Log.Message ("Found account: ", acc);
+                        Log.Info ("Found account: ", acc);
                     } else {
-                        Log.Message ("Invalid custom account in ", ACCOUNTS_CONF, ":", lineNum);
+                        Log.Info ("Invalid custom account in ", ACCOUNTS_CONF, ":", lineNum);
                     }
                 } else if (parts.Length > 0) {
-                    Log.Message ("Invalid account in ", ACCOUNTS_CONF, ":", lineNum);
+                    Log.Info ("Invalid account in ", ACCOUNTS_CONF, ":", lineNum);
                 }
                 ++lineNum;
             }
@@ -126,7 +126,7 @@ namespace Shell.MailSync
                                 parameters.Remove ("to");
                                 Channel chan = new Channel (accounts: accounts, from: from, to: to, op: op, parameters: parameters);
                                 channels.Add (chan);
-                                Log.Message ("Found channel: ", chan);
+                                Log.Info ("Found channel: ", chan);
                             } else {
                                 throw new ArgumentException ("one of the following parameters is missing: 'from' or 'to' ");
                             }
@@ -139,7 +139,7 @@ namespace Shell.MailSync
                         }
                     }
                 } catch (ArgumentException ex) {
-                    Log.Message ("Invalid channel in ", CHANNELS_CONF, ":", lineNum, ": ", ex.Message);
+                    Log.Info ("Invalid channel in ", CHANNELS_CONF, ":", lineNum, ": ", ex.Message);
                 }
 
                 ++lineNum;

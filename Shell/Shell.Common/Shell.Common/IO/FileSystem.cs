@@ -161,12 +161,12 @@ namespace Shell.Common.IO
                     process.ErrorDataReceived += (sender, e) => actionWrite (sender, e);
                     process.OutputDataReceived += (sender, e) => actionWrite (sender, e);
                     
-                    Log.MessageLog ("Start Process (date='", Commons.DATETIME, "', run='", RootDirectory + SystemInfo.PathSeparator + path, "')");
+                    Log.InfoLog ("Start Process (date='", Commons.DATETIME, "', run='", RootDirectory + SystemInfo.PathSeparator + path, "')");
                     process.Start ();
                     process.BeginOutputReadLine ();
                     process.BeginErrorReadLine ();
                     process.WaitForExit ();
-                    Log.MessageLog ("Stop Process (date='", Commons.DATETIME, "')");
+                    Log.InfoLog ("Stop Process (date='", Commons.DATETIME, "')");
                 }
             } catch (Exception e) {
                 Log.Error (e);

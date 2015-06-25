@@ -40,7 +40,7 @@ namespace Shell.Common.IO
                     File.Move (tempPath, localPath);
                 }
             } catch (Exception ex) {
-                Log.Message ();
+                Log.Info ();
                 Log.Debug ("Error: Download: ", localPath, " <= ", url);
                 Log.Error (ex);
                 success = false;

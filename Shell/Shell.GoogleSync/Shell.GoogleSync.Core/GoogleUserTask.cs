@@ -51,14 +51,14 @@ namespace Shell.GoogleSync.Core
         {
             IEnumerable<GoogleAccount> accounts = GoogleAccount.List ();
             if (accounts.Any ()) {
-                Log.Message (accounts.ToStringTable (
+                Log.Info (accounts.ToStringTable (
                     new[] { "Name", "E-Mail Address", "ID" },
                     acc => acc.DisplayName,
                     acc => acc.Emails,
                     acc => acc.Id
                 ));
             } else {
-                Log.Message ("There are no accounts.");
+                Log.Info ("There are no accounts.");
             }
         }
 
@@ -66,12 +66,12 @@ namespace Shell.GoogleSync.Core
         {
             GoogleApp appConfig = new GoogleApp ();
             foreach (GoogleAccount acc in GoogleAccount.List()) {
-                Log.Message ("Google Account: ", acc);
+                Log.Info ("Google Account: ", acc);
                 Log.Indent++;
                 if (appConfig.Authenticate (acc)) {
-                    Log.Message ("Success!");
+                    Log.Info ("Success!");
                 } else {
-                    Log.Message ("Failure!");
+                    Log.Info ("Failure!");
                 }
                 Log.Indent--;
             }

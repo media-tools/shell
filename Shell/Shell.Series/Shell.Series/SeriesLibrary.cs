@@ -29,7 +29,7 @@ namespace Shell.Series
         {
             if (EpisodeFile.IsEpisodeFile (filepath)) {
                 EpisodeFile episodeFile = new EpisodeFile (filepath: filepath);
-                Log.Message ("Found episode: ", episodeFile);
+                Log.Info ("Found episode: ", episodeFile);
             }
         }
     }

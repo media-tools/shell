@@ -84,9 +84,9 @@ namespace Shell.GoogleSync
             MediaShare[] filteredShares = Shares.Filter (shareFilter).FilterBy (googleUserFilter, share => this [share]);
 
             if (filteredShares.Length != 0) {
-                Log.Message ("List of local picture shares:");
+                Log.Info ("List of local picture shares:");
                 Log.Indent++;
-                Log.Message (filteredShares.OrderBy (s => s.RootDirectory).ToStringTable (
+                Log.Info (filteredShares.OrderBy (s => s.RootDirectory).ToStringTable (
                     s => LogColor.Reset,
                     new[] { "Name", "Root Directory", "Album Count", "Google Name", "Google Email", "Google ID" },
                     s => s.Name,
@@ -98,7 +98,7 @@ namespace Shell.GoogleSync
                 ));
                 Log.Indent--;
             } else {
-                Log.Message ("No shares available.");
+                Log.Info ("No shares available.");
             }
         }
 
@@ -108,7 +108,7 @@ namespace Shell.GoogleSync
             MediaShare[] filteredShares = Shares.Filter (shareFilter).FilterBy (googleUserFilter, share => this [share]);
 
             if (filteredShares.Length != 0) {
-                Log.Message ("List of local picture shares:");
+                Log.Info ("List of local picture shares:");
                 Log.Indent++;
                 int i = 1;
                 foreach (MediaShare share in filteredShares.OrderBy (share => share.RootDirectory)) {
@@ -117,7 +117,7 @@ namespace Shell.GoogleSync
                 }
                 Log.Indent--;
             } else {
-                Log.Message ("No shares available.");
+                Log.Info ("No shares available.");
             }
         }
     }

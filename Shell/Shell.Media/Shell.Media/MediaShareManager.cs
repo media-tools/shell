@@ -71,9 +71,9 @@ namespace Shell.Media
             MediaShare[] filteredShares = Shares.Filter (shareFilter);
 
             if (filteredShares.Length != 0) {
-                Log.Message ("List of picture shares:");
+                Log.Info ("List of picture shares:");
                 Log.Indent++;
-                Log.Message (filteredShares.OrderBy (s => s.RootDirectory).ToStringTable (
+                Log.Info (filteredShares.OrderBy (s => s.RootDirectory).ToStringTable (
                     s => LogColor.Reset,
                     new[] { "Name", "Root Directory", "Album Count" },
                     s => s.Name,
@@ -82,7 +82,7 @@ namespace Shell.Media
                 ));
                 Log.Indent--;
             } else {
-                Log.Message ("No shares available.");
+                Log.Info ("No shares available.");
             }
         }
 
@@ -91,7 +91,7 @@ namespace Shell.Media
             MediaShare[] filteredShares = Shares.Filter (shareFilter);
 
             if (filteredShares.Length != 0) {
-                Log.Message ("List of picture shares:");
+                Log.Info ("List of picture shares:");
                 Log.Indent++;
                 int i = 1;
                 foreach (MediaShare share in filteredShares.OrderBy (share => share.RootDirectory)) {
@@ -100,7 +100,7 @@ namespace Shell.Media
                 }
                 Log.Indent--;
             } else {
-                Log.Message ("No shares available.");
+                Log.Info ("No shares available.");
             }
         }
 
@@ -110,13 +110,13 @@ namespace Shell.Media
 
             if (filteredShares.Length != 0) {
                 foreach (MediaShare share in filteredShares.OrderBy (share => share.RootDirectory)) {
-                    Log.Message ("Share: ", share.Name);
+                    Log.Info ("Share: ", share.Name);
                     Log.Indent++;
                     share.UpdateIndex ();
                     Log.Indent--;
                 }
             } else {
-                Log.Message ("No shares are available for indexing.");
+                Log.Info ("No shares are available for indexing.");
             }
         }
 
@@ -126,13 +126,13 @@ namespace Shell.Media
 
             if (filteredShares.Length != 0) {
                 foreach (MediaShare share in filteredShares.OrderBy (share => share.RootDirectory)) {
-                    Log.Message ("Share: ", share.Name);
+                    Log.Info ("Share: ", share.Name);
                     Log.Indent++;
                     share.CleanIndex ();
                     Log.Indent--;
                 }
             } else {
-                Log.Message ("No shares are available for cleaning.");
+                Log.Info ("No shares are available for cleaning.");
             }
         }
 
@@ -142,13 +142,13 @@ namespace Shell.Media
 
             if (filteredShares.Length != 0) {
                 foreach (MediaShare share in filteredShares.OrderBy (share => share.RootDirectory)) {
-                    Log.Message ("Share: ", share.Name);
+                    Log.Info ("Share: ", share.Name);
                     Log.Indent++;
                     share.RebuildIndex (albumFilter: albumFilter);
                     Log.Indent--;
                 }
             } else {
-                Log.Message ("No shares are available for indexing.");
+                Log.Info ("No shares are available for indexing.");
             }
         }
 
@@ -158,14 +158,14 @@ namespace Shell.Media
 
             if (filteredShares.Length != 0) {
                 foreach (MediaShare share in filteredShares.OrderBy (share => share.RootDirectory)) {
-                    Log.Message ("Share: ", share.Name);
+                    Log.Info ("Share: ", share.Name);
                     Log.Indent++;
                     PictureDeduplication dedup = new PictureDeduplication ();
                     dedup.DeduplicateAlbums (share: share, albumFilter: albumFilter, dryRun: dryRun);
                     Log.Indent--;
                 }
             } else {
-                Log.Message ("No shares are available for deduplicating.");
+                Log.Info ("No shares are available for deduplicating.");
             }
         }
 
@@ -175,14 +175,14 @@ namespace Shell.Media
 
             if (filteredShares.Length != 0) {
                 foreach (MediaShare share in filteredShares.OrderBy (share => share.RootDirectory)) {
-                    Log.Message ("Share: ", share.Name);
+                    Log.Info ("Share: ", share.Name);
                     Log.Indent++;
                     PictureDeduplication dedup = new PictureDeduplication ();
                     dedup.DeduplicateShare (share: share, albumFilter: albumFilter, dryRun: dryRun);
                     Log.Indent--;
                 }
             } else {
-                Log.Message ("No shares are available for deduplicating.");
+                Log.Info ("No shares are available for deduplicating.");
             }
         }
 
@@ -192,14 +192,14 @@ namespace Shell.Media
 
             if (filteredShares.Length != 0) {
                 foreach (MediaShare share in filteredShares.OrderBy (share => share.RootDirectory)) {
-                    Log.Message ("Share: ", share.Name);
+                    Log.Info ("Share: ", share.Name);
                     Log.Indent++;
                     PictureDeduplication dedup = new PictureDeduplication ();
                     dedup.SetAuthor (share: share, albumFilter: albumFilter, author: author, dryRun: dryRun);
                     Log.Indent--;
                 }
             } else {
-                Log.Message ("No shares are available for author setting.");
+                Log.Info ("No shares are available for author setting.");
             }
         }
 
@@ -233,7 +233,7 @@ namespace Shell.Media
                     share.GarbageCollection ();
                 }
             } else {
-                Log.Message ("No shares are available for deserializing.");
+                Log.Info ("No shares are available for deserializing.");
             }
         }
     }

@@ -82,9 +82,9 @@ namespace Shell.GoogleSync.Contacts
             foreach (Group group in fg.Entries) {
                 Groups [group.Title] = group.Id;
             }
-            Log.Message ("Groups: ", account);
+            Log.Info ("Groups: ", account);
             Log.Indent++;
-            Log.Message (Groups.ToStringTable (
+            Log.Info (Groups.ToStringTable (
                 c => LogColor.Reset,
                 new[] { "Title", "ID" },
                 c => c.Key,
@@ -97,7 +97,7 @@ namespace Shell.GoogleSync.Contacts
         {
             CatchErrors (() => {
                 // Analysis disable once ConvertToLambdaExpression
-                Log.Message (ContactList.ToStringTable (
+                Log.Info (ContactList.ToStringTable (
                     c => c.IsIncludedInSynchronisation () ? (account.IsMasterAccount () ? LogColor.DarkYellow : LogColor.DarkCyan) : LogColor.Reset,
                     new[] { "Full Name", "E-Mail Address", "Phone", "Role" },
                     c => c.Name.FullName,
@@ -110,16 +110,16 @@ namespace Shell.GoogleSync.Contacts
 
         public void Deduplicate ()
         {
-            Log.Message ("Deduplicate contacts: ", account);
+            Log.Info ("Deduplicate contacts: ", account);
             Log.Indent++;
             CatchErrors (() => {
                 HashSet<string> names = new HashSet<string> ();
                 foreach (Contact masterContact in ContactList.ToArray()) {
-                    Log.Message ("Contact: ", masterContact);
+                    Log.Info ("Contact: ", masterContact);
                     Log.Indent++;
 
                     if (names.Contains (masterContact.Name.FullName)) {
-                        Log.Message ("delete!");
+                        Log.Info ("delete!");
                         DeleteContact (masterContact);
                     } else {
                         names.Add (masterContact.Name.FullName);
@@ -133,7 +133,7 @@ namespace Shell.GoogleSync.Contacts
 
         public void SyncTo (Contacts otherContacts)
         {
-            Log.Message ("Synchronizing contacts: ", account, " => ", otherContacts.account);
+            Log.Info ("Synchronizing contacts: ", account, " => ", otherContacts.account);
             Log.Indent++;
             CatchErrors (() => {
                 Contact[] masterContacts = (from c in ContactList
@@ -141,17 +141,17 @@ namespace Shell.GoogleSync.Contacts
                                                         select c).ToArray ();
                 
                 foreach (Contact masterContact in masterContacts) {
-                    Log.Message ("Contact: ", masterContact);
+                    Log.Info ("Contact: ", masterContact);
                     Log.Indent++;
 
                     Contact[] slaveContacts = otherContacts.FindContact (checkFor: masterContact).ToArray ();
                     if (slaveContacts.Length > 0) {
                         foreach (Contact slaveContact in slaveContacts) {
-                            Log.Message ("Update contact: ", slaveContact);
+                            Log.Info ("Update contact: ", slaveContact);
                             otherContacts.UpdateContact (slave: slaveContact, master: masterContact, masterList: this);
                         }
                     } else {
-                        Log.Message ("Create contact.");
+                        Log.Info ("Create contact.");
                         otherContacts.CreateContact (template: masterContact, templateList: this);
                     }
 
@@ -184,7 +184,7 @@ namespace Shell.GoogleSync.Contacts
                 Uri feedUri = new Uri (ContactsQuery.CreateContactsUri ("default"));
                 ContactsRequest cr = new ContactsRequest (settings);
                 Contact createdEntry = cr.Insert (address: feedUri, entry: newContact);
-                Log.Message ("Contact's ID: " + createdEntry.Id);
+                Log.Info ("Contact's ID: " + createdEntry.Id);
             });
         }
 
@@ -255,11 +255,11 @@ namespace Shell.GoogleSync.Contacts
                 Log.Debug ("master photo: ", (masterPhoto != null) ? masterPhoto.Length : -1);
                 Log.Debug ("slave photo: ", (slavePhoto != null) ? slavePhoto.Length : -1);
                 if (masterPhoto != null) {
-                    Log.Message ("Copy master photo to slave.");
+                    Log.Info ("Copy master photo to slave.");
                     UpdateContactPhoto (slave, masterPhoto);
                 }
                 if (masterPhoto == null && slavePhoto != null) {
-                    Log.Message ("Reverse copy slave photo to master.");
+                    Log.Info ("Reverse copy slave photo to master.");
                     masterList.UpdateContactPhoto (master, slavePhoto);
                 }
             }
@@ -336,12 +336,12 @@ namespace Shell.GoogleSync.Contacts
 
         public void CleanContacts ()
         {
-            Log.Message ("Cleaning contacts: ", account);
+            Log.Info ("Cleaning contacts: ", account);
             Log.Indent++;
             CatchErrors (() => {
                 
                 foreach (Contact contact in ContactList) {
-                    Log.Message ("Contact: ", contact);
+                    Log.Info ("Contact: ", contact);
                     Log.Indent++;
 
                     CleanContact (contact: contact);

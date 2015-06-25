@@ -34,16 +34,16 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="Core.Portable">
-      <HintPath>..\packages\Core.Common.0.1.204\lib\net45\Core.Portable.dll</HintPath>
+      <HintPath>..\packages\Core.Common.0.1.206\lib\net45\Core.Portable.dll</HintPath>
     </Reference>
     <Reference Include="Core.Platform">
-      <HintPath>..\packages\Core.Common.0.1.204\lib\net45\Core.Platform.dll</HintPath>
+      <HintPath>..\packages\Core.Common.0.1.206\lib\net45\Core.Platform.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Posix">
-      <HintPath>..\packages\Core.Common.0.1.204\lib\net45\Mono.Posix.dll</HintPath>
+      <HintPath>..\packages\Core.Common.0.1.206\lib\net45\Mono.Posix.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json">
-      <HintPath>..\packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.7.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -76,7 +76,6 @@
     <Compile Include="Shell.Common\Tasks\ScriptTask.cs" />
     <Compile Include="Shell.Common\Tasks\MainScriptTask.cs" />
     <Compile Include="Shell.Common\IO\FileSystemUtilities.cs" />
-    <Compile Include="Shell.Common\Util\ValueObject.cs" />
     <Compile Include="Shell.Common\IO\TaggedLog.cs" />
     <Compile Include="Shell.Common\Util\TimeSpanExtension.cs" />
     <Compile Include="Shell.Common\Util\CustomParallel.cs" />

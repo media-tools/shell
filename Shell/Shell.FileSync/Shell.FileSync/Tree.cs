@@ -68,25 +68,6 @@ namespace Shell.FileSync
             return new object[] { ToString () };
         }
 
-        public override bool Equals (object obj)
-        {
-            return ValueObject<Tree>.Equals (myself: this, obj: obj);
-        }
-
-        public override int GetHashCode ()
-        {
-            return base.GetHashCode ();
-        }
-
-        public static bool operator == (Tree a, Tree b)
-        {
-            return ValueObject<Tree>.Equality (a, b);
-        }
-
-        public static bool operator != (Tree a, Tree b)
-        {
-            return ValueObject<Tree>.Inequality (a, b);
-        }
     }
 }
 

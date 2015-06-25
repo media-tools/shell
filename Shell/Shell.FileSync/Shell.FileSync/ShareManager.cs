@@ -31,7 +31,7 @@ namespace Shell.FileSync
                                                                                            select file.FullName);
             }
 
-            Log.Message ("Load share config files:");
+            Log.Info ("Load share config files:");
             Log.Indent++;
             Shares.Clear ();
             List<Tuple<string, string>> configTable = new List<Tuple<string, string>> ();
@@ -53,7 +53,7 @@ namespace Shell.FileSync
                 }
             }
             Log.Indent--;
-            Log.Message (configTable.ToStringTable (
+            Log.Info (configTable.ToStringTable (
                 i => LogColor.Reset,
                 new[] { "Config File", "Status" },
                 i => i.Item1,
@@ -64,13 +64,13 @@ namespace Shell.FileSync
         public void Print ()
         {
             if (Shares.Count != 0) {
-                Log.Message ("List of shares:");
+                Log.Info ("List of shares:");
                 Log.Indent++;
                 int i = 1;
                 foreach (Share share in from share in Shares.Values orderby share.Name select share) {
-                    Log.Message (share, ":");
+                    Log.Info (share, ":");
                     Log.Indent++;
-                    Log.Message (share.Trees.ToStringTable (
+                    Log.Info (share.Trees.ToStringTable (
                         s => LogColor.Reset,
                         new[] { "Name", "Root Directory", "Enabled", "Read", "Write", "Delete" },
                         s => s.Name,
@@ -85,7 +85,7 @@ namespace Shell.FileSync
                 }
                 Log.Indent--;
             } else {
-                Log.Message ("No shares or directory trees available.");
+                Log.Info ("No shares or directory trees available.");
             }
         }
 
@@ -93,14 +93,14 @@ namespace Shell.FileSync
         {
             if (Shares.Count != 0) {
                 foreach (Share share in from share in Shares.Values orderby share.Name select share) {
-                    Log.Message (share, ":");
+                    Log.Info (share, ":");
                     Log.Indent++;
                     share.Synchronize ();
                     Log.Indent--;
-                    Log.Message ();
+                    Log.Info ();
                 }
             } else {
-                Log.Message ("No shares are available for synchronization.");
+                Log.Info ("No shares are available for synchronization.");
             }
         }
     }

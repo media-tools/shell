@@ -90,7 +90,7 @@ namespace Shell.GoogleSync.Photos
         {
             foreach (GoogleAccount acc in GoogleAccount.List()) {
                 if (googleUserFilter.Matches (acc)) {
-                    Log.Message ("Google Account: ", acc);
+                    Log.Info ("Google Account: ", acc);
                     Log.Indent++;
                     acc.Refresh ();
                     AlbumCollection albums = new AlbumCollection (account: acc);
@@ -104,15 +104,15 @@ namespace Shell.GoogleSync.Photos
         {
             foreach (GoogleAccount acc in GoogleAccount.List()) {
                 if (googleUserFilter.Matches (acc)) {
-                    Log.Message ("Google Account: ", acc);
+                    Log.Info ("Google Account: ", acc);
                     Log.Indent++;
-                    Log.Message ();
+                    Log.Info ();
                     acc.Refresh ();
 
                     AlbumCollection albums = new AlbumCollection (account: acc);
                     foreach (WebAlbum album in albums.GetAlbums()) {
                         if (albumFilter.Matches (album)) {
-                            Log.Message ("Album: ", album.Title);
+                            Log.Info ("Album: ", album.Title);
                             Log.Indent++;
                             album.PrintPhotos ();
                             Log.Indent--;
@@ -128,7 +128,7 @@ namespace Shell.GoogleSync.Photos
             GoogleAccount[] accs = GoogleAccount.List ().Where (googleUserFilter.Matches).ToArray ();
 
             if (accs.Count () != 1) {
-                Log.Message ("Json can only be exported for ONE google account at a time!");
+                Log.Info ("Json can only be exported for ONE google account at a time!");
                 return;
             }
 
@@ -204,10 +204,10 @@ namespace Shell.GoogleSync.Photos
                         continue;
                     }
 
-                    Log.Message ("Share: ", share.Name, " (in ", share.RootDirectory, ")");
+                    Log.Info ("Share: ", share.Name, " (in ", share.RootDirectory, ")");
                     Log.Indent++;
 
-                    Log.Message ("Google account: ", account);
+                    Log.Info ("Google account: ", account);
 
                     account.Refresh ();
                     AlbumCollection webAlbumCollection = new AlbumCollection (account: account);
@@ -215,10 +215,10 @@ namespace Shell.GoogleSync.Photos
                     todo (share, webAlbumCollection, shareManager.Shares);
 
                     Log.Indent--;
-                    Log.Message ();
+                    Log.Info ();
                 }
             } else {
-                Log.Message ("No shares are available for uploading.");
+                Log.Info ("No shares are available for uploading.");
             }
         }
 

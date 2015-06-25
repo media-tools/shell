@@ -31,17 +31,17 @@ namespace Shell.Common
 
             ScriptTask matchingTask = null;
             if (args.Length > 0 && findMatchingTask (args [0], out matchingTask)) {
-                Log.MessageLog ("Start (date='", Commons.DATETIME, "', args='", StringUtils.JoinArgs (args: args, alt: "(null)"), "')");
+                Log.InfoLog ("Start (date='", Commons.DATETIME, "', args='", StringUtils.JoinArgs (args: args, alt: "(null)"), "')");
 
                 if (Commons.IS_EXPERIMENTAL) {
-                    Log.Message (LogColor.DarkBlue, "=== Experimental mode! ===", LogColor.Reset);
+                    Log.Info (LogColor.DarkBlue, "=== Experimental mode! ===", LogColor.Reset);
                 }
 
                 HooksBeforeTask (matchingTask);
                 matchingTask.Run (args.Skip (1).ToArray ());
                 HooksAfterTask (matchingTask);
 
-                Log.MessageLog ("Stop (date='", Commons.DATETIME, "', runtime='", (int)Commons.RUNTIME_SEC, " sec')");
+                Log.InfoLog ("Stop (date='", Commons.DATETIME, "', runtime='", (int)Commons.RUNTIME_SEC, " sec')");
             } else {
                 printUsage ();
             }
@@ -49,10 +49,10 @@ namespace Shell.Common
 
         private void printUsage ()
         {
-            Log.MessageLog ("");
-            Log.Message (Commons.INFO_STR);
+            Log.InfoLog ("");
+            Log.Info (Commons.INFO_STR);
 
-            Log.MessageLog ("Print usage...");
+            Log.InfoLog ("Print usage...");
             Console.ResetColor ();
             Console.Write ("Usage: ");
             Console.ForegroundColor = ConsoleColor.DarkBlue;

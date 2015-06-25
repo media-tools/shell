@@ -136,18 +136,18 @@ namespace Shell.Common.IO
             }
         }
 
-        public static void Message (params object[] message)
+        public static void Info (params object[] message)
         {
-            MessageConsole (message);
-            MessageLog (message);
+            InfoConsole (message);
+            InfoLog (message);
         }
 
-        public static void MessageLog (params object[] message)
+        public static void InfoLog (params object[] message)
         {
             LogFileWriteLine (message);
         }
 
-        public static void MessageConsole (params object[] message)
+        public static void InfoConsole (params object[] message)
         {
             printConsole (message);
         }
@@ -246,7 +246,7 @@ namespace Shell.Common.IO
 
         public static string AskForString (string question, LogColor color = LogColor.Reset)
         {
-            Log.MessageLog ("Question => ", question);
+            Log.InfoLog ("Question => ", question);
             Console.ResetColor ();
             if (color != LogColor.Reset)
                 Console.ForegroundColor = color.ToConsoleColor ();
@@ -255,7 +255,7 @@ namespace Shell.Common.IO
             Console.Out.Flush ();
             string input = Console.ReadLine () ?? "";
             input = input.Trim (' ', '\r', '\n', '\t');
-            Log.MessageLog ("User Input => ", input);
+            Log.InfoLog ("User Input => ", input);
             return input;
         }
 

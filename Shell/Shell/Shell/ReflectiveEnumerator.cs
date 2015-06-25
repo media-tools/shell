@@ -37,7 +37,7 @@ namespace Shell.Common.Util
                     objects.Add ((T)Activator.CreateInstance (type));
                 }
             } catch (ReflectionTypeLoadException ex) {
-                Log.Message ("Error in assembly: ", assembly.FullName);
+                Log.Info ("Error in assembly: ", assembly.FullName);
                 Log.Error (ex);
             }
             return objects;
@@ -53,7 +53,7 @@ namespace Shell.Common.Util
                     objects.Add ((T)Activator.CreateInstance (type));
                 }
             } catch (ReflectionTypeLoadException ex) {
-                Log.Message ("Error in assembly: ", assembly.FullName);
+                Log.Info ("Error in assembly: ", assembly.FullName);
                 Log.Error (ex);
             }
             return objects;

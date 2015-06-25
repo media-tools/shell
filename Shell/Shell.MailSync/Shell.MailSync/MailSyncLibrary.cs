@@ -40,7 +40,7 @@ namespace Shell.MailSync
             }
             progressBar.Finish ();
 
-            Log.Message (lib.Accounts.ToStringTable (
+            Log.Info (lib.Accounts.ToStringTable (
                 acc => inboxMessages.ContainsKey (acc) ? LogColor.Reset : LogColor.DarkCyan,
                 new[] { "User Name", "Server", "Inbox Messages" },
                 acc => acc.Username,
@@ -65,7 +65,7 @@ namespace Shell.MailSync
         public void ListFolders ()
         {
             foreach (Account account in lib.Accounts) {
-                Log.Message ("Folders in ", account);
+                Log.Info ("Folders in ", account);
 
                 ProgressBar progressBar = Log.OpenProgressBar (identifier: "MailSyncLibrary:ListFolders:" + account.Accountname, description: "Checking folders...");
                 Dictionary<string, int> folderMessages = new Dictionary<string, int> ();
@@ -78,7 +78,7 @@ namespace Shell.MailSync
                 }
                 progressBar.Finish ();
 
-                Log.Message (folderMessages.Keys.ToStringTable (
+                Log.Info (folderMessages.Keys.ToStringTable (
                     fold => LogColor.Reset,
                     new[] { "Folder", "Inbox Messages" },
                     fold => fold,
@@ -354,11 +354,11 @@ namespace Shell.MailSync
                             MessageList needToCopyLater = ApplyFilter (unfiltered: notThereLater, parameters: channel.Parameters);
                             if (needToCopyLater.Count > 0) {
                                 if (channel.Operation == ChannelOperation.COPY) {
-                                    Log.Message ("Sync failed: copied: ", (needToCopy.Count - needToCopyLater.Count), ", failed to copy: ", needToCopyLater.Count);
+                                    Log.Info ("Sync failed: copied: ", (needToCopy.Count - needToCopyLater.Count), ", failed to copy: ", needToCopyLater.Count);
                                 } else if (channel.Operation == ChannelOperation.MOVE) {
-                                    Log.Message ("Sync failed: moved: ", (needToCopy.Count - needToCopyLater.Count), ", failed to move: ", needToCopyLater.Count);
+                                    Log.Info ("Sync failed: moved: ", (needToCopy.Count - needToCopyLater.Count), ", failed to move: ", needToCopyLater.Count);
                                 } else if (channel.Operation == ChannelOperation.DELETE) {
-                                    Log.Message ("Sync failed: deleted: ", (needToCopy.Count - needToCopyLater.Count), ", failed to delete: ", needToCopyLater.Count);
+                                    Log.Info ("Sync failed: deleted: ", (needToCopy.Count - needToCopyLater.Count), ", failed to delete: ", needToCopyLater.Count);
                                 }
                             }
                         }

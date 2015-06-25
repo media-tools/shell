@@ -14,7 +14,7 @@ using SQLite;
 
 namespace Shell.Media.Files
 {
-    public abstract class MediaFile : ValueObject<MediaFile>, IDatabaseAware
+    public abstract class MediaFile : Core.Common.ValueObject<MediaFile>, IDatabaseAware
     {
         public static Type[] TYPES = new Type[] {
             typeof(Picture),
@@ -197,26 +197,6 @@ namespace Shell.Media.Files
         protected override IEnumerable<object> Reflect ()
         {
             return new object[] { Hash };
-        }
-
-        public override bool Equals (object obj)
-        {
-            return ValueObject<MediaFile>.Equals (myself: this, obj: obj);
-        }
-
-        public override int GetHashCode ()
-        {
-            return base.GetHashCode ();
-        }
-
-        public static bool operator == (MediaFile a, MediaFile b)
-        {
-            return ValueObject<MediaFile>.Equality (a, b);
-        }
-
-        public static bool operator != (MediaFile a, MediaFile b)
-        {
-            return ValueObject<MediaFile>.Inequality (a, b);
         }
     }
 }

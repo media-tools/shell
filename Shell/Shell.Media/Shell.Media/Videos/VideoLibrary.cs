@@ -103,7 +103,7 @@ namespace Shell.Media.Videos
                     string sourceSubtitles = sourceFullPath.Replace (".mkv", ".srt");
                     string destinationSubtitles = destinationFullPath.Replace (".mkv", ".srt");
                     if (success && File.Exists (sourceSubtitles) && !File.Exists (destinationSubtitles)) {
-                        Log.Message ("Move subtitles too: ", sourceSubtitles, " => ", destinationSubtitles);
+                        Log.Info ("Move subtitles too: ", sourceSubtitles, " => ", destinationSubtitles);
                         File.Move (sourceSubtitles, destinationSubtitles);
                     }
                     

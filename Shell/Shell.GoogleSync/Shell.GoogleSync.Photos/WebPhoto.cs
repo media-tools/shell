@@ -149,7 +149,7 @@ namespace Shell.GoogleSync.Photos
             if (PicasaEntry != null) {
                 PicasaEntry.Delete ();
             } else {
-                Log.Message ("Delete not possible! WebPhoto holds no internal object! FilenameForDownload=", FilenameForDownload);
+                Log.Info ("Delete not possible! WebPhoto holds no internal object! FilenameForDownload=", FilenameForDownload);
             }
         }
     }

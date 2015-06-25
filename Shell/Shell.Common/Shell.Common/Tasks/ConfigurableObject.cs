@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Core.Common;
 using Shell.Common.IO;
 using Shell.Common.Tasks;
 using Shell.Common.Util;

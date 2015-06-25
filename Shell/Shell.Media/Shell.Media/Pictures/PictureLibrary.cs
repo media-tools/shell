@@ -40,7 +40,7 @@ namespace Shell.Media.Pictures
                     ExifTag tag;
                     if (ExifTag.ReadFromExiftoolConsoleOutput (line, out tag)) {
                         tags.Add (tag);
-                        Log.Message ("- ", Log.Fill (tag.Name, 30), ": ", tag.Value);
+                        Log.Info ("- ", Log.Fill (tag.Name, 30), ": ", tag.Value);
                     }
                 }
             };
@@ -48,7 +48,7 @@ namespace Shell.Media.Pictures
             fs.Runtime.WriteAllText (path: "run1.sh", contents: script);
 
 
-            Log.Message ("EXIF tags:");
+            Log.Info ("EXIF tags:");
             Log.Indent++;
             fs.Runtime.ExecuteScript (path: "run1.sh", receiveOutput: receiveOutput, ignoreEmptyLines: true, verbose: false);
             Log.Indent--;
@@ -182,9 +182,9 @@ namespace Shell.Media.Pictures
                 }
             }
             if (lastDateTimeStr != null) {
-                Log.Message ("Error parsing exif datetime: ", lastDateTimeStr);
+                Log.Info ("Error parsing exif datetime: ", lastDateTimeStr);
             } else if (exifTags.Count > 0) {
-                Log.Message ("No ", string.Join (" or ", possibleTagNames), ", but: ", string.Join ("; ", exifTags.Select (tag => tag.Name + "=" + tag.Value)));
+                Log.Info ("No ", string.Join (" or ", possibleTagNames), ", but: ", string.Join ("; ", exifTags.Select (tag => tag.Name + "=" + tag.Value)));
             }
             return null;
         }

@@ -12,7 +12,7 @@ using Shell.Media.Files;
 
 namespace Shell.Media.Videos
 {
-    public class ActionCamVideo : ValueObject<ActionCamVideo>
+    public class ActionCamVideo : Core.Common.ValueObject<ActionCamVideo>
     {
         public string FullPath { get; set; }
 
@@ -91,27 +91,6 @@ namespace Shell.Media.Videos
         {
             return new object[] { FileName };
         }
-
-        public override bool Equals (object obj)
-        {
-            return ValueObject<ActionCamVideo>.Equals (myself: this, obj: obj);
-        }
-
-        public override int GetHashCode ()
-        {
-            return base.GetHashCode ();
-        }
-
-        public static bool operator == (ActionCamVideo a, ActionCamVideo b)
-        {
-            return ValueObject<ActionCamVideo>.Equality (a, b);
-        }
-
-        public static bool operator != (ActionCamVideo a, ActionCamVideo b)
-        {
-            return ValueObject<ActionCamVideo>.Inequality (a, b);
-        }
     }
-
 }
 

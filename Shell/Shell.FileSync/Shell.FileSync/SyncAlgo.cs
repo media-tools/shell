@@ -39,10 +39,10 @@ namespace Shell.FileSync
 
         private void PrintInfo ()
         {
-            Log.Message ("Synchronization:");
+            Log.Info ("Synchronization:");
             Log.Indent++;
-            Log.Message ("Source:      ", Source);
-            Log.Message ("Destination: ", Destination);
+            Log.Info ("Source:      ", Source);
+            Log.Info ("Destination: ", Destination);
             Log.Indent--;
         }
 
@@ -101,76 +101,76 @@ namespace Shell.FileSync
 
         private void PrintChanges ()
         {
-            Log.Message ("Changes: ");
+            Log.Info ("Changes: ");
             Log.Indent++;
             foreach (DataFile sourceFile in Changes.Unchanged) {
-                Log.Message (LogColor.DarkGray, "[unchanged] ", LogColor.Reset, sourceFile);
+                Log.Info (LogColor.DarkGray, "[unchanged] ", LogColor.Reset, sourceFile);
             }
             foreach (Tuple<DataFile, TimeSpan> tuple in Changes.Older) {
                 DataFile sourceFile = tuple.Item1;
                 TimeSpan diff = tuple.Item2;
-                Log.Message (LogColor.DarkYellow, "[older ", diff.Negate ().Verbose (), "] ", LogColor.Reset, sourceFile);
+                Log.Info (LogColor.DarkYellow, "[older ", diff.Negate ().Verbose (), "] ", LogColor.Reset, sourceFile);
             }
             foreach (Tuple<DataFile, TimeSpan> tuple in Changes.Newer) {
                 DataFile sourceFile = tuple.Item1;
                 TimeSpan diff = tuple.Item2;
-                Log.Message (LogColor.DarkGreen, "[newer ", diff.Verbose (), "] ", LogColor.Reset, sourceFile);
+                Log.Info (LogColor.DarkGreen, "[newer ", diff.Verbose (), "] ", LogColor.Reset, sourceFile);
             }
             foreach (DataFile sourceFile in Changes.Changed) {
-                Log.Message (LogColor.DarkGreen, "[changed] ", LogColor.Reset, sourceFile);
+                Log.Info (LogColor.DarkGreen, "[changed] ", LogColor.Reset, sourceFile);
             }
             foreach (DataFile sourceFile in Changes.Created) {
-                Log.Message (LogColor.DarkGreen, "[created] ", LogColor.Reset, sourceFile);
+                Log.Info (LogColor.DarkGreen, "[created] ", LogColor.Reset, sourceFile);
             }
             foreach (DataFile destFile in Changes.Deleted) {
-                Log.Message (LogColor.DarkRed, "[deleted] ", LogColor.Reset, destFile);
+                Log.Info (LogColor.DarkRed, "[deleted] ", LogColor.Reset, destFile);
             }
             foreach (DataFile destFile in Changes.Inexistant) {
-                Log.Message (LogColor.DarkGray, "[inexistant] ", LogColor.Reset, destFile);
+                Log.Info (LogColor.DarkGray, "[inexistant] ", LogColor.Reset, destFile);
             }
             foreach (Tuple<DataFile, Exception> tuple in Changes.Error) {
                 DataFile sourceFile = tuple.Item1;
                 Exception ex = tuple.Item2;
-                Log.Message (LogColor.DarkGray, "[error] ", LogColor.Reset, sourceFile, " (", LogColor.Red, ex.Message, LogColor.Reset, ")");
+                Log.Info (LogColor.DarkGray, "[error] ", LogColor.Reset, sourceFile, " (", LogColor.Red, ex.Message, LogColor.Reset, ")");
             }
             Log.Indent--;
         }
 
         private void ApplyChanges ()
         {
-            Log.Message ("Apply changes: ");
+            Log.Info ("Apply changes: ");
             Log.Indent++;
             int done = 0;
             if (Destination.IsWriteable) {
                 foreach (DataFile sourceFile in Changes.Created) {
-                    Log.Message (LogColor.DarkGreen, "[create] ", LogColor.Reset, sourceFile);
+                    Log.Info (LogColor.DarkGreen, "[create] ", LogColor.Reset, sourceFile);
                     CopyFileExactly (sourceFile: sourceFile, destinationTree: Destination);
                 }
                 foreach (DataFile sourceFile in Changes.Changed) {
-                    Log.Message (LogColor.DarkGreen, "[overwrite] ", LogColor.Reset, sourceFile);
+                    Log.Info (LogColor.DarkGreen, "[overwrite] ", LogColor.Reset, sourceFile);
                     CopyFileExactly (sourceFile: sourceFile, destinationTree: Destination);
                 }
                 foreach (DataFile sourceFile in from tuple in Changes.Newer select tuple.Item1) {
-                    Log.Message (LogColor.DarkGreen, "[overwrite with newer version] ", LogColor.Reset, sourceFile);
+                    Log.Info (LogColor.DarkGreen, "[overwrite with newer version] ", LogColor.Reset, sourceFile);
                     CopyFileExactly (sourceFile: sourceFile, destinationTree: Destination);
                 }
             }
             if (!Destination.IsSource && Destination.IsDeletable) {
                 foreach (DataFile sourceFile in from tuple in Changes.Older select tuple.Item1) {
-                    Log.Message (LogColor.DarkYellow, "[overwrite with older version] ", LogColor.Reset, sourceFile);
+                    Log.Info (LogColor.DarkYellow, "[overwrite with older version] ", LogColor.Reset, sourceFile);
                     CopyFileExactly (sourceFile: sourceFile, destinationTree: Destination);
                 }
                 foreach (DataFile destFile in Changes.Deleted) {
-                    Log.Message (LogColor.DarkRed, "[delete] ", LogColor.Reset, destFile);
+                    Log.Info (LogColor.DarkRed, "[delete] ", LogColor.Reset, destFile);
                     DeleteFile (path: destFile);
                 }
             }
             foreach (DataFile destFile in Changes.Inexistant) {
-                Log.Message (LogColor.DarkGray, "[don't delete] ", LogColor.Reset, destFile);
+                Log.Info (LogColor.DarkGray, "[don't delete] ", LogColor.Reset, destFile);
             }
 
             if (done == 0) {
-                Log.Message ("Nothing to do.");
+                Log.Info ("Nothing to do.");
             }
             Log.Indent--;
         }

@@ -1,9 +1,10 @@
 using System;
-using Shell.Common;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Core.Common;
 using MailKit.Net.Imap;
+using Shell.Common;
 using Shell.Common.Util;
 
 namespace Shell.MailSync

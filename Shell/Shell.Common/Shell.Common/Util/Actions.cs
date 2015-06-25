@@ -26,7 +26,7 @@ namespace Shell.Common.Util
                     if (logHeader != null) {
                         Action originalOperation = operation;
                         operation = () => {
-                            Log.Message (logHeader);
+                            Log.Info (logHeader);
                             Log.Indent++;
                             originalOperation ();
                             Log.Indent--;

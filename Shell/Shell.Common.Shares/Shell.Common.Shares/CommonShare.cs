@@ -1,12 +1,12 @@
 ﻿using System;
-using Shell.Common.Util;
 using System.IO;
-using Shell.Common.IO;
 using System.Linq;
+using Shell.Common.IO;
+using Shell.Common.Util;
 
 namespace Shell.Common.Shares
 {
-    public abstract class CommonShare<Derived> : ValueObject<Derived>, IFilterable, IRootDirectory
+    public abstract class CommonShare<Derived> : Core.Common.ValueObject<Derived>, IFilterable, IRootDirectory
         where Derived : CommonShare<Derived>
     {
         public static string CONFIG_FILENAME = "control.ini";

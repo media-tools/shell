@@ -144,7 +144,7 @@ namespace Shell.GoogleSync.Contacts
             };
             HashSet<string> IsInvalidFamilyName = new HashSet<string> (InvalidFamilyNames);
 
-            Log.Message (name.FullName);
+            Log.Info (name.FullName);
             name.FullName = name.FullName.FormatName ();
             name.FullName = name.FullName ?? "Unknown";
             if (string.IsNullOrWhiteSpace (name.FamilyName) || string.IsNullOrWhiteSpace (name.GivenName)) {

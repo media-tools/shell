@@ -61,7 +61,7 @@ namespace Shell.Common.IO
         public void Save ()
         {
             if (!Commons.CanStartCriticalOperation) {
-                Log.MessageLog ("Can't save because we are exiting.");
+                Log.InfoLog ("Can't save because we are exiting.");
                 return;
             }
 

@@ -30,7 +30,7 @@ namespace Shell.Git
             string script = "";
             script += "cd " + rootDirectory + "\n";
             bool isGitRepo = Directory.Exists (rootDirectory + SystemInfo.PathSeparator + ".git");
-            Log.MessageLog ("Check if git repository exists in: ", rootDirectory, ": ", (isGitRepo ? "Yes" : "No"));
+            Log.InfoLog ("Check if git repository exists in: ", rootDirectory, ": ", (isGitRepo ? "Yes" : "No"));
             if (!isGitRepo) {
                 script += "git init\n";
             }

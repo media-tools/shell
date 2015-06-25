@@ -23,7 +23,7 @@ namespace Shell.Media.Pictures
             share.UpdateIndex ();
             //share.Deserialize (verbose: true);
 
-            Log.Message ("Set author: ", author);
+            Log.Info ("Set author: ", author);
             Log.Indent++;
 
             bool deletedSomething = false;
@@ -34,14 +34,14 @@ namespace Shell.Media.Pictures
 
                     // if the filename is in the preferred format
                     if (NamingUtilities.IsPreferredFileName (oldFilename)) {
-                        Log.Message ("- [", album.Path, "] ", LogColor.DarkBlue, "[", oldFilename, "]", LogColor.Reset);
+                        Log.Info ("- [", album.Path, "] ", LogColor.DarkBlue, "[", oldFilename, "]", LogColor.Reset);
                     }
                     // otherwise add the author and the date!
                     else {
                         DateTime date = file.PreferredTimestamp; 
                         string preferredFilename = NamingUtilities.MakePreferredFileName (fileName: oldFilename, date: date, author: author);
 
-                        Log.Message ("- [", album.Path, "] ", LogColor.DarkRed, "[", oldFilename, "]", LogColor.Reset,
+                        Log.Info ("- [", album.Path, "] ", LogColor.DarkRed, "[", oldFilename, "]", LogColor.Reset,
                             " => ", LogColor.DarkGreen, "[", preferredFilename, "]", LogColor.Reset);
 
                         if (!dryRun) {
@@ -72,7 +72,7 @@ namespace Shell.Media.Pictures
             share.UpdateIndex ();
             //share.Deserialize (verbose: true);
 
-            Log.Message ("Deduplicate share...");
+            Log.Info ("Deduplicate share...");
             Log.Indent++;
 
             bool deletedSomething = false;
@@ -83,7 +83,7 @@ namespace Shell.Media.Pictures
 
             if (byPixelHash.Count > 0) {
                 foreach (HexString pixelHash in byPixelHash.Keys.OrderBy(h => h.Hash)) {
-                    Log.Message ("- [", pixelHash.PrintShort, "]");
+                    Log.Info ("- [", pixelHash.PrintShort, "]");
                     Log.Indent++;
 
                     MediaFileInAlbum[] duplicateFiles = byPixelHash [pixelHash];
@@ -99,9 +99,9 @@ namespace Shell.Media.Pictures
                         if (anyOtherFilenames || anyBadFilename) {
                             foreach (MediaFileInAlbum dupFile in duplicateFiles) {
                                 if (dupFile.File.Filename == bestFilename) {
-                                    Log.Message ("- [", dupFile.Album.Path, "] ", LogColor.DarkGreen, "[", dupFile.File.Filename, "]", LogColor.Reset);
+                                    Log.Info ("- [", dupFile.Album.Path, "] ", LogColor.DarkGreen, "[", dupFile.File.Filename, "]", LogColor.Reset);
                                 } else {
-                                    Log.Message ("- [", dupFile.Album.Path, "] ", LogColor.DarkRed, "[", dupFile.File.Filename, "]", LogColor.Reset,
+                                    Log.Info ("- [", dupFile.Album.Path, "] ", LogColor.DarkRed, "[", dupFile.File.Filename, "]", LogColor.Reset,
                                         " => ", LogColor.DarkGreen, "[", bestFilename, "]", LogColor.Reset);
 
                                     if (!dryRun) {
@@ -120,7 +120,7 @@ namespace Shell.Media.Pictures
                         // if all filename are equal
                         else {
                             foreach (MediaFileInAlbum dupFile in duplicateFiles) {
-                                Log.Message ("- [", dupFile.Album.Path, "] ", LogColor.DarkBlue, "[", dupFile.File.Filename, "]", LogColor.Reset);
+                                Log.Info ("- [", dupFile.Album.Path, "] ", LogColor.DarkBlue, "[", dupFile.File.Filename, "]", LogColor.Reset);
                             }
                         }
                     }
@@ -134,7 +134,7 @@ namespace Shell.Media.Pictures
                     Log.Indent--;
                 }
             } else {
-                Log.Message ("No duplicates.");
+                Log.Info ("No duplicates.");
             }
 
             if (deletedSomething) {
@@ -151,9 +151,9 @@ namespace Shell.Media.Pictures
             if (oldPath != newPath && File.Exists (oldPath)) {
                 Log.Indent++;
                 try {
-                    Log.MessageConsole (LogColor.DarkMagenta, "[Move] ", oldPath, LogColor.Reset);
-                    Log.MessageConsole (LogColor.DarkMagenta, "    => ", newPath, LogColor.Reset);
-                    Log.MessageLog ("[Move] ", oldPath, " => ", newPath);
+                    Log.InfoConsole (LogColor.DarkMagenta, "[Move] ", oldPath, LogColor.Reset);
+                    Log.InfoConsole (LogColor.DarkMagenta, "    => ", newPath, LogColor.Reset);
+                    Log.InfoLog ("[Move] ", oldPath, " => ", newPath);
 
                     if (File.Exists (newPath)) {
                         File.Delete (oldPath);
@@ -204,7 +204,7 @@ namespace Shell.Media.Pictures
             share.CleanIndex ();
             //share.Deserialize (verbose: true);
 
-            Log.Message ("Deduplicate albums...");
+            Log.Info ("Deduplicate albums...");
             Log.Indent++;
 
             foreach (Album album in share.Database.Albums.Filter(albumFilter).ToArray()) {
@@ -212,11 +212,11 @@ namespace Shell.Media.Pictures
 
                 Dictionary<DateTime, Picture[]> byTimestamp = SortByExifTimestamp (album.PictureQuery.ToArray ());
                 if (byTimestamp.Count > 0) {
-                    Log.Message ("Album: [", album.Path, "]");
+                    Log.Info ("Album: [", album.Path, "]");
                     Log.Indent++;
 
                     foreach (DateTime timestamp in byTimestamp.Keys) {
-                        Log.Message ("Timestamp: [", timestamp.ToString ("yyyy:MM:dd HH:mm:ss"), "]");
+                        Log.Info ("Timestamp: [", timestamp.ToString ("yyyy:MM:dd HH:mm:ss"), "]");
                         Log.Indent++;
 
                         Dictionary<HexString, MediaFile[]> byPixelHash = new Dictionary<HexString, MediaFile[]> ();
@@ -234,7 +234,7 @@ namespace Shell.Media.Pictures
                         byPixelHash = byPixelHash.Keys.Where (key => byPixelHash [key].Length >= 2).ToDictionary (key => key, key => byPixelHash [key]);
 
                         foreach (HexString pixelHash in byPixelHash.Keys) {
-                            Log.Message ("Pixel Hash: [", pixelHash.PrintShort, "]");
+                            Log.Info ("Pixel Hash: [", pixelHash.PrintShort, "]");
                             Log.Indent++;
 
                             MediaFile[] sameFiles = byPixelHash [pixelHash];
@@ -244,7 +244,7 @@ namespace Shell.Media.Pictures
                             FindBestFilename (candidates: sameFiles, fileToKeep: out fileToKeep, bestFilename: out __bestFilename);
 
                             foreach (MediaFile file in sameFiles) {
-                                Log.Message ("- [", file.Size, "] ", file.Filename, file == fileToKeep ? " [keep!]" : "");
+                                Log.Info ("- [", file.Size, "] ", file.Filename, file == fileToKeep ? " [keep!]" : "");
                             }
 
                             if (!dryRun) {

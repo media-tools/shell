@@ -56,7 +56,7 @@ namespace Shell.Media.Files
         public static bool RenamePath (ref string fullPath, string oldPath, string newPath)
         {
             try {
-                Log.Message ("Rename file: ", Path.GetFileName (oldPath), " => ", Path.GetFileName (newPath));
+                Log.Info ("Rename file: ", Path.GetFileName (oldPath), " => ", Path.GetFileName (newPath));
                 if (File.Exists (newPath) && File.Exists (oldPath)) {
                     File.Delete (newPath);
                 }
@@ -96,8 +96,8 @@ namespace Shell.Media.Files
             File.Move (sourceFileName: oldFullPath, destFileName: newFullPath);
             fullPath = newFullPath;
 
-            Log.Message ("Rename file: old full path = ", oldFullPath);
-            Log.Message ("             new full path = ", newFullPath);
+            Log.Info ("Rename file: old full path = ", oldFullPath);
+            Log.Info ("             new full path = ", newFullPath);
         }
     }
 }

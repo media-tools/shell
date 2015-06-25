@@ -88,7 +88,7 @@ namespace Shell.Common.Tasks
         private void printError (OptionSet optionSet)
         {
             error ();
-            Log.Message ();
+            Log.Info ();
             printOptions (optionSet);
         }
 
@@ -100,7 +100,7 @@ namespace Shell.Common.Tasks
             optionSet.Add ("d|debug", "Show debugging messages.", option => Log.DEBUG_ENABLED = option != null);
             optionSet.Add ("<>", option => {
                 Log.Error ("Invalid parameter: ", option);
-                Log.Message ();
+                Log.Info ();
                 setHelp (true);
             });
 

@@ -16,7 +16,7 @@ namespace Shell.Media.Videos
     {
         public void VideoMerge (string[] directories, bool dryRun)
         {
-            Log.Message ("Action Cam Utilities: Video Merge");
+            Log.Info ("Action Cam Utilities: Video Merge");
             Log.Indent++;
 
             foreach (string dir in directories) {
@@ -28,7 +28,7 @@ namespace Shell.Media.Videos
 
         public void VideoMerge (string directory, bool dryRun)
         {
-            Log.Message ("[", directory, "]");
+            Log.Info ("[", directory, "]");
             Log.Indent++;
 
             try {
@@ -39,13 +39,13 @@ namespace Shell.Media.Videos
 
                 foreach (ActionCamVideo[] consecution in consecutiveVideos) {
 
-                    Log.Message ("[", consecution.First ().FormattedDate, "]");
+                    Log.Info ("[", consecution.First ().FormattedDate, "]");
                     Log.Indent++;
 
-                    Log.Message ("Original video files:");
+                    Log.Info ("Original video files:");
                     Log.Indent++;
                     foreach (ActionCamVideo video in consecution) {
-                        Log.Message (video.FileName);
+                        Log.Info (video.FileName);
                     }
                     Log.Indent--;
 
@@ -71,11 +71,11 @@ namespace Shell.Media.Videos
                 Log.Try ();
 
                 if (consecution.Any (v => !v.FileName.EndsWith (".mkv"))) {
-                    Log.Message ("Convert container format of files:");
+                    Log.Info ("Convert container format of files:");
                     Log.Indent++;
 
                     foreach (ActionCamVideo video in consecution) {
-                        Log.Message ("[", video.FileName, "]");
+                        Log.Info ("[", video.FileName, "]");
                         Log.Indent++;
 
                         string newPath;
@@ -107,13 +107,13 @@ namespace Shell.Media.Videos
             string targetFileName = NamingUtilities.MakeRawFilename (first.FormattedDate + "_" + first.FormattedConsecutiveNumber + "-" + last.FormattedConsecutiveNumber + ".mkv");
             string targetFullPath = Path.Combine (Path.GetDirectoryName (first.FullPath), targetFileName);
 
-            Log.Message ("Merge into: ", targetFileName);
+            Log.Info ("Merge into: ", targetFileName);
             Log.Indent++;
 
             if (VideoLibrary.Instance.MergeMatroska (outputPath: targetFullPath, inputPaths: consecution.Select (video => video.FullPath).ToArray ())) {
-                Log.Message ("Success.");
+                Log.Info ("Success.");
             } else {
-                Log.Message ("Failure.");
+                Log.Info ("Failure.");
             }
 
             Log.Indent--;

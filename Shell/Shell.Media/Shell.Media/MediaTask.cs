@@ -158,17 +158,17 @@ namespace Shell.Media
 
             if (albumWildcardOverride) {
                 // leave album filter as it is (CONTAIN policy instead of EXACT)
-                Log.Message ("Are you SURE you want to allow wildcards in the album filter?");
-                Log.Message ("Album filter: ", albumFilter);
+                Log.Info ("Are you SURE you want to allow wildcards in the album filter?");
+                Log.Info ("Album filter: ", albumFilter);
                 Console.ReadLine ();
             } else {
                 // override album filter to use the EXACT policy
                 albumFilter = Filter.ExactFilter (copyFrom: albumFilter);
             }
 
-            Log.Message ("Author: ", author);
-            Log.Message ("Album filter: ", albumFilter);
-            Log.Message ("Share filter: ", shareFilter);
+            Log.Info ("Author: ", author);
+            Log.Info ("Album filter: ", albumFilter);
+            Log.Info ("Share filter: ", shareFilter);
 
             MediaShareManager shares = new MediaShareManager (rootDirectory: "/");
             shares.Initialize (cached: true);

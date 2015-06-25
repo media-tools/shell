@@ -65,7 +65,7 @@ namespace Shell.FileSync
             }
 
             if (pairs.Count == 0) {
-                Log.Message ("No directory trees are available for synchronization.");
+                Log.Info ("No directory trees are available for synchronization.");
                 return;
             }
 

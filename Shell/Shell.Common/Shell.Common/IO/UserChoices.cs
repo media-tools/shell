@@ -19,22 +19,22 @@ namespace Shell.Common.IO
 
         public void Ask (string question)
         {
-            Log.Message ();
-            Log.Message (LogColor.DarkGray, "Actions:", LogColor.Reset);
+            Log.Info ();
+            Log.Info (LogColor.DarkGray, "Actions:", LogColor.Reset);
             Log.Indent++;
             foreach (UserChoice choice in Choices) {
-                Log.Message (LogColor.DarkGray, choice, LogColor.Reset);
+                Log.Info (LogColor.DarkGray, choice, LogColor.Reset);
             }
             Log.Indent--;   
  
             do {
-                Log.Message ();
+                Log.Info ();
                 string chosen = Log.AskForString (question: question, color: LogColor.DarkGray);
                 IEnumerable<UserChoice> chosenChoices = Choices.Where (c => c.Number == chosen);
 
                 // found a direct match?
                 if (chosenChoices.Any ()) {
-                    Log.Message ();
+                    Log.Info ();
                     chosenChoices.First ().Action ();
                     return;
                 }

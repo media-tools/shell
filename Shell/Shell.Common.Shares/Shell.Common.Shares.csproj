@@ -32,6 +32,18 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\packages\Newtonsoft.Json.7.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="Core.Portable">
+      <HintPath>..\packages\Core.Common.0.1.206\lib\net45\Core.Portable.dll</HintPath>
+    </Reference>
+    <Reference Include="Core.Platform">
+      <HintPath>..\packages\Core.Common.0.1.206\lib\net45\Core.Platform.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Posix">
+      <HintPath>..\packages\Core.Common.0.1.206\lib\net45\Mono.Posix.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -49,5 +61,8 @@
       <Project>{CBB5DE48-A305-4F9C-88F3-F0F071AC3298}</Project>
       <Name>Shell.Common</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

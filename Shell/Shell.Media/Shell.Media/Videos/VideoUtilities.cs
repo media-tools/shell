@@ -17,11 +17,11 @@ namespace Shell.Media.Videos
     {
         public void VideoEncodeDirectory (string[] directories, VideoEncoding encoding, int crf, bool dryRun, int scaleX, int scaleY)
         {
-            Log.Message ("Video Utilities: Video Encode");
+            Log.Info ("Video Utilities: Video Encode");
             Log.Indent++;
-            Log.Message ("Encoding: ", encoding);
-            Log.Message ("CRF: ", crf);
-            Log.Message ("Scale: ", scaleX, ":", scaleY);
+            Log.Info ("Encoding: ", encoding);
+            Log.Info ("CRF: ", crf);
+            Log.Info ("Scale: ", scaleX, ":", scaleY);
 
             foreach (string dir in directories) {
                 VideoEncodeDirectory (directory: dir, dryRun: dryRun, encoding: encoding, crf: crf, scaleX: scaleX, scaleY: scaleY);
@@ -32,7 +32,7 @@ namespace Shell.Media.Videos
 
         public void VideoEncodeDirectory (string directory, VideoEncoding encoding, int crf, bool dryRun, int scaleX, int scaleY)
         {
-            Log.Message ("[", directory, "]");
+            Log.Info ("[", directory, "]");
             Log.Indent++;
 
             try {
@@ -75,7 +75,7 @@ namespace Shell.Media.Videos
                 targetPath = Path.Combine (Path.GetDirectoryName (targetPath), filename + ".mkv");
             }
 
-            Log.Message ("[", Path.GetFileName (rawVideoFile), " => ", Path.GetFileName (targetPath), "]");
+            Log.Info ("[", Path.GetFileName (rawVideoFile), " => ", Path.GetFileName (targetPath), "]");
             Log.Indent++;
 
             Log.Debug ("source: ", rawVideoFile);

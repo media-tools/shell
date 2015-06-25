@@ -76,7 +76,7 @@ namespace Shell.Git
             fs.Runtime.WriteAllText (path: "install.sh", contents: script);
             fs.Runtime.ExecuteScript (path: "install.sh", sudo: true);
 
-            Log.Message ("source /etc/bash_completion.d/dotnetshell");
+            Log.Info ("source /etc/bash_completion.d/dotnetshell");
         }
     }
 }

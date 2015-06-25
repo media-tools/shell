@@ -7,6 +7,7 @@ using Shell.Common.IO;
 using Shell.Common.Util;
 using Core.Math;
 using System.Linq;
+using Core.Common;
 
 namespace Shell.GoogleSync.Photos
 {
@@ -40,7 +41,7 @@ namespace Shell.GoogleSync.Photos
         {
             WebPhotoCollection result = AlbumCollection.GetPhotos (album: this, deleteDuplicates: false, holdInternals: false);
 
-            Log.Message (result.WebFiles.ToStringTable (
+            Shell.Common.IO.Log.Info (result.WebFiles.ToStringTable (
                 p => LogColor.Reset,
                 new[] { "Filename for Download", "Filename", "Id", "Dimensions", "Timestamp", "Download URL" },
                 p => p.FilenameForDownload,
@@ -88,11 +89,9 @@ namespace Shell.GoogleSync.Photos
         public void Delete (bool verbose = true)
         {
             if (verbose) {
-                Log.Message ("Delete album: " + Title);
+                Shell.Common.IO.Log.Info ("Delete album: " + Title);
             }
-            AlbumCollection.CatchErrors (() => {
-                InternalAlbum.AtomEntry.Delete ();
-            });
+            AlbumCollection.CatchErrors (() => InternalAlbum.AtomEntry.Delete ());
         }
 
         public string[] FilterKeys ()

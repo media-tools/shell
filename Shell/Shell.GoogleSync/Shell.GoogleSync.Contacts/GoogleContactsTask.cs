@@ -45,7 +45,7 @@ namespace Shell.GoogleSync.Contacts
         void listContacts ()
         {
             foreach (GoogleAccount acc in GoogleAccount.List()) {
-                Log.Message ("Google Account: ", acc);
+                Log.Info ("Google Account: ", acc);
                 Log.Indent++;
                 acc.Refresh ();
                 Contacts contacts = new Contacts (account: acc);
@@ -80,7 +80,7 @@ namespace Shell.GoogleSync.Contacts
         {
             IEnumerable<GoogleAccount> accounts = GoogleAccount.List ();
             if (accounts.Any ()) {
-                Log.Message (accounts.ToStringTable (
+                Log.Info (accounts.ToStringTable (
                     acc => acc.IsMasterAccount () ? LogColor.DarkYellow : LogColor.DarkCyan,
                     new[] { "Name", "E-Mail Address", "ID", "Role" },
                     acc => acc.DisplayName,
@@ -96,7 +96,7 @@ namespace Shell.GoogleSync.Contacts
                     Log.Error ("There are no slave accounts!");
                 }
             } else {
-                Log.Message ("There are no accounts.");
+                Log.Info ("There are no accounts.");
             }
         }
 
@@ -118,13 +118,13 @@ namespace Shell.GoogleSync.Contacts
             if (accounts.Any ()) {
                 Log.UserChoice ("Which account do you want to set as master?", choices: accounts.ToUserChoices (action));
             } else {
-                Log.Message ("There are no accounts.");
+                Log.Info ("There are no accounts.");
             }
         }
 
         void setMasterAccount (GoogleAccount account)
         {
-            Log.Message ("Set as master: ", account);
+            Log.Info ("Set as master: ", account);
             HashSet<string> ids = Contacts.MasterAccountIds;
             ids.Add (account.Id);
             Contacts.MasterAccountIds = ids;
@@ -132,7 +132,7 @@ namespace Shell.GoogleSync.Contacts
 
         void setSlaveAccount (GoogleAccount account)
         {
-            Log.Message ("Set as slave: ", account);
+            Log.Info ("Set as slave: ", account);
             HashSet<string> ids = Contacts.MasterAccountIds;
             ids.Remove (account.Id);
             Contacts.MasterAccountIds = ids;
@@ -140,14 +140,14 @@ namespace Shell.GoogleSync.Contacts
 
         void printIncludedNames ()
         {
-            Log.Message ("Contacts whose name contains one the following strings are synchronized:");
+            Log.Info ("Contacts whose name contains one the following strings are synchronized:");
             Log.Indent++;
             if (Contacts.IncludeNames.Any ()) {
                 foreach (string name in Contacts.IncludeNames) {
-                    Log.Message ("- ", LogColor.DarkCyan, name, LogColor.Reset);
+                    Log.Info ("- ", LogColor.DarkCyan, name, LogColor.Reset);
                 }
             } else {
-                Log.Message ("None.");
+                Log.Info ("None.");
             }
             Log.Indent--;
         }

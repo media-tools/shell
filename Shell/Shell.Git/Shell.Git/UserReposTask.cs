@@ -95,12 +95,12 @@ namespace Shell.Git
                 };
                 int i = 1;
                 foreach (string path in RepoPaths) {
-                    Log.Message ("Commit: ", path);
+                    Log.Info ("Commit: ", path);
                     GitLibrary.Execute (commands: commands, verbose: true, rootDirectory: path);
                     ++i;
                 }
             } else {
-                Log.Message ("No repositories.");
+                Log.Info ("No repositories.");
             }
         }
 
@@ -116,12 +116,12 @@ namespace Shell.Git
                 };
                 int i = 1;
                 foreach (string path in RepoPaths) {
-                    Log.Message ("Push: ", path);
+                    Log.Info ("Push: ", path);
                     GitLibrary.Execute (commands: commands, verbose: true, rootDirectory: path);
                     ++i;
                 }
             } else {
-                Log.Message ("No repositories.");
+                Log.Info ("No repositories.");
             }
         }
 
@@ -135,12 +135,12 @@ namespace Shell.Git
                 };
                 int i = 1;
                 foreach (string path in RepoPaths) {
-                    Log.Message ("Status: ", path);
+                    Log.Info ("Status: ", path);
                     GitLibrary.Execute (commands: commands, verbose: true, rootDirectory: path);
                     ++i;
                 }
             } else {
-                Log.Message ("No repositories.");
+                Log.Info ("No repositories.");
             }
         }
 
@@ -152,7 +152,7 @@ namespace Shell.Git
             }
 
             addRepo (paramPath);
-            Log.Message ("Added repository: ", paramPath);
+            Log.Info ("Added repository: ", paramPath);
             list ();
         }
 
@@ -164,7 +164,7 @@ namespace Shell.Git
             }
 
             removeRepo (paramPath);
-            Log.Message ("Removed repository: ", paramPath);
+            Log.Info ("Removed repository: ", paramPath);
             list ();
         }
 
@@ -183,14 +183,14 @@ namespace Shell.Git
         private void list ()
         {
             if (RepoPaths.Count >= 1) {
-                Log.Message ("List of repositories:");
+                Log.Info ("List of repositories:");
                 int i = 1;
                 foreach (string path in RepoPaths) {
-                    Log.Message ("  ", i, ". ", path);
+                    Log.Info ("  ", i, ". ", path);
                     ++i;
                 }
             } else {
-                Log.Message ("No repositories.");
+                Log.Info ("No repositories.");
             }
         }
     }

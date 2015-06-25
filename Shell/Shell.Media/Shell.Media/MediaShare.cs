@@ -72,32 +72,12 @@ namespace Shell.Media
             return new object[] { Name };
         }
 
-        public override bool Equals (object obj)
-        {
-            return ValueObject<MediaShare>.Equals (myself: this, obj: obj);
-        }
-
-        public override int GetHashCode ()
-        {
-            return base.GetHashCode ();
-        }
-
-        public static bool operator == (MediaShare a, MediaShare b)
-        {
-            return ValueObject<MediaShare>.Equality (a, b);
-        }
-
-        public static bool operator != (MediaShare a, MediaShare b)
-        {
-            return ValueObject<MediaShare>.Inequality (a, b);
-        }
-
         public void UpdateIndex ()
         {
             NormalizeAlbumPaths ();
 
             // list media files
-            Log.Message ("List media files...");
+            Log.Info ("List media files...");
             Log.Indent++;
             Func<FileInfo, bool> noShareConfigs = fileInfo => fileInfo.Name != CommonShare<MediaShare>.CONFIG_FILENAME;
             Func<DirectoryInfo, bool> dirFilter = dir => !dir.Name.StartsWith (".");
@@ -111,7 +91,7 @@ namespace Shell.Media
             Log.Indent--;
 
             // index all media files
-            Log.Message ("Index media files...");
+            Log.Info ("Index media files...");
             Log.Indent++;
 
 
@@ -166,7 +146,7 @@ namespace Shell.Media
 
                     // check if some attributes may be missing
                     if (!cachedFile.IsCompletelyIndexed) {
-                        Log.Message ("Media file (update): ", fullPath);
+                        Log.Info ("Media file (update): ", fullPath);
                         Log.Indent++;
 
                         cachedFile.Index ();
@@ -183,7 +163,7 @@ namespace Shell.Media
 				// if the file needs to be indexed
 				else if (MediaFile.IsValidFile (fullPath: fullPath)) {
                     progress.Print (current: i, min: 0, max: max, currentDescription: "indexing: " + relativePath, showETA: true, updateETA: true);
-                    Log.Message ("Media file: ", fullPath);
+                    Log.Info ("Media file: ", fullPath);
                     Log.Indent++;
 
                     // create the file record and index it
@@ -204,7 +184,7 @@ namespace Shell.Media
                     progress.Print (current: i, min: 0, max: max, currentDescription: "unknown: " + relativePath, showETA: true, updateETA: false);
 
                     if (!MediaFile.IsIgnoredFile (fullPath: fullPath)) {
-                        Log.Message ("Unknown file: ", fullPath);
+                        Log.Info ("Unknown file: ", fullPath);
                     }
                 }
 
@@ -221,7 +201,7 @@ namespace Shell.Media
         private void NormalizeAlbumPaths ()
         {
             // list media files
-            Log.Message ("Normalize media directories...");
+            Log.Info ("Normalize media directories...");
             Log.Indent++;
 
             bool allPathsNormalized;
@@ -238,7 +218,7 @@ namespace Shell.Media
                             string newAlbumPath = NamingUtilities.NormalizeAlbumName (albumPath);
                             string newFullPath = Path.Combine (RootDirectory, newAlbumPath);
 
-                            Log.Message ("Rename Album: ", fullPath, " => ", newFullPath);
+                            Log.Info ("Rename Album: ", fullPath, " => ", newFullPath);
 
                             if (Directory.Exists (newFullPath)) {
                                 Log.Error ("Can't rename album: destination name already exists! (", newFullPath, ")");
@@ -246,8 +226,8 @@ namespace Shell.Media
                                 // if the directory is a symlink
                                 if (FileHelper.Instance.IsSymLink (fullPath)) {
                                     string target = FileHelper.Instance.ReadSymLink (fullPath);
-                                    Log.Message ("Symlink (old): ", fullPath, " => ", target);
-                                    Log.Message ("Symlink (new): ", newFullPath, " => ", target);
+                                    Log.Info ("Symlink (old): ", fullPath, " => ", target);
+                                    Log.Info ("Symlink (new): ", newFullPath, " => ", target);
                                     FileHelper.Instance.CreateSymLink (target, newFullPath);
                                     File.Delete (fullPath);
                                     allPathsNormalized = false;
@@ -267,10 +247,10 @@ namespace Shell.Media
                             if (albumPath.Length > 0 && !NamingUtilities.IsNormalizedAlbumName (target)) {
                                 string newTarget = NamingUtilities.NormalizeAlbumName (target);
 
-                                Log.Message ("Change target of symlinked Album: ", fullPath);
+                                Log.Info ("Change target of symlinked Album: ", fullPath);
 
-                                Log.Message ("Symlink (old): ", fullPath, " => ", target);
-                                Log.Message ("Symlink (new): ", fullPath, " => ", newTarget);
+                                Log.Info ("Symlink (old): ", fullPath, " => ", target);
+                                Log.Info ("Symlink (new): ", fullPath, " => ", newTarget);
                                 File.Delete (fullPath);
                                 FileHelper.Instance.CreateSymLink (newTarget, fullPath);
                                 allPathsNormalized = false;
@@ -289,7 +269,7 @@ namespace Shell.Media
         public void CleanIndex ()
         {
             // clean up album list
-            Log.Message ("Clean up index...");
+            Log.Info ("Clean up index...");
             Log.Indent++;
 
             Database.DB.BeginTransaction ();
@@ -298,13 +278,13 @@ namespace Shell.Media
                 // iterate over a copy to be able to delete stuff
                 foreach (MediaFile file in album.AllFilesQuery) {
                     if (!File.Exists (Path.Combine (RootDirectory, album.Path, file.Filename))) {
-                        Log.Message ("File does not exist: ", file.RelativePath);
+                        Log.Info ("File does not exist: ", file.RelativePath);
                         file.IsDeleted = true;
                         Database.UpdateFile (file);
                     }
                 }
                 if (!Directory.Exists (Path.Combine (RootDirectory, album.Path))) {
-                    Log.Message ("Album does not exist: ", album.Path);
+                    Log.Info ("Album does not exist: ", album.Path);
                     album.IsDeleted = true;
                     Database.UpdateAlbum (album);
                 }
@@ -319,7 +299,7 @@ namespace Shell.Media
             foreach (MediaFile file in Database.Media) {
                 int sqlAlbumId = SqlAlbumIds [file.AlbumPath];
                 if (sqlAlbumId != file.SqlAlbumId) {
-                    Log.Message ("Bug! Wrong SQL album ID: wrong=", file.SqlAlbumId, ", right=", sqlAlbumId, ", relativePath=", file.RelativePath);
+                    Log.Info ("Bug! Wrong SQL album ID: wrong=", file.SqlAlbumId, ", right=", sqlAlbumId, ", relativePath=", file.RelativePath);
                     file.SqlAlbumId = sqlAlbumId;
                     Database.UpdateFile (file);
                 }
@@ -332,7 +312,7 @@ namespace Shell.Media
         public void RebuildIndex (Filter albumFilter)
         {
             // clean up album list
-            Log.Message ("Rebuild index...");
+            Log.Info ("Rebuild index...");
             Log.Indent++;
             RemoveFromIndex (albumFilter: albumFilter);
             UpdateIndex ();
@@ -342,10 +322,10 @@ namespace Shell.Media
         public void RemoveFromIndex (Filter albumFilter)
         {
             // clean up album list
-            Log.Message ("Remove from index...");
+            Log.Info ("Remove from index...");
             Log.Indent++;
             foreach (Album album in Database.Albums.Filter(albumFilter)) {
-                Log.Message ("- ", album.Path);
+                Log.Info ("- ", album.Path);
                 foreach (MediaFile file in album.AllFilesQuery) {
                     file.IsDeleted = true;
                     file.IsDeleted = true;
@@ -536,9 +516,9 @@ namespace Shell.Media
 
         public void PrintAlbums (Filter albumFilter)
         {
-            Log.Message (Name, " (in ", RootDirectory, "):");
+            Log.Info (Name, " (in ", RootDirectory, "):");
             Log.Indent++;
-            Log.Message (Database.Albums.Filter (albumFilter).ToStringTable (
+            Log.Info (Database.Albums.Filter (albumFilter).ToStringTable (
                 a => LogColor.Reset,
                 new[] { "Album", "Picture Files", "Audio Files", "Video Files", "Document Files" },
                 a => a.Path,

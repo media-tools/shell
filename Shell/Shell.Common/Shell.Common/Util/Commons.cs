@@ -65,24 +65,24 @@ namespace Shell.Common.Util
 
         public static void OnCancel ()
         {
-            Log.MessageConsole ();
-            Log.MessageLog ("Cancelled!");
+            Log.InfoConsole ();
+            Log.InfoLog ("Cancelled!");
             int i = 1;
             if (ExitHooks.Count > 0) {
                 foreach (Action hook in ExitHooks) {
-                    Log.MessageLog ("Running exit hook #", i, " of ", ExitHooks.Count, "...");
+                    Log.InfoLog ("Running exit hook #", i, " of ", ExitHooks.Count, "...");
                     try {
                         hook ();
                     } catch (Exception ex) {
-                        Log.MessageLog ("Fuck you! Exception in exit hook: ", ex);
+                        Log.InfoLog ("Fuck you! Exception in exit hook: ", ex);
                     }
-                    Log.MessageLog ("Done running exit hook #", i, ".");
+                    Log.InfoLog ("Done running exit hook #", i, ".");
                     i++;
                 }
             } else {
-                Log.MessageLog ("There are no exit hooks.");
+                Log.InfoLog ("There are no exit hooks.");
             }
-            Log.MessageLog ("Exit.");
+            Log.InfoLog ("Exit.");
         }
 
         public static void CancelThreadWorker ()
@@ -92,14 +92,14 @@ namespace Shell.Common.Util
             while (PendingOperations > 0 && timeout > 0) {
                 Thread.Sleep (100);
                 timeout -= 100;
-                Log.MessageLog ("Waiting for pending operations to finish (", timeout, " ms)...");
+                Log.InfoLog ("Waiting for pending operations to finish (", timeout, " ms)...");
             }
             CanStartCriticalOperation = false;
             timeout = 30000;
             while (CriticalOperations > 0 && timeout > 0) {
                 Thread.Sleep (100);
                 timeout -= 100;
-                Log.MessageLog ("Waiting for critical operations to finish (", timeout, " ms)...");
+                Log.InfoLog ("Waiting for critical operations to finish (", timeout, " ms)...");
             }
             OnCancel ();
             Console.CursorVisible = true;

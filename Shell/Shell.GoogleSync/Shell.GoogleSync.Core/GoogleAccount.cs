@@ -13,20 +13,23 @@ using Shell.Common.IO;
 using Shell.Common.Tasks;
 using Shell.Common.Util;
 using Shell.Namespaces;
+using Newtonsoft.Json;
+using Core.IO;
 
 namespace Shell.GoogleSync.Core
 {
     public class GoogleAccount : ConfigurableObject, IFilterable
     {
-        private ConfigFile accountConfig;
+        ConfigFile accountConfig;
+        GoogleAccountListJson jsonAccounts;
 
-        private string section;
+        string section;
 
         public string Id { get { return accountConfig [section, "Id", ""]; } }
 
         public string DisplayName { get { return accountConfig [section, "DisplayName", ""]; } }
 
-        private static Regex filterShortDisplayName = new Regex ("[^a-z]");
+        static Regex filterShortDisplayName = new Regex ("[^a-z]");
 
         public string ShortDisplayName { get { return filterShortDisplayName.Replace (FirstName.ToLower (), ""); } }
 
@@ -44,14 +47,19 @@ namespace Shell.GoogleSync.Core
             : this ()
         {
             section = id2section (id);
-            string displayName = accountConfig [section, "DisplayName", ""];
-            string emails = accountConfig [section, "Emails", ""];
+
+            if (!jsonAccounts.Accounts.ContainsKey (id)) {
+                jsonAccounts.Accounts [id] = new GoogleAccountJson ();
+            }
         }
 
         private GoogleAccount ()
         {
             ConfigName = NamespaceGoogle.CONFIG_NAME;
             accountConfig = fs.Config.OpenConfigFile ("accounts.ini");
+
+            string content = fs.Config.ReadAllText ("accounts.json");
+            jsonAccounts = PortableConfigHelper.ReadConfig<GoogleAccountListJson> (content: ref content);
         }
 
         public static GoogleAccount SaveAccount (UserCredential credential, DictionaryDataStore dataStore)
@@ -85,6 +93,21 @@ namespace Shell.GoogleSync.Core
 
             dataStore.Save (configFile: accountConfig, section: section);
 
+            GoogleAccountListJson jsonAccounts = dummy.jsonAccounts;
+            if (!jsonAccounts.Accounts.ContainsKey (id)) {
+                jsonAccounts.Accounts [id] = new GoogleAccountJson ();
+            }
+
+            GoogleAccountJson accJson = jsonAccounts.Accounts [id];
+            accJson.AccessToken = credential.Token.AccessToken;
+            accJson.RefreshToken = credential.Token.RefreshToken;
+            accJson.Id = me.Id;
+            accJson.Emails = (from email in me.Emails ?? new Person.EmailsData[0]
+                                       select email.Value).ToArray ();
+            accJson.DisplayName = me.DisplayName;
+
+            dummy.fs.Config.WriteAllText (path: "accounts.json", contents: PortableConfigHelper.WriteConfig (stuff: jsonAccounts));
+
             return new GoogleAccount (id: id);
         }
 
@@ -97,6 +120,25 @@ namespace Shell.GoogleSync.Core
             foreach (string id in ids) {
                 GoogleAccount acc = new GoogleAccount (id: id);
                 yield return acc;
+
+
+                GoogleAccountListJson jsonAccounts = dummy.jsonAccounts;
+                if (!jsonAccounts.Accounts.ContainsKey (id)) {
+                    jsonAccounts.Accounts [id] = new GoogleAccountJson ();
+                }
+
+                GoogleAccountJson accJson = jsonAccounts.Accounts [id];
+                accJson.AccessToken = accountConfig [acc.section, "AccessToken", ""];
+                accJson.RefreshToken = accountConfig [acc.section, "RefreshToken", ""];
+                accJson.Id = accountConfig [acc.section, "Id", ""];
+                accJson.Emails = accountConfig [acc.section, "Emails", ""].Split (';');
+                accJson.DisplayName = accountConfig [acc.section, "DisplayName", ""];
+
+                DictionaryDataStore dds = new DictionaryDataStore ();
+                dds.Load (configFile: accountConfig, section: acc.section);
+                dds.Save (dictionary: accJson.DataStore);
+
+                dummy.fs.Config.WriteAllText (path: "accounts.json", contents: PortableConfigHelper.WriteConfig (stuff: jsonAccounts));
             }
         }
 
@@ -189,6 +231,33 @@ namespace Shell.GoogleSync.Core
         public static bool operator != (GoogleAccount a, GoogleAccount b)
         {
             return ValueObject<ConfigurableObject>.Inequality (a, b);
+        }
+
+        public sealed class GoogleAccountJson
+        {
+            [JsonProperty ("access_token")]
+            public string AccessToken { get; set; } = "";
+
+            [JsonProperty ("refresh_token")]
+            public string RefreshToken { get; set; } = "";
+
+            [JsonProperty ("id")]
+            public string Id { get; set; } = "";
+
+            [JsonProperty ("emails")]
+            public string[] Emails { get; set; } = new string[0];
+
+            [JsonProperty ("display_name")]
+            public string DisplayName { get; set; } = "";
+
+            [JsonProperty ("data_store")]
+            public Dictionary<string, string> DataStore { get; set; } = new Dictionary<string, string>();
+        }
+
+        public sealed class GoogleAccountListJson
+        {
+            [JsonProperty ("accounts")]
+            public Dictionary<string, GoogleAccountJson> Accounts { get; set; } = new Dictionary<string, GoogleAccountJson>();
         }
     }
 }

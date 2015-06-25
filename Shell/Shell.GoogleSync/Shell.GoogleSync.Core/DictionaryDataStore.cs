@@ -105,6 +105,22 @@ namespace Shell.GoogleSync.Core
             }
         }
 
+        public void Save (Dictionary<string,string> dictionary)
+        {
+            foreach (var pair in Store) {
+                dictionary ["store_" + pair.Key] = pair.Value;
+            }
+            dictionary ["store_keys"] = Store.Keys.JoinValues ();
+        }
+
+        public void Load (Dictionary<string,string> dictionary)
+        {
+            string[] keys = dictionary ["store_keys"].SplitValues ();
+            foreach (string key in keys) {
+                Store [key] = dictionary ["store_" + key];
+            }
+        }
+
         /// <summary>Creates a unique stored key based on the key and the class type.</summary>
         /// <param name="key">The object key.</param>
         /// <param name="t">The type to store or retrieve.</param>

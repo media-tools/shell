@@ -312,8 +312,7 @@ namespace Shell.GoogleSync.Photos
                         // if the album doesn't exist locally...
                         if (!share.Database.Albums.Any (a => album.Title == PhotoSyncUtilities.ToSyncedAlbumName (a))) {
                             // .. and if it is no "special" album...
-                            if (album.Title != PhotoSyncUtilities.SPECIAL_ALBUM_AUTO_BACKUP && !album.Title.StartsWith (PhotoSyncUtilities.SPECIAL_ALBUM_HANGOUT)) {
-                                // ... and doesn't contain any photos, delete it!
+                            if (album.Title != PhotoSyncUtilities.SPECIAL_ALBUM_AUTO_BACKUP && !album.Title.StartsWith (PhotoSyncUtilities.SPECIAL_ALBUM_HANGOUT)) {                                // ... and doesn't contain any photos, delete it!
                                 if (result.WebFiles.Length == 0) {
                                     album.Delete (verbose: false);
                                     result.Log ("Delete album (in ListWebAlbums): ", album.Title);

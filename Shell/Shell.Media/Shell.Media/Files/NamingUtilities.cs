@@ -123,6 +123,7 @@ namespace Shell.Media.Files
             new FormatCombo { Prefix = "Screenshot_", Format = "yyyy-MM-dd HH.mm.ss" },
             new FormatCombo { Prefix = "Screenshot ", Format = "yyyy-MM-dd HH.mm.ss" },
             new FormatCombo { Prefix = "Screenshot - ", Format = "dd.MM.yyyy - HH_mm_ss" },
+            new FormatCombo { Prefix = "Screenshot - ", Format = "yyyy-MM-dd - HH_mm_ss" },
             new FormatCombo { Prefix = "Bildschirmfoto vom ", Format = "yyyy-MM-dd HH_mm_ss" },
             new FormatCombo { Prefix = "Bildschirmfoto - ", Format = "dd.MM.yyyy - HH_mm_ss" },
             new FormatCombo { Prefix = "", Format = "yyyy-MM-dd HH-mm-ss" },

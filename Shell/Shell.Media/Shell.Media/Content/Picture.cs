@@ -212,7 +212,7 @@ namespace Shell.Media.Content
             if (Path.GetExtension (fullPath) == ".png") {
                 if (Path.GetFileName (fullPath).ToLower ().Contains ("screenshot")) {
                     if (fullPath.ToLower ().Contains ("serie")) {
-                        Picture.ConvertToJpeg (fullPath: ref fullPath, quality: 85);
+                        Picture.ConvertToJpeg (fullPath: ref fullPath, quality: 65);
                     } else {
                         Picture.ConvertToJpeg (fullPath: ref fullPath, quality: 95);
                     }
